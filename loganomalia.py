@@ -11,20 +11,30 @@ class LogAnomaliaDWCA(object):
     def __init__(self):
         self.log = {}
 
+
+    def _setup_termtest_dict(self):
+        """create empty dictionary of the format:
+            {"ids":[], "sample":[]}
+        """
+        return {"ids":[], "sample":[]}
+
     def _check_if_new_failure(self):
         """check if the failure is different from the previous failures for
         this term-test combination; if so, store the value
         """
 
-
-    def _add_failure(self, row, term):
+    def _add_failure(self, row, term, test):
         """add the row id to the specific term
         """
         if term in self.log.keys():
-            # TODO prevent from endless list when single mistake in all rows??
-            self.log[term].append(row.id)
+            if not test in self.log[term].keys():
+                self.log[term][test] = {test : self._setup_termtest_dict()}
+
         else:
-            self.log[term] = [row.id]
+            self.log[term] = {test : self._setup_termtest_dict()}
+
+        self.log[term][test]["ids"].append(row.id)
+        #self.log[term][test][sample] =
 
     # EQUAL TO
     def check_equal(self, row, term, value):
@@ -32,7 +42,7 @@ class LogAnomaliaDWCA(object):
         if not equal
         """
         if not row.data[qn(term)]  == value:
-            self._add_failure(row, term)
+            self._add_failure(row, term, 'Equal')
 
     # EQUAL TO OPTION
     def check_equal_options(self, row, term, values):
@@ -40,4 +50,4 @@ class LogAnomaliaDWCA(object):
         a list
         """
         if not row.data[qn(term)]  in values:
-            self._add_failure(row, term)
+            self._add_failure(row, term, 'EqualList')

@@ -15,7 +15,7 @@ Created on Fri Feb  5 16:01:01 2016
 
 import os
 
-from logroutine import LogAnomaliaDWCA
+from loganomalia import LogAnomaliaDWCA
 from dwca.read import DwCAReader
 
 ABS_PATH = '/home/stijn_vanhoey/githubs/temp/validator_testdata2'
@@ -30,8 +30,8 @@ logit = LogAnomaliaDWCA()
 # de idee: iedereen kan zijn test maken door test-sequenties op te bouwen:
 with DwCAReader(os.path.join(ABS_PATH, 'validator_testdata.zip')) as dwca:
     for row in dwca:
-        logit.check_language(row, 'en')
-        logit.check_rightsHolder(row, 'INBO') #INTRO
+        logit.check_equal(row, 'language', 'en')
+        logit.check_equal(row, 'rightsHolder','INBO') #INTRO
         #logit.check_verbatimSRS(row)
 
 print logit.log
