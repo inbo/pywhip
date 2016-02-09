@@ -15,7 +15,8 @@ class LogAnomaliaDWCA(object):
         """add the row id to the specific term
         """
         if term in self.log.keys():
-            self.log[term] = self.log[term].append(row.id)
+            # TODO prevent from endless list when single mistake in all rows??
+            self.log[term].append(row.id)
         else:
             self.log[term] = [row.id]
 
@@ -35,7 +36,11 @@ class LogAnomaliaDWCA(object):
 
     def check_license(self, row,
             licenze='http://creativecommons.org/publicdomain/zero/1.0/'):
-        self._term_check_equal(row, 'license', licenze)
+        try:
+            self._term_check_equal(row, 'license', licenze)
+        except:
+            self._term_check_equal(row, 'rights', licenze)
+
 
     def check_rightsHolder(self, row, rightsHolder='INBO'):
         self._term_check_equal(row, 'rightsHolder', rightsHolder)

@@ -18,17 +18,38 @@ import os
 from logroutine import LogAnomaliaDWCA
 from dwca.read import DwCAReader
 
-ABS_PATH = '/home/stijn_vanhoey/githubs/temp/'
+ABS_PATH = '/home/stijn_vanhoey/githubs/temp/validator_testdata2'
 
 #set up logging for row_id failures
 logit = LogAnomaliaDWCA()
 
 #with DwCAReader(os.path.join(ABS_PATH,
                         #'dwca-broedvogel-atlas-occurrences-v1.10.zip')) as dwca:
-with DwCAReader(os.path.join(ABS_PATH, 'dwca_tester.zip')) as dwca:
-    for row in dwca:
-        logit.check_language(row)
-        logit.check_rightsHolder(row)
 
+
+# de idee: iedereen kan zijn test maken door test-sequenties op te bouwen:
+with DwCAReader(os.path.join(ABS_PATH, 'validator_testdata.zip')) as dwca:
+    for row in dwca:
+        logit.check_language(row, 'en')
+        logit.check_rightsHolder(row, 'INBO') #INTRO
+        #logit.check_verbatimSRS(row)
+
+print logit.log
+
+
+# AANGEGEVEN FOUTEN:
+
+# rightsholder
 # INBO:BROEDVOGELATLAS:AH:00000763:00070
+# INBO:BROEDVOGELATLAS:AH:00000477:00070
+
+# # language
 # INBO:BROEDVOGELATLAS:AH:00000512:00070
+# INBO:BROEDVOGELATLAS:AH:00000905:00070
+# INBO:BROEDVOGELATLAS:AH:00000368:00070
+
+# nomenclature code
+# INBO:BROEDVOGELATLAS:AH:00000763:00070
+# INBO:BROEDVOGELATLAS:AH:00000368:00070
+
+
