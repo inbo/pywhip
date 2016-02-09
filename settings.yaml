@@ -1,0 +1,94 @@
+# Structure of the yaml is:
+#
+# Term : 
+#     - TestType : argument(s)
+#     - TestType : argument(s)
+
+type : 
+  - StringFormat : UpperCamelCase
+
+language : 
+  - Equal : en
+
+license : 
+  - Equal : http://creativecommons.org/publicdomain/zero/1.0/
+  
+rightsHolder : 
+  - Equal : INBO
+
+accessRights :
+  - Equal : http://www.inbo.be/en/norms-for-data-use
+
+institutionCode :
+  - Equal : INBO
+
+ownerInstitutionCode : 
+  - Equal : INBO
+
+basisOfRecord :
+  - StringFormat : UpperCamelCase
+
+dynamicProperties : 
+  - ValidDataType : json  # how to check idea: json.loads(), which will throw a ValueError
+  
+recordedBy : 
+  - Delimiter : |
+
+individualCount : 
+  - ValidDataType : integer
+  - NotEqual : 0
+
+sex : 
+  - StringFormat : lowercase
+  - Delimiter : |
+
+lifeStage : 
+  - StringFormat : lowercase
+  - Delimiter : |
+  
+samplingProtocol : 
+  - StringFormat : lowercase
+
+samplingEffort : 
+  - ValidDataType : json
+  
+eventDate : 
+  - StringFormat : ISO8601   # parse it by datetime module and check for exception ValueError before processing by dateutil.parser.parse :
+
+continent : 
+  - Equal : Europe
+
+countryCode : 
+  - Equal : BE
+
+verbatimCoordinateSystem : 
+  - Conditional : IF verbatimCoordinates  # not sure if covered with this
+
+verbatimSRS :   
+  - Equal : [Belgian Datum 1972, ED50, WGS84]
+  - Conditional : IF verbatimCoordinates  # cfr. verbatimCoordinateSystem
+
+decimalLatitude : 
+  - StringFormat : .5f
+
+decimalLongitude : 
+  - StringFormat : .5f 
+
+geodeticDatum : 
+  - Equal : WGS84
+  - Conditional : IF decimalLatitude
+  
+coordinateUncertaintyInMeters : 
+  - Conditional : IF decimalLatitude
+  
+georeferenceRemarks : 
+  - Conditional : IF decimalLatitude
+
+identifiedBy : 
+  - Delimiter : |
+
+taxonRank : 
+  - StringFormat : lowercase
+
+nomenclaturalCode :
+  - Equal : [ICZN,ICBN]
