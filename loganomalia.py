@@ -5,6 +5,8 @@ Created on Fri Feb  5 15:12:07 2016
 @author: stijn_vanhoey
 """
 
+import json
+
 from dwca.darwincore.utils import qualname as qn
 
 class LogAnomaliaDWCA(object):
@@ -24,7 +26,7 @@ class LogAnomaliaDWCA(object):
         return row.data[qn(term)] in self.log[term][test]["sample"]
 
     def _add_failure(self, row, term, test):
-        """add the row id to the specific term
+        """add the row id to the specific term and the sample if news
         """
         if term in self.log.keys():
             if not test in self.log[term].keys():
@@ -45,6 +47,14 @@ class LogAnomaliaDWCA(object):
         if not row.data[qn(term)]  == value:
             self._add_failure(row, term, 'Equal')
 
+    # NOT EQUAL TO
+    def check_not_equal(self, row, term, value):
+        """test if a specific term is equal to the provided value, log row id
+        if not equal
+        """
+        if row.data[qn(term)]  == value:
+            self._add_failure(row, term, 'NotEqual')
+
     # EQUAL TO OPTION
     def check_equal_options(self, row, term, values):
         """test if a specific term is equal to one of the provided options in
@@ -52,3 +62,32 @@ class LogAnomaliaDWCA(object):
         """
         if not row.data[qn(term)]  in values:
             self._add_failure(row, term, 'EqualList')
+
+    def check_datatype(self, row, term, dtype):
+        """check for datatypes (broader as python-specific, also json,...)
+        """
+        if dtype == 'json':
+            try:
+                json.loads(row.data[qn(term)])
+            except:
+                self._add_failure(row, term, 'ValidDataType')
+        elif dtype == 'int' or dtype == 'integer':
+            if not isinstance(row.data[qn(term)], int):
+                self._add_failure(row, term, 'ValidDataType')
+        else:
+            raise Exception("{} not supported".format(dtype))
+
+    def check_stringformat(self, row, term, strformat):
+        """
+        """
+
+
+
+
+#    def check_conditional(self, row, term, condition):
+#        """check if condition is present when item is enlisted
+#        """
+#         if not Condition  in row.:
+#            self._add_failure(row, term, 'EqualList')
+
+
