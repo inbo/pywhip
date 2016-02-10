@@ -22,21 +22,19 @@ occurrenceID:
 
 type:
     - populated: true
-    - condition:
-        - if:
-            - term: basisOfRecord
+    - if:
+        - basisOfRecord:
             - populated: true # Necessary to avoid empty values
             - equals: HumanObservation
         - equals: Event
-    - condition:
-        - if:
-            - term: basisOfRecord
+#        - populated: true # Not necessary, already covered by main populated test
+    - if:
+        - basisOfRecord:
             - populated: true
             - equals: PreservedSpecimen
         - equals: PhysicalObject
-    - condition:
-        - if:
-            - term: basisOfRecord
+    - if:
+        - basisOfRecord:
             - populated: true
             - equals: Occurrence
         - equals: Text
