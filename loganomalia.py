@@ -63,6 +63,7 @@ class LogAnomaliaDWCA(object):
         if not row.data[qn(term)]  in values:
             self._add_failure(row, term, 'EqualList')
 
+    # DTYPE
     def check_datatype(self, row, term, dtype):
         """check for datatypes (broader as python-specific, also json,...)
         """
@@ -77,6 +78,7 @@ class LogAnomaliaDWCA(object):
         else:
             raise Exception("{} not supported".format(dtype))
 
+    # STRING FORMAT
     def check_stringformat(self, row, term, strformat):
         """
         """
