@@ -38,9 +38,10 @@ type:
             - populated: true
             - equals: Occurrence
         - equals: Text
+#    - listValues: true
 
 language:
-    - populated: true
+    - populated: true # All other tests silently ignore empty values
     - equals: en # Equals is case sensitive
 
 license:
@@ -72,13 +73,8 @@ ownerInstitutionCode:
     - equals: [INBO, INBO/LB-BIM]
 
 basisOfRecord:
-    - equals: [HumanObservation, PreservedSpecimen, Occurrence] # Can be removed because of next test
-#    - mapping: # Not sure this is a good implementation
-#        - with: type
-#        - Event: HumanObservation
-#        - PhysicalObject: PreservedSpecimen
-#        - Text: Occurrence
     - populated: true
+    - equals: [HumanObservation, PreservedSpecimen, Occurrence]
 
 informationWithheld:
     - populated: true
@@ -86,9 +82,14 @@ informationWithheld:
 
 dataGeneralizations:
     - if:
-        - term: decimalLongitude
-        - required: true
+        - decimalLongitude:
+            - populated: true
         - equals: "coordinates are generalized to centroid a 5x5km UTM grid"
+        - populated: true # Necessary as equals accepts empty records
+    - if:
+        - decimalLongitude:
+            - populated: false
+        - populated: false
 
 # dynamicProperties: 
 #    - type: json
@@ -108,13 +109,13 @@ individualCount:
 sex:
     - delimitedValues:
         - delimiter: " | "
-        - equals: [female, male]
         - listValues: true # Will list delimited values
-    - listValues: false # Will list undelimited values
-#    - mapping: # Strong mapping, e.g. if adult = empty, sex cannot be populated.
-#        - with: lifeStage
-#        - adult: [female, male]
-#        - "": ""
+        - if:
+            - lifeStage:
+                - equals: adult
+                - populated: true
+            - equals: [female, male] # Empty values also accepted here
+    - listValues: false # Would list undelimited values
 
 lifeStage:
     - equals: [adult]
@@ -132,12 +133,15 @@ samplingProtocol:
 
 samplingEffort:
     - type: json
-#    - mapping:
-#        - with: samplingProtocol
-#        - keyValues: [
-#            ("fixed sampling location": populated),
-#            ...
-#            ]
+    - if:
+        - samplingProtocol:
+            - populated: true
+            - equals: fixed sampling location
+        - populated: true
+    - if:
+        - samplingProtocol:
+            - populated: false
+        - populated: false
 
 eventDate:
     - dateValues:
@@ -180,15 +184,23 @@ verbatimCoordinates:
 
 verbatimCoordinateSystem:
     - if:
-        - term: verbatimCoordinates
-        - populated: true
+        - verbatimCoordinates:
+            - populated: true
         - equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
+    - if:
+        - verbatimCoordinates:
+            - populated: false
+        - populated: false
 
 verbatimSRS:
     - if:
-        - term: verbatimCoordinates
-        - populated: true
+        - verbatimCoordinates:
+            - populated: true
         - equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
+    - if:
+        - verbatimCoordinates:
+            - populated: false
+        - populated: false
 
 decimalLatitude:
     - type: float
@@ -197,28 +209,49 @@ decimalLatitude:
 
 decimalLongitude:
     - if:
-        - term: decimalLatitude
+        - decimalLatitude:
+            - populated: true
         - populated: true
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
     - type: float
     - numberFormat: .5f
     - range: [2.54, 5.92]
 
 geodeticDatum:
     - if:
-        - term: decimalLongitude
+        - decimalLongitude:
+            - populated: true
         - populated: true
         - equals: WGS84
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
   
 coordinateUncertaintyInMeters:
     - if:
-        - term: decimalLongitude
+        - decimalLongitude:
+            - populated: true
         - populated: true
         - equals: 3769 # Or use a range
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
   
 georeferenceRemarks:
     - if:
-        - term: decimalLongitude
+        - decimalLongitude:
+            - populated: true
+        - populated: true
         - equals: coordinates are centroid of used grid square
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
 
 identifiedBy:
     - delimitedValues:
@@ -249,26 +282,22 @@ order:
     - equals: Lepidoptera
 
 taxonRank:
-    - populated: true
-    - if:
-        - term: scientificName
-        - populated: true
-        - equals: species # [species, subspecies, form]
+    - populated: true # Because scientficName assumed populated
+    - equals: species # [species, subspecies, form]
     - listValues: true # Not sure how to verify this with scientificName
-#    - mapping:
-#        - with: scientificName
 
 scientificNameAuthorship:
-    - if:
-        - term: scientificName
-        - populated: true
+    - populated: true # Would not be required for hybrids
     - listValues: true
 
 vernacularName:
+    - if:
+        - taxonRank:
+            - populated: true
+            - equals: subspecies
+        - populated: false # Fictionous example where subspecies should not have a vernacular name
     - listValues: true
 
 nomenclaturalCode:
-    - if:
-        - term: scientificName
-        - populated: true
-        - equals: ICZN # [ICZN, ICBN]
+    - populated: true
+    - equals: ICZN # [ICZN, ICBN]
