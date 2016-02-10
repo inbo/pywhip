@@ -26,3 +26,6 @@ dict-object:
 
 
 The resulting object will be processed by a Report creator, which provides an overview of the current problems for each of the tests set up...
+
+We could rely on the functionality of marshmallow, as provided in following example:
+https://gist.github.com/bartaelterman/737b92dd3c58d749717e
