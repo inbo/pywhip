@@ -13,15 +13,16 @@
 # 
 # - list all terms that were not tested
 # - list all terms that are empty for all records
+# - list grouped unique values: scientificName, taxonRank, ...
 
 
 occurrenceID:
     - required: true
-    - unique: true
+    - unique: true # Column based, covered by the IPT
 
 type:
     - required: true # All other tests silently ignore empty values
-    - equals: [Event, PhysicalObject, Text] # Equals is case sensitive 
+    - equals: [Event, PhysicalObject, Text] # Equals is case sensitive
 
 language:
     - required: true
@@ -58,18 +59,20 @@ ownerInstitutionCode:
 basisOfRecord:
     - required: true
     - equals: [HumanObservation, PreservedSpecimen, Occurrence] # Can be removed because of next test
-    - mapping: # Not sure this is a good implementation
-        - with: type
-        - Event: HumanObservation
-        - PhysicalObject: PreservedSpecimen
-        - Text: Occurrence
+#    - mapping: # Not sure this is a good implementation
+#        - with: type
+#        - Event: HumanObservation
+#        - PhysicalObject: PreservedSpecimen
+#        - Text: Occurrence
 
 informationWithheld:
     - required: true
     - equals: see metadata
 
 dataGeneralizations:
-    - ifDecimalCoordinates: # So common it makes sense to write a specific test
+    - if:
+        - term: decimalLongitude
+        - required: true
         - equals: "coordinates are generalized to centroid a 5x5km UTM grid"
 
 # dynamicProperties: 
@@ -77,20 +80,26 @@ dataGeneralizations:
 
 recordedBy:
     - required: true
-    - delimiter: " | "
-    - equals: "observerID:*"
-    - length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
+    - delimitedValues:
+        - delimiter: " | "
+#        - regex: "observerID:*"
+        - length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
+        - required: true
 
 individualCount:
     - type: integer
-    - range: [1, 200] # Assumes integer. This also covers to test not equal to 0.
+    - range: [1, 200] # Assumes integer or floats. This also covers to test not equal to 0.
 
 sex:
-    - delimiter: " | "
-    - equals: [female, male] # Also accepts "male | female"
-    - mapping: # Strong mapping, e.g. if adult = empty, sex cannot be populated.
-        - with: lifeStage
-        - adult: [female, male]
+    - delimitedValues:
+        - delimiter: " | "
+        - equals: [female, male]
+        - listValues: true # Will list delimited values
+    - listValues: false # Will list undelimited values
+#    - mapping: # Strong mapping, e.g. if adult = empty, sex cannot be populated.
+#        - with: lifeStage
+#        - adult: [female, male]
+#        - "": ""
 
 lifeStage:
     - equals: [adult]
@@ -103,23 +112,26 @@ associatedReferences:
   
 samplingProtocol:
     - required: true
-    - equals: [casual observation, fixed sampling location, monitoring, recorded from collection, recorded from literature]
+    - equals: [casual observation, fixed sampling location, monitoring, 
+               recorded from collection, recorded from literature]
 
 samplingEffort:
     - type: json
-    - mapping:
-        - with: samplingProtocol
-        - "fixed sampling location": populated # This doesn't work, need to find other implementation
+#    - mapping:
+#        - with: samplingProtocol
+#        - keyValues: [
+#            ("fixed sampling location": populated),
+#            ...
+#            ]
 
 eventDate:
-    - type: iso8601 # would not accept ranges
-    - type: [YYYY-MM-DD, YYYY-MM, YYYY] # An alternative, more customizable implementation of iso8601 test
-    - range: [1830-01-01, 2014-10-20] # Assumes isodate
+    - dateValues:
+        - equals: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
+        - range: [1830-01-01, 2014-10-20]
 
 verbatimEventDate:
-#    - delimiter: / # Allows iso date ranges, but does not test to only accept ranges
-#    - type: iso8601
-    - type: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Explicit way to test for ranges only
+    - dateValues:
+        - equals: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges
 
 # locationID
 
@@ -142,7 +154,7 @@ municipality:
 # verbatimLocality
 
 verbatimCoordinates:
-    - equals: 31U*
+    - format: 31U*
     - length: 8 # Or [8,8]
     - listValues: true
 
@@ -153,47 +165,60 @@ verbatimCoordinates:
 #    - range: ...
 
 verbatimCoordinateSystem:
-    - ifVerbatimCoordinates:
+    - if:
+        - term: verbatimCoordinates
+        - required: true
         - equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
 
 verbatimSRS:
-    - ifVerbatimCoordinates:
+    - if:
+        - term: verbatimCoordinates
+        - required: true
         - equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
 
 decimalLatitude:
     - required: false
     - type: float
-    - format: d.ddddd # Or .5f
-    - range: [50.68,51.51]
+    - numberFormat: .5f
+    - range: [50.68, 51.51]
 
 decimalLongitude:
     - required: false
+    - if:
+        - term: decimalLatitude
+        - required: true
     - type: float
-    - format: d.ddddd # Or .5f
-    - range: [2.54,5.92]
+    - numberFormat: .5f
+    - range: [2.54, 5.92]
 
 geodeticDatum:
-    - ifDecimalCoordinates:
+    - if:
+        - term: decimalLongitude
+        - required: true
         - equals: WGS84
   
 coordinateUncertaintyInMeters:
-    - ifDecimalCoordinates:
+    - if:
+        - term: decimalLongitude
+        - required: true
         - equals: 3769 # Or use a range
   
 georeferenceRemarks:
-    - ifDecimalCoordinates:
+    - if:
+        - term: decimalLongitude
         - equals: coordinates are centroid of used grid square
 
 identifiedBy:
-    - delimiter: " | "
-#    - format: ... # How to cope with First name Last name, F. Last name? Just listValues?
-    - listValues: true # Doesn't split with delimiter?
+    - delimitedValues:
+        - delimiter: " | "
+        - listValues: true
+#        - regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?
 
 scientificName:
     - required: true
-    - type: scientificName # Only checks syntax, no taxon lookup
-    - type: [Genus, Genus species, Genus species subspecies] # An alternative, more customizable implementation of scientificName test
-    - listValues: true
+#    - taxonValues:
+#        - More complex lookups to check nomenclature and taxonomy
+    - listValues: true # Allows user to check values
 
 kingdom:
     - required: true
@@ -213,16 +238,25 @@ order:
 
 taxonRank:
     - required: true
-    - equals: species # [species, subspecies, form]
+    - if:
+        - term: scientificName
+        - required: true
+        - equals: species # [species, subspecies, form]
     - listValues: true # Not sure how to verify this with scientificName
+#    - mapping:
+#        - with: scientificName
 
 scientificNameAuthorship:
+    - if:
+        - term: scientificName
+        - required: true
     - listValues: true
 
 vernacularName:
-    - required: true
     - listValues: true
 
 nomenclaturalCode:
-    - required: true
-    - equals: ICZN # [ICZN, ICBN]
+    - if:
+        - term: scientificName
+        - required: true
+        - equals: ICZN # [ICZN, ICBN]
