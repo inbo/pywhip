@@ -17,56 +17,56 @@
 
 
 occurrenceID:
-    - required: true
+    - populated: true
     - unique: true # Column based, covered by the IPT
 
 type:
-    - required: true # All other tests silently ignore empty values
     - equals: [Event, PhysicalObject, Text] # Equals is case sensitive
+    - populated: true # All other tests silently ignore empty values
 
 language:
-    - required: true
-    - equals: en
+    - populated: true
+    - equals: en # Equals is case sensitive
 
 license:
-    - required: true
+    - populated: true
     - equals: http://creativecommons.org/publicdomain/zero/1.0/
   
 rightsHolder:
-    - required: true
+    - populated: true
     - equals: INBO # Example of an institution specific test
 
 accessRights:
-    - required: true
+    - populated: true
     - equals: http://www.inbo.be/en/norms-for-data-use
 
 datasetID:
-    - required: true
+    - populated: true
     - equals: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
 
 institutionCode:
-    - required: true
+    - populated: true
     - equals: INBO
 
 datasetName:
-    - required: true
+    - populated: true
     - equals: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
 
 ownerInstitutionCode:
-    - required: true
+    - populated: true
     - equals: [INBO, INBO/LB-BIM]
 
 basisOfRecord:
-    - required: true
     - equals: [HumanObservation, PreservedSpecimen, Occurrence] # Can be removed because of next test
 #    - mapping: # Not sure this is a good implementation
 #        - with: type
 #        - Event: HumanObservation
 #        - PhysicalObject: PreservedSpecimen
 #        - Text: Occurrence
+    - populated: true
 
 informationWithheld:
-    - required: true
+    - populated: true
     - equals: see metadata
 
 dataGeneralizations:
@@ -79,12 +79,12 @@ dataGeneralizations:
 #    - type: json
 
 recordedBy:
-    - required: true
+    - populated: true
     - delimitedValues:
         - delimiter: " | "
 #        - regex: "observerID:*"
         - length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
-        - required: true
+        - populated: true
 
 individualCount:
     - type: integer
@@ -111,7 +111,7 @@ associatedReferences:
 # eventID
   
 samplingProtocol:
-    - required: true
+    - populated: true
     - equals: [casual observation, fixed sampling location, monitoring, 
                recorded from collection, recorded from literature]
 
@@ -136,19 +136,18 @@ verbatimEventDate:
 # locationID
 
 continent:
-    - required: true
+    - populated: true
     - equals: Europe
 
 countryCode:
-    - required: true
+    - populated: true
     - equals: BE
 
 stateProvince:
-    - required: false # Is default, but good to remind myself that this term is not required
     - equals: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
 
 municipality:
-    - required: true
+    - populated: true
     - listValues: true
 
 # verbatimLocality
@@ -167,26 +166,24 @@ verbatimCoordinates:
 verbatimCoordinateSystem:
     - if:
         - term: verbatimCoordinates
-        - required: true
+        - populated: true
         - equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
 
 verbatimSRS:
     - if:
         - term: verbatimCoordinates
-        - required: true
+        - populated: true
         - equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
 
 decimalLatitude:
-    - required: false
     - type: float
     - numberFormat: .5f
     - range: [50.68, 51.51]
 
 decimalLongitude:
-    - required: false
     - if:
         - term: decimalLatitude
-        - required: true
+        - populated: true
     - type: float
     - numberFormat: .5f
     - range: [2.54, 5.92]
@@ -194,13 +191,13 @@ decimalLongitude:
 geodeticDatum:
     - if:
         - term: decimalLongitude
-        - required: true
+        - populated: true
         - equals: WGS84
   
 coordinateUncertaintyInMeters:
     - if:
         - term: decimalLongitude
-        - required: true
+        - populated: true
         - equals: 3769 # Or use a range
   
 georeferenceRemarks:
@@ -215,32 +212,32 @@ identifiedBy:
 #        - regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?
 
 scientificName:
-    - required: true
+    - populated: true
 #    - taxonValues:
 #        - More complex lookups to check nomenclature and taxonomy
     - listValues: true # Allows user to check values
 
 kingdom:
-    - required: true
+    - populated: true
     - equals: Animalia
 
 phylum:
-    - required: true
+    - populated: true
     - equals: Arthropoda
 
 class:
-    - required: true
+    - populated: true
     - equals: Insecta
 
 order:
-    - required: true
+    - populated: true
     - equals: Lepidoptera
 
 taxonRank:
-    - required: true
+    - populated: true
     - if:
         - term: scientificName
-        - required: true
+        - populated: true
         - equals: species # [species, subspecies, form]
     - listValues: true # Not sure how to verify this with scientificName
 #    - mapping:
@@ -249,7 +246,7 @@ taxonRank:
 scientificNameAuthorship:
     - if:
         - term: scientificName
-        - required: true
+        - populated: true
     - listValues: true
 
 vernacularName:
@@ -258,5 +255,5 @@ vernacularName:
 nomenclaturalCode:
     - if:
         - term: scientificName
-        - required: true
+        - populated: true
         - equals: ICZN # [ICZN, ICBN]
