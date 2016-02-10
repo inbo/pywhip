@@ -1,94 +1,228 @@
-# Structure of the yaml is:
+# Structure of the YAML is:
 #
-# Term : 
-#     - TestType : argument(s)
-#     - TestType : argument(s)
+# Term: 
+#     - TestType: argument(s)
+#     - TestType: argument(s)
+# 
+# Below are the actual test settings for this dataset:
+#
+# http://dataset.inbo.be/dagvlinders-inbo-occurrences
 
-type : 
-  - StringFormat : UpperCamelCase
 
-language : 
-  - Equal : en
+# Other tests not covered here:
+# 
+# - list all terms that were not tested
+# - list all terms that are empty for all records
 
-license : 
-  - Equal : http://creativecommons.org/publicdomain/zero/1.0/
+
+occurrenceID:
+    - required: true
+    - unique: true
+
+type:
+    - required: true # All other tests silently ignore empty values
+    - equals: [Event, PhysicalObject, Text] # Equals is case sensitive 
+
+language:
+    - required: true
+    - equals: en
+
+license:
+    - required: true
+    - equals: http://creativecommons.org/publicdomain/zero/1.0/
   
-rightsHolder : 
-  - Equal : INBO
+rightsHolder:
+    - required: true
+    - equals: INBO # Example of an institution specific test
 
-accessRights :
-  - Equal : http://www.inbo.be/en/norms-for-data-use
+accessRights:
+    - required: true
+    - equals: http://www.inbo.be/en/norms-for-data-use
 
-institutionCode :
-  - Equal : INBO
+datasetID:
+    - required: true
+    - equals: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
 
-ownerInstitutionCode : 
-  - Equal : INBO
+institutionCode:
+    - required: true
+    - equals: INBO
 
-basisOfRecord :
-  - StringFormat : UpperCamelCase
+datasetName:
+    - required: true
+    - equals: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
 
-dynamicProperties : 
-  - ValidDataType : json  # how to check idea: json.loads(), which will throw a ValueError
+ownerInstitutionCode:
+    - required: true
+    - equals: [INBO, INBO/LB-BIM]
+
+basisOfRecord:
+    - required: true
+    - equals: [HumanObservation, PreservedSpecimen, Occurrence] # Can be removed because of next test
+    - mapping: # Not sure this is a good implementation
+        - with: type
+        - Event: HumanObservation
+        - PhysicalObject: PreservedSpecimen
+        - Text: Occurrence
+
+informationWithheld:
+    - required: true
+    - equals: see metadata
+
+dataGeneralizations:
+    - ifDecimalCoordinates: # So common it makes sense to write a specific test
+        - equals: "coordinates are generalized to centroid a 5x5km UTM grid"
+
+# dynamicProperties: 
+#    - type: json
+
+recordedBy:
+    - required: true
+    - delimiter: " | "
+    - equals: "observerID:*"
+    - length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
+
+individualCount:
+    - type: integer
+    - range: [1, 200] # Assumes integer. This also covers to test not equal to 0.
+
+sex:
+    - delimiter: " | "
+    - equals: [female, male] # Also accepts "male | female"
+    - mapping: # Strong mapping, e.g. if adult = empty, sex cannot be populated.
+        - with: lifeStage
+        - adult: [female, male]
+
+lifeStage:
+    - equals: [adult]
+
+associatedReferences:
+#    - type: url
+    - listValues: true # Output the unique values for this term
+
+# eventID
   
-recordedBy : 
-  - Delimiter : |
+samplingProtocol:
+    - required: true
+    - equals: [casual observation, fixed sampling location, monitoring, recorded from collection, recorded from literature]
 
-individualCount : 
-  - ValidDataType : integer
-  - NotEqual : 0
+samplingEffort:
+    - type: json
+    - mapping:
+        - with: samplingProtocol
+        - "fixed sampling location": populated # This doesn't work, need to find other implementation
 
-sex : 
-  - StringFormat : lowercase
-  - Delimiter : |
+eventDate:
+    - type: iso8601 # would not accept ranges
+    - type: [YYYY-MM-DD, YYYY-MM, YYYY] # An alternative, more customizable implementation of iso8601 test
+    - range: [1830-01-01, 2014-10-20] # Assumes isodate
 
-lifeStage : 
-  - StringFormat : lowercase
-  - Delimiter : |
+verbatimEventDate:
+#    - delimiter: / # Allows iso date ranges, but does not test to only accept ranges
+#    - type: iso8601
+    - type: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Explicit way to test for ranges only
+
+# locationID
+
+continent:
+    - required: true
+    - equals: Europe
+
+countryCode:
+    - required: true
+    - equals: BE
+
+stateProvince:
+    - required: false # Is default, but good to remind myself that this term is not required
+    - equals: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
+
+municipality:
+    - required: true
+    - listValues: true
+
+# verbatimLocality
+
+verbatimCoordinates:
+    - equals: 31U*
+    - length: 8 # Or [8,8]
+    - listValues: true
+
+# verbatimLatitude:
+#    - range: ...
+
+# verbatimLongitude:
+#    - range: ...
+
+verbatimCoordinateSystem:
+    - ifVerbatimCoordinates:
+        - equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
+
+verbatimSRS:
+    - ifVerbatimCoordinates:
+        - equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
+
+decimalLatitude:
+    - required: false
+    - type: float
+    - format: d.ddddd # Or .5f
+    - range: [50.68,51.51]
+
+decimalLongitude:
+    - required: false
+    - type: float
+    - format: d.ddddd # Or .5f
+    - range: [2.54,5.92]
+
+geodeticDatum:
+    - ifDecimalCoordinates:
+        - equals: WGS84
   
-samplingProtocol : 
-  - StringFormat : lowercase
-
-samplingEffort : 
-  - ValidDataType : json
+coordinateUncertaintyInMeters:
+    - ifDecimalCoordinates:
+        - equals: 3769 # Or use a range
   
-eventDate : 
-  - StringFormat : ISO8601   # parse it by datetime module and check for exception ValueError before processing by dateutil.parser.parse :
+georeferenceRemarks:
+    - ifDecimalCoordinates:
+        - equals: coordinates are centroid of used grid square
 
-continent : 
-  - Equal : Europe
+identifiedBy:
+    - delimiter: " | "
+#    - format: ... # How to cope with First name Last name, F. Last name? Just listValues?
+    - listValues: true # Doesn't split with delimiter?
 
-countryCode : 
-  - Equal : BE
+scientificName:
+    - required: true
+    - type: scientificName # Only checks syntax, no taxon lookup
+    - type: [Genus, Genus species, Genus species subspecies] # An alternative, more customizable implementation of scientificName test
+    - listValues: true
 
-verbatimCoordinateSystem : 
-  - Conditional : IF verbatimCoordinates  # not sure if covered with this
+kingdom:
+    - required: true
+    - equals: Animalia
 
-verbatimSRS :   
-  - Equal : [Belgian Datum 1972, ED50, WGS84]
-  - Conditional : IF verbatimCoordinates  # cfr. verbatimCoordinateSystem
+phylum:
+    - required: true
+    - equals: Arthropoda
 
-decimalLatitude : 
-  - StringFormat : .5f
+class:
+    - required: true
+    - equals: Insecta
 
-decimalLongitude : 
-  - StringFormat : .5f 
+order:
+    - required: true
+    - equals: Lepidoptera
 
-geodeticDatum : 
-  - Equal : WGS84
-  - Conditional : IF decimalLatitude
-  
-coordinateUncertaintyInMeters : 
-  - Conditional : IF decimalLatitude
-  
-georeferenceRemarks : 
-  - Conditional : IF decimalLatitude
+taxonRank:
+    - required: true
+    - equals: species # [species, subspecies, form]
+    - listValues: true # Not sure how to verify this with scientificName
 
-identifiedBy : 
-  - Delimiter : |
+scientificNameAuthorship:
+    - listValues: true
 
-taxonRank : 
-  - StringFormat : lowercase
+vernacularName:
+    - required: true
+    - listValues: true
 
-nomenclaturalCode :
-  - Equal : [ICZN,ICBN]
+nomenclaturalCode:
+    - required: true
+    - equals: ICZN # [ICZN, ICBN]
