@@ -21,8 +21,25 @@ occurrenceID:
     - unique: true # Column based, covered by the IPT
 
 type:
-    - equals: [Event, PhysicalObject, Text] # Equals is case sensitive
-    - populated: true # All other tests silently ignore empty values
+    - populated: true
+    - condition:
+        - if:
+            - term: basisOfRecord
+            - populated: true # Necessary to avoid empty values
+            - equals: HumanObservation
+        - equals: Event
+    - condition:
+        - if:
+            - term: basisOfRecord
+            - populated: true
+            - equals: PreservedSpecimen
+        - equals: PhysicalObject
+    - condition:
+        - if:
+            - term: basisOfRecord
+            - populated: true
+            - equals: Occurrence
+        - equals: Text
 
 language:
     - populated: true
