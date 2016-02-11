@@ -38,6 +38,8 @@ All validation information will be stored in a dictionary object, referring to t
 
 The resulting object will be processed by a report creator, which provides an overview of the current problems for each of the performed tests.
 
+We could rely on the functionality of marshmallow, as provided in following example: https://gist.github.com/bartaelterman/737b92dd3c58d749717e
+
 ## Test types
 
 ### populated
@@ -203,10 +205,3 @@ if:
     - equals: Event                 # Then the main term must be "Event"
     - populated: true               # Then the main term must be "Populated"
 ```
-
-
-
-
-
-
-
