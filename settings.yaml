@@ -1,94 +1,303 @@
-# Structure of the yaml is:
+# Structure of the YAML is:
 #
-# Term : 
-#     - TestType : argument(s)
-#     - TestType : argument(s)
+# Term: 
+#     - TestType: argument(s)
+#     - TestType: argument(s)
+# 
+# Below are the actual test settings for this dataset:
+#
+# http://dataset.inbo.be/dagvlinders-inbo-occurrences
 
-type : 
-  - StringFormat : UpperCamelCase
 
-language : 
-  - Equal : en
+# Other tests not covered here:
+# 
+# - list all terms that were not tested
+# - list all terms that are empty for all records
+# - list grouped unique values: scientificName, taxonRank, ...
 
-license : 
-  - Equal : http://creativecommons.org/publicdomain/zero/1.0/
+
+occurrenceID:
+    - populated: true
+    - unique: true # Column based, covered by the IPT
+
+type:
+    - populated: true
+    - if:
+        - basisOfRecord:
+            - populated: true # Necessary to avoid empty values
+            - equals: HumanObservation
+        - equals: Event
+#        - populated: true # Not necessary, already covered by main populated test
+    - if:
+        - basisOfRecord:
+            - populated: true
+            - equals: PreservedSpecimen
+        - equals: PhysicalObject
+    - if:
+        - basisOfRecord:
+            - populated: true
+            - equals: Occurrence
+        - equals: Text
+#    - listValues: true
+
+language:
+    - populated: true # All other tests silently ignore empty values
+    - equals: en # Equals is case sensitive
+
+license:
+    - populated: true
+    - equals: http://creativecommons.org/publicdomain/zero/1.0/
   
-rightsHolder : 
-  - Equal : INBO
+rightsHolder:
+    - populated: true
+    - equals: INBO # Example of an institution specific test
 
-accessRights :
-  - Equal : http://www.inbo.be/en/norms-for-data-use
+accessRights:
+    - populated: true
+    - equals: http://www.inbo.be/en/norms-for-data-use
 
-institutionCode :
-  - Equal : INBO
+datasetID:
+    - populated: true
+    - equals: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
 
-ownerInstitutionCode : 
-  - Equal : INBO
+institutionCode:
+    - populated: true
+    - equals: INBO
 
-basisOfRecord :
-  - StringFormat : UpperCamelCase
+datasetName:
+    - populated: true
+    - equals: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
 
-dynamicProperties : 
-  - ValidDataType : json  # how to check idea: json.loads(), which will throw a ValueError
+ownerInstitutionCode:
+    - populated: true
+    - equals: [INBO, INBO/LB-BIM]
+
+basisOfRecord:
+    - populated: true
+    - equals: [HumanObservation, PreservedSpecimen, Occurrence]
+
+informationWithheld:
+    - populated: true
+    - equals: see metadata
+
+dataGeneralizations:
+    - if:
+        - decimalLongitude:
+            - populated: true
+        - equals: "coordinates are generalized to centroid a 5x5km UTM grid"
+        - populated: true # Necessary as equals accepts empty records
+    - if:
+        - decimalLongitude:
+            - populated: false
+        - populated: false
+
+# dynamicProperties: 
+#    - type: json
+
+recordedBy:
+    - populated: true
+    - delimitedValues:
+        - delimiter: " | "
+#        - regex: "observerID:*"
+        - length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
+        - populated: true
+
+individualCount:
+    - type: integer
+    - range: [1, 200] # Assumes integer or floats. This also covers to test not equal to 0.
+
+sex:
+    - delimitedValues:
+        - delimiter: " | "
+        - listValues: true # Will list delimited values
+        - if:
+            - lifeStage:
+                - equals: adult
+                - populated: true
+            - equals: [female, male] # Empty values also accepted here
+    - listValues: false # Would list undelimited values
+
+lifeStage:
+    - equals: [adult]
+
+associatedReferences:
+#    - type: url
+    - listValues: true # Output the unique values for this term
+
+# eventID
   
-recordedBy : 
-  - Delimiter : |
+samplingProtocol:
+    - populated: true
+    - equals: [casual observation, fixed sampling location, monitoring, 
+               recorded from collection, recorded from literature]
 
-individualCount : 
-  - ValidDataType : integer
-  - NotEqual : 0
+samplingEffort:
+    - type: json
+    - if:
+        - samplingProtocol:
+            - populated: true
+            - equals: fixed sampling location
+        - populated: true
+    - if:
+        - samplingProtocol:
+            - populated: false
+        - populated: false
 
-sex : 
-  - StringFormat : lowercase
-  - Delimiter : |
+eventDate:
+    - dateValues:
+        - equals: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
+        - range: [1830-01-01, 2014-10-20]
 
-lifeStage : 
-  - StringFormat : lowercase
-  - Delimiter : |
+verbatimEventDate:
+    - dateValues:
+        - equals: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges
+
+# locationID
+
+continent:
+    - populated: true
+    - equals: Europe
+
+countryCode:
+    - populated: true
+    - equals: BE
+
+stateProvince:
+    - equals: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
+
+municipality:
+    - populated: true
+    - listValues: true
+
+# verbatimLocality
+
+verbatimCoordinates:
+    - format: 31U*
+    - length: 8 # Or [8,8]
+    - listValues: true
+
+# verbatimLatitude:
+#    - range: ...
+
+# verbatimLongitude:
+#    - range: ...
+
+verbatimCoordinateSystem:
+    - if:
+        - verbatimCoordinates:
+            - populated: true
+        - equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
+    - if:
+        - verbatimCoordinates:
+            - populated: false
+        - populated: false
+
+verbatimSRS:
+    - if:
+        - verbatimCoordinates:
+            - populated: true
+        - equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
+    - if:
+        - verbatimCoordinates:
+            - populated: false
+        - populated: false
+
+decimalLatitude:
+    - type: float
+    - numberFormat: .5f
+    - range: [50.68, 51.51]
+
+decimalLongitude:
+    - if:
+        - decimalLatitude:
+            - populated: true
+        - populated: true
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
+    - type: float
+    - numberFormat: .5f
+    - range: [2.54, 5.92]
+
+geodeticDatum:
+    - if:
+        - decimalLongitude:
+            - populated: true
+        - populated: true
+        - equals: WGS84
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
   
-samplingProtocol : 
-  - StringFormat : lowercase
-
-samplingEffort : 
-  - ValidDataType : json
+coordinateUncertaintyInMeters:
+    - if:
+        - decimalLongitude:
+            - populated: true
+        - populated: true
+        - equals: 3769 # Or use a range
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
   
-eventDate : 
-  - StringFormat : ISO8601   # parse it by datetime module and check for exception ValueError before processing by dateutil.parser.parse :
+georeferenceRemarks:
+    - if:
+        - decimalLongitude:
+            - populated: true
+        - populated: true
+        - equals: coordinates are centroid of used grid square
+     - if:
+        - decimalLatitude:
+            - populated: false
+        - populated: false
 
-continent : 
-  - Equal : Europe
+identifiedBy:
+    - delimitedValues:
+        - delimiter: " | "
+        - listValues: true
+#        - regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?
 
-countryCode : 
-  - Equal : BE
+scientificName:
+    - populated: true
+#    - taxonValues:
+#        - More complex lookups to check nomenclature and taxonomy
+    - listValues: true # Allows user to check values
 
-verbatimCoordinateSystem : 
-  - Conditional : IF verbatimCoordinates  # not sure if covered with this
+kingdom:
+    - populated: true
+    - equals: Animalia
 
-verbatimSRS :   
-  - Equal : [Belgian Datum 1972, ED50, WGS84]
-  - Conditional : IF verbatimCoordinates  # cfr. verbatimCoordinateSystem
+phylum:
+    - populated: true
+    - equals: Arthropoda
 
-decimalLatitude : 
-  - StringFormat : .5f
+class:
+    - populated: true
+    - equals: Insecta
 
-decimalLongitude : 
-  - StringFormat : .5f 
+order:
+    - populated: true
+    - equals: Lepidoptera
 
-geodeticDatum : 
-  - Equal : WGS84
-  - Conditional : IF decimalLatitude
-  
-coordinateUncertaintyInMeters : 
-  - Conditional : IF decimalLatitude
-  
-georeferenceRemarks : 
-  - Conditional : IF decimalLatitude
+taxonRank:
+    - populated: true # Because scientficName assumed populated
+    - equals: species # [species, subspecies, form]
+    - listValues: true # Not sure how to verify this with scientificName
 
-identifiedBy : 
-  - Delimiter : |
+scientificNameAuthorship:
+    - populated: true # Would not be required for hybrids
+    - listValues: true
 
-taxonRank : 
-  - StringFormat : lowercase
+vernacularName:
+    - if:
+        - taxonRank:
+            - populated: true
+            - equals: subspecies
+        - populated: false # Fictionous example where subspecies should not have a vernacular name
+    - listValues: true
 
-nomenclaturalCode :
-  - Equal : [ICZN,ICBN]
+nomenclaturalCode:
+    - populated: true
+    - equals: ICZN # [ICZN, ICBN]
