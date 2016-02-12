@@ -1,16 +1,16 @@
 # Structure of the YAML is:
 #
-# Term: 
+# Term:
 #     - TestType: argument(s)
 #     - TestType: argument(s)
-# 
+#
 # Below are the actual test settings for this dataset:
 #
 # http://dataset.inbo.be/dagvlinders-inbo-occurrences
 
 
 # Other tests not covered here:
-# 
+#
 # - list all terms that were not tested
 # - list all terms that are empty for all records
 # - list grouped unique values: scientificName, taxonRank, ...
@@ -47,7 +47,7 @@ language:
 license:
     - populated: true
     - equals: http://creativecommons.org/publicdomain/zero/1.0/
-  
+
 rightsHolder:
     - populated: true
     - equals: INBO # Example of an institution specific test
@@ -91,7 +91,7 @@ dataGeneralizations:
             - populated: false
         - populated: false
 
-# dynamicProperties: 
+# dynamicProperties:
 #    - type: json
 
 recordedBy:
@@ -104,7 +104,7 @@ recordedBy:
 
 individualCount:
     - type: integer
-    - range: [1, 200] # Assumes integer or floats. This also covers to test not equal to 0.
+    - numberRange: [1, 200] # Assumes integer or floats. This also covers to test not equal to 0.
 
 sex:
     - delimitedValues:
@@ -125,10 +125,10 @@ associatedReferences:
     - listValues: true # Output the unique values for this term
 
 # eventID
-  
+
 samplingProtocol:
     - populated: true
-    - equals: [casual observation, fixed sampling location, monitoring, 
+    - equals: [casual observation, fixed sampling location, monitoring,
                recorded from collection, recorded from literature]
 
 samplingEffort:
@@ -144,13 +144,11 @@ samplingEffort:
         - populated: false
 
 eventDate:
-    - dateValues:
-        - equals: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
-        - range: [1830-01-01, 2014-10-20]
+    - dateFormat: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
+    - dateRange: [1830-01-01, 2014-10-20]
 
 verbatimEventDate:
-    - dateValues:
-        - equals: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges
+    - dateFormat: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges
 
 # locationID
 
@@ -172,15 +170,15 @@ municipality:
 # verbatimLocality
 
 verbatimCoordinates:
-    - format: 31U*
+    - regexFormat: 31U*
     - length: 8 # Or [8,8]
     - listValues: true
 
 # verbatimLatitude:
-#    - range: ...
+#    - numberRange: ...
 
 # verbatimLongitude:
-#    - range: ...
+#    - numberRange: ...
 
 verbatimCoordinateSystem:
     - if:
@@ -205,7 +203,7 @@ verbatimSRS:
 decimalLatitude:
     - type: float
     - numberFormat: .5f
-    - range: [50.68, 51.51]
+    - numberRange: [50.68, 51.51]
 
 decimalLongitude:
     - if:
@@ -218,7 +216,7 @@ decimalLongitude:
         - populated: false
     - type: float
     - numberFormat: .5f
-    - range: [2.54, 5.92]
+    - numberRange: [2.54, 5.92]
 
 geodeticDatum:
     - if:
@@ -230,7 +228,7 @@ geodeticDatum:
         - decimalLatitude:
             - populated: false
         - populated: false
-  
+
 coordinateUncertaintyInMeters:
     - if:
         - decimalLongitude:
@@ -241,7 +239,7 @@ coordinateUncertaintyInMeters:
         - decimalLatitude:
             - populated: false
         - populated: false
-  
+
 georeferenceRemarks:
     - if:
         - decimalLongitude:
