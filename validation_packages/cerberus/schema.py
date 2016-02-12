@@ -40,8 +40,10 @@ class MyValidator(Validator):
         # check is min < max
         if ref_range[0] >= ref_range[1]:
             raise Exception('min > max in range value')
-        Validator._validate_min(self, ref_range[0], field, float(value))
-        Validator._validate_max(self, ref_range[1], field, float(value))
+
+        if value.isdigit():
+            Validator._validate_min(self, ref_range[0], field, float(value))
+            Validator._validate_max(self, ref_range[1], field, float(value))
 
     def _validate_if(self, ifset, field, value):
         # extract dict values -> conditions
@@ -66,11 +68,20 @@ v = MyValidator(schema)
 v.allow_unknown = True
 v.validate(document)
 
+#%% Multiple rows
 
+v = MyValidator(schema)
+v.allow_unknown = True
 
+errors = {}
+with DwCAReader(os.path.join(ABS_PATH, 'validator_testdata.zip')) as dwca:
+    for row in dwca:
+        document = {k.split('/')[-1]: v for k, v in row.data.iteritems()}
 
-
-
+        # validate each row and log the errors for each row
+        v.validate(document)
+        if len(v.errors) > 0:
+            errors[row.id] = v.errors
 
 
 
