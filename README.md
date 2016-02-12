@@ -98,7 +98,7 @@ unique: false # Default. Ignored
 
 ### length
 
-Does the data character length fall between a range?
+Does the data character length fall between a specific range?
 
 ```YAML
 # Expects: integer or list of two integers
@@ -111,11 +111,10 @@ length: [2,4] # Character length is between 2 and 8 inclusive
 
 ### numberRange
 
-Does the data fall between a numeric range? This does not test for the dtype
-working with (int, float,...) and just compares values.
+Does the data fall between a specific numeric range?
 
 ```YAML
-# Expects: list of two integers or list of two floats
+# Expects: list of two integers or list of two floats, values will be compared as floats
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
@@ -127,7 +126,7 @@ numberRange: [,]     # Incorrect syntax
 
 ### dateRange
 
-Does the date/datetime objects fall between a defined date range?
+Does the date/datetime objects fall between a specific date range?
 
 ```YAML
 # Expects: list of two integers or list of two floats
@@ -154,7 +153,7 @@ numberFormat: .5f # 5 decimals
 
 ### dateFormat
 
-Does the data conform to a specific
+Does the data conform to a specific date format?
 
 ```YAML
 dateValues:
