@@ -1,0 +1,6 @@
+language : 
+  equals : en
+
+rightsHolder:
+  required: true
+  equals: INBO
