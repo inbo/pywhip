@@ -23,7 +23,7 @@ Term 2:
 All validation information will be stored in a dictionary object, referring to the term, the type of test, and some logging information:
 
 * Number of tests that succeeded and failed or the record IDs of those.
-* Examples of unique values that failed (with a maximum of 10): 
+* Examples of unique values that failed (with a maximum of 10):
 
 ```python
 {
@@ -72,7 +72,7 @@ type: uri
 
 ### equals
 
-Does the data equal a specific value? 
+Does the data equal a specific value?
 
 ```YAML
 # Expects: string or list
@@ -109,19 +109,35 @@ length: 8
 length: [2,4] # Character length is between 2 and 8 inclusive
 ```
 
-### range
+### numberRange
 
-Does the data fall between a numeric range?
+Does the data fall between a numeric range? This does not test for the dtype
+working with (int, float,...) and just compares values.
 
 ```YAML
 # Expects: list of two integers or list of two floats
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-range: [0.5,1] # Between 0.5 and 1 inclusive
-range: [,200]  # Less or equal than 200
-range: [1,]    # More or equal than 1
-range: [,]     # Incorrect syntax
+numberRange: [0.5,1] # Between 0.5 and 1 inclusive
+numberRange: [,200]  # Less or equal than 200
+numberRange: [1,]    # More or equal than 1
+numberRange: [,]     # Incorrect syntax
+```
+
+### dateRange
+
+Does the date/datetime objects fall between a defined date range?
+
+```YAML
+# Expects: list of two integers or list of two floats
+# Records without data: are ignored
+# Records of wrong data type: fail test
+
+dateRange: [1830-01-01, 2014-10-20] # Between 1 Jan 1830 and 20 October 2014 inclusive
+dateRange: [, 2014-10-20] # Before 20 October 2014
+dateRange: [1830-01-01,] # After 1 Jan 1830
+dateRange: [,]     # Incorrect syntax
 ```
 
 ### numberFormat
@@ -136,7 +152,17 @@ Does the data conform to a [specific number format](https://mkaz.github.io/2012/
 numberFormat: .5f # 5 decimals
 ```
 
-### regex
+### dateFormat
+
+Does the data conform to a specific
+
+```YAML
+dateValues:
+- equals: [YYYY-MM-DD, YYYY-MM, YYYY] # Will match specific date formats
+- range: [1830-01-01, 2014-10-20] # Will match dates between specific date range (inclusive)
+```
+
+### regexFormat
 
 Does the data match a specific regex expression?
 
@@ -161,16 +187,6 @@ listValues: true
 listValues: false # Default. Ignored
 ```
 
-### dateValues
-
-Subfunction to work with date values. Will alter `equals` and `range` functionality. Alternative would be to work with `dateFormat` and `dateRange`.
-
-```YAML
-dateValues:
-- equals: [YYYY-MM-DD, YYYY-MM, YYYY] # Will match specific date formats
-- range: [1830-01-01, 2014-10-20] # Will match dates between specific date range (inclusive)
-```
-
 ### delimitedValues
 
 Subfunction to work on delimited data within a field. Will alter the functionality off all functions to work with the delimited data instead of the whole string. Requires `delimiter`.
@@ -178,7 +194,7 @@ Subfunction to work on delimited data within a field. Will alter the functionali
 ```YAML
 delimitedValues:
     - delimiter: " | "  # Will use this delimiter for separating values.
-                        # Depending on how well data is delimited, the 
+                        # Depending on how well data is delimited, the
                         # following tests will fail or succeed
     - populated: true   # No empty delimited values
     - type: url
