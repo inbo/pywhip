@@ -129,7 +129,7 @@ numberRange: [,]     # Incorrect syntax
 Does the date/datetime objects fall between a specific date range?
 
 ```YAML
-# Expects: list of two integers or list of two floats
+# Expects: list of two dates
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
