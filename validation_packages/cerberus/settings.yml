@@ -4,3 +4,17 @@ language :
 rightsHolder:
   required: true
   equals: INBO
+
+individualCount:
+  numberRange: [5, 200]
+
+ownerInstitutionCode:
+  required: true
+  equals: [INBO, INBO/LB-BIM]
+
+samplingEffort:
+  if:
+    samplingProtocol:
+      required: true
+      equals: Bird Census News 2004 1/2 p.36
+    equals: test
