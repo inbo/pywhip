@@ -12,9 +12,9 @@ ownerInstitutionCode:
   required: true
   equals: [INBO, INBO/LB-BIM]
 
-#samplingEffort:
-#  if:
-#    samplingProtocol:
-#      required: true
-#      equals: Bird Census News 2004 1/2 p.36
-#    equals: test
+samplingEffort:
+  if:
+    samplingProtocol:
+      required: true
+      equals: Bird Census News 2004 1/2 p.36
+    type: string

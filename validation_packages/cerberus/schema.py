@@ -62,7 +62,6 @@ class MyValidator(Validator):
         if valid:
             tempvalidation = MyValidator({field: rules})
             tempvalidation.validate({field : self.document[field]})
-            print tempvalidation.errors
 
 v = MyValidator(schema)
 v.allow_unknown = True
@@ -82,6 +81,34 @@ with DwCAReader(os.path.join(ABS_PATH, 'validator_testdata.zip')) as dwca:
         v.validate(document)
         if len(v.errors) > 0:
             errors[row.id] = v.errors
+
+#%%
+
+
+"""
+* try to check mapping in between current yaml and the cerberus naming conventions
+* create validator function for each of the current defined tests + unittets for each individually
+* for the delimitedValues and if: see if recursively is right way to do + how to port errors and characteristics
+* alternatively collect/restructure the errors:
+    * ids of the rows appending for the term/test combination
+    * sample of the failure definition added
+    * when listValues asked, collect sample for each
+    * check how error messages are handled...
+    -- when working on a row, directly map to dict in the readme (+ unique samples)
+* based on information of dict -> report creation
+    * html-dashboard => wat zijn de opties?
+"""
+
+
+
+
+
+
+
+
+
+
+
 
 
 
