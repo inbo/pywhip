@@ -42,7 +42,9 @@ We could rely on the functionality of marshmallow, as provided in following exam
 
 ## Test types
 
-### populated
+Cerberus already provide a set of [validation rules](http://docs.python-cerberus.org/en/stable/usage.html#validation-rules), which can be used and extended for the validator case
+
+### required
 
 Does the field contain data?
 
@@ -51,13 +53,24 @@ Does the field contain data?
 # Records without data: is being tested
 # Records of wrong data type: n/a
 
-populated: true # The term must contain data
-populated: false # The term cannot contain data
+required: true # The term must contain data
+required: false # The term cannot contain data
 ```
 
 ### type
 
-Does the data conform to a specific field type?
+Does the data conform to a specific field type? Cerberus supports following dtypes:
+* string
+* integer
+* float
+* number (integer or float)
+* boolean
+* datetime
+* dict (formally collections.mapping)
+* list (formally collections.sequence, excluding strings)
+* set
+
+The dwac validator uses a custom rule for dates, embedded in dateFormat. Furthermore, uri and json formats will be explicitly supported as group type.
 
 ```YAML
 # Expects: string
@@ -70,22 +83,23 @@ type: json
 type: uri
 ```
 
-### equals
+### allowed
 
-Does the data equal a specific value?
+Does the data equal a specific value? (cfr. equals)
 
 ```YAML
 # Expects: string or list
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-equals: male
-equals: [male, female] # Male or female
+allowed: male
+allowed: [male, female] # Male or female
 ```
 
 ### unique
 
 Does this term contain unique values across all rows?
+(Currently not planned for development)
 
 ```YAML
 # Expects: boolean
@@ -96,32 +110,58 @@ unique: true # All values must be unique
 unique: false # Default. Ignored
 ```
 
-### length
+### minlength
 
-Does the data character length fall between a specific range?
+Is the length of the data string or list larger than the given value
 
 ```YAML
-# Expects: integer or list of two integers
+# Expects: integer
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-length: 8
-length: [2,4] # Character length is between 2 and 8 inclusive
+length: 8  # Character length is larger than 2
 ```
 
-### numberRange
+### maxlength
 
-Does the data fall between a specific numeric range?
+Is the length of the data string or list smaller than the given value
+
+```YAML
+# Expects: integer
+# Records without data: are ignored
+# Records of wrong data type: all considered strings
+
+length: 20  # Character length is smaller than 20
+```
+
+### minimum
+
+Minimum value allowed for any types that implement comparison operators.
 
 ```YAML
 # Expects: list of two integers or list of two floats, values will be compared as floats
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-numberRange: [0.5,1] # Between 0.5 and 1 inclusive
-numberRange: [,200]  # Less or equal than 200
-numberRange: [1,]    # More or equal than 1
-numberRange: [,]     # Incorrect syntax
+minimum: 0.5     # float
+minimum: 200     # integer
+minimum: [1,]    # More or equal than 1
+minimum: [,]     # Incorrect syntax
+```
+
+### maximum
+
+Maximum value allowed for any types that implement comparison operators.
+
+```YAML
+# Expects: list of two integers or list of two floats, values will be compared as floats
+# Records without data: are ignored
+# Records of wrong data type: fail test
+
+maximum: [0.5,1] # Between 0.5 and 1 inclusive
+maximum: [,200]  # Less or equal than 200
+maximum: [1,]    # More or equal than 1
+maximum: [,]     # Incorrect syntax
 ```
 
 ### dateRange

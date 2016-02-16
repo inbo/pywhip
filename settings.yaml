@@ -17,285 +17,285 @@
 
 
 occurrenceID:
-    - populated: true
-    - unique: true # Column based, covered by the IPT
+  required: true
+  unique: true # Column based, covered by the IPT
 
 type:
-    - populated: true
-    - if:
-        - basisOfRecord:
-            - populated: true # Necessary to avoid empty values
-            - equals: HumanObservation
-        - equals: Event
-#        - populated: true # Not necessary, already covered by main populated test
-    - if:
-        - basisOfRecord:
-            - populated: true
-            - equals: PreservedSpecimen
-        - equals: PhysicalObject
-    - if:
-        - basisOfRecord:
-            - populated: true
-            - equals: Occurrence
-        - equals: Text
-#    - listValues: true
+  required: true
+  if:
+    basisOfRecord:
+      required: true # Necessary to avoid empty values
+      equals: HumanObservation
+    equals: Event
+#     required: true # Not necessary, already covered by main required test
+  if:
+    basisOfRecord:
+      required: true
+      equals: PreservedSpecimen
+    equals: PhysicalObject
+  if:
+    basisOfRecord:
+      required: true
+      equals: Occurrence
+    equals: Text
+#   listValues: true
 
 language:
-    - populated: true # All other tests silently ignore empty values
-    - equals: en # Equals is case sensitive
+  required: true # All other tests silently ignore empty values
+  equals: en # Equals is case sensitive
 
 license:
-    - populated: true
-    - equals: http://creativecommons.org/publicdomain/zero/1.0/
+  required: true
+  equals: http://creativecommons.org/publicdomain/zero/1.0/
 
 rightsHolder:
-    - populated: true
-    - equals: INBO # Example of an institution specific test
+  required: true
+  equals: INBO # Example of an institution specific test
 
 accessRights:
-    - populated: true
-    - equals: http://www.inbo.be/en/norms-for-data-use
+  required: true
+  equals: http://www.inbo.be/en/norms-for-data-use
 
 datasetID:
-    - populated: true
-    - equals: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
+  required: true
+  equals: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
 
 institutionCode:
-    - populated: true
-    - equals: INBO
+  required: true
+  equals: INBO
 
 datasetName:
-    - populated: true
-    - equals: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
+  required: true
+  equals: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
 
 ownerInstitutionCode:
-    - populated: true
-    - equals: [INBO, INBO/LB-BIM]
+  required: true
+  equals: [INBO, INBO/LB-BIM]
 
 basisOfRecord:
-    - populated: true
-    - equals: [HumanObservation, PreservedSpecimen, Occurrence]
+  required: true
+  equals: [HumanObservation, PreservedSpecimen, Occurrence]
 
 informationWithheld:
-    - populated: true
-    - equals: see metadata
+  required: true
+  equals: see metadata
 
 dataGeneralizations:
-    - if:
-        - decimalLongitude:
-            - populated: true
-        - equals: "coordinates are generalized to centroid a 5x5km UTM grid"
-        - populated: true # Necessary as equals accepts empty records
-    - if:
-        - decimalLongitude:
-            - populated: false
-        - populated: false
+  if:
+    decimalLongitude:
+      required: true
+    equals: "coordinates are generalized to centroid a 5x5km UTM grid"
+    required: true # Necessary as equals accepts empty records
+  if:
+    decimalLongitude:
+      required: false
+    required: false
 
 # dynamicProperties:
-#    - type: json
+#   type: json
 
 recordedBy:
-    - populated: true
-    - delimitedValues:
-        - delimiter: " | "
-#        - regex: "observerID:*"
-        - length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
-        - populated: true
+  required: true
+  delimitedValues:
+    delimiter: " | "
+#     regex: "observerID:*"
+    length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
+    required: true
 
 individualCount:
-    - type: integer
-    - numberRange: [1, 200] # Assumes integer or floats. This also covers to test not equal to 0.
+  type: integer
+  numberRange: [1, 200] # Assumes integer or floats. This also covers to test not equal to 0.
 
 sex:
-    - delimitedValues:
-        - delimiter: " | "
-        - listValues: true # Will list delimited values
-        - if:
-            - lifeStage:
-                - equals: adult
-                - populated: true
-            - equals: [female, male] # Empty values also accepted here
-    - listValues: false # Would list undelimited values
+  delimitedValues:
+    delimiter: " | "
+    listValues: true # Will list delimited values
+    if:
+      lifeStage:
+        equals: adult
+        required: true
+      equals: [female, male] # Empty values also accepted here
+  listValues: false # Would list undelimited values
 
 lifeStage:
-    - equals: [adult]
+  equals: [adult]
 
 associatedReferences:
-#    - type: url
-    - listValues: true # Output the unique values for this term
+  type: url
+  listValues: true # Output the unique values for this term
 
 # eventID
 
 samplingProtocol:
-    - populated: true
-    - equals: [casual observation, fixed sampling location, monitoring,
-               recorded from collection, recorded from literature]
+  required: true
+  equals: [casual observation, fixed sampling location, monitoring,
+            recorded from collection, recorded from literature]
 
 samplingEffort:
-    - type: json
-    - if:
-        - samplingProtocol:
-            - populated: true
-            - equals: fixed sampling location
-        - populated: true
-    - if:
-        - samplingProtocol:
-            - populated: false
-        - populated: false
+  type: json
+  if:
+    samplingProtocol:
+      required: true
+      equals: fixed sampling location
+    required: true
+  if:
+    samplingProtocol:
+      required: false
+    required: false
 
 eventDate:
-    - dateFormat: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
-    - dateRange: [1830-01-01, 2014-10-20]
+  dateFormat: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
+  dateRange: [1830-01-01, 2014-10-20]
 
 verbatimEventDate:
-    - dateFormat: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges
+  dateFormat: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges
 
 # locationID
 
 continent:
-    - populated: true
-    - equals: Europe
+  required: true
+  equals: Europe
 
 countryCode:
-    - populated: true
-    - equals: BE
+  required: true
+  equals: BE
 
 stateProvince:
-    - equals: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
+  equals: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
 
 municipality:
-    - populated: true
-    - listValues: true
+  required: true
+  listValues: true
 
 # verbatimLocality
 
 verbatimCoordinates:
-    - regexFormat: 31U*
-    - length: 8 # Or [8,8]
-    - listValues: true
+  regexFormat: 31U*
+  length: 8 # Or [8,8]
+  listValues: true
 
 # verbatimLatitude:
-#    - numberRange: ...
+#   numberRange: ...
 
 # verbatimLongitude:
-#    - numberRange: ...
+#   numberRange: ...
 
 verbatimCoordinateSystem:
-    - if:
-        - verbatimCoordinates:
-            - populated: true
-        - equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
-    - if:
-        - verbatimCoordinates:
-            - populated: false
-        - populated: false
+  if:
+    verbatimCoordinates:
+      required: true
+    equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
+  if:
+    verbatimCoordinates:
+      required: false
+    required: false
 
 verbatimSRS:
-    - if:
-        - verbatimCoordinates:
-            - populated: true
-        - equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
-    - if:
-        - verbatimCoordinates:
-            - populated: false
-        - populated: false
+    if:
+      verbatimCoordinates:
+        required: true
+      equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
+    if:
+      verbatimCoordinates:
+        required: false
+      required: false
 
 decimalLatitude:
-    - type: float
-    - numberFormat: .5f
-    - numberRange: [50.68, 51.51]
+  type: float
+  numberFormat: .5f
+  numberRange: [50.68, 51.51]
 
 decimalLongitude:
-    - if:
-        - decimalLatitude:
-            - populated: true
-        - populated: true
-     - if:
-        - decimalLatitude:
-            - populated: false
-        - populated: false
-    - type: float
-    - numberFormat: .5f
-    - numberRange: [2.54, 5.92]
+  if:
+    decimalLatitude:
+      required: true
+    required: true
+  if:
+    decimalLatitude:
+      required: false
+    required: false
+  type: float
+  numberFormat: .5f
+  numberRange: [2.54, 5.92]
 
 geodeticDatum:
-    - if:
-        - decimalLongitude:
-            - populated: true
-        - populated: true
-        - equals: WGS84
-     - if:
-        - decimalLatitude:
-            - populated: false
-        - populated: false
+  if:
+    decimalLongitude:
+      required: true
+    required: true
+    equals: WGS84
+  if:
+    decimalLatitude:
+      required: false
+    required: false
 
 coordinateUncertaintyInMeters:
-    - if:
-        - decimalLongitude:
-            - populated: true
-        - populated: true
-        - equals: 3769 # Or use a range
-     - if:
-        - decimalLatitude:
-            - populated: false
-        - populated: false
+  if:
+    decimalLongitude:
+      required: true
+    required: true
+    equals: 3769 # Or use a range
+ if:
+    decimalLatitude:
+      required: false
+    required: false
 
 georeferenceRemarks:
-    - if:
-        - decimalLongitude:
-            - populated: true
-        - populated: true
-        - equals: coordinates are centroid of used grid square
-     - if:
-        - decimalLatitude:
-            - populated: false
-        - populated: false
+  if:
+    decimalLongitude:
+      required: true
+    required: true
+    equals: coordinates are centroid of used grid square
+  if:
+    decimalLatitude:
+      required: false
+    required: false
 
 identifiedBy:
-    - delimitedValues:
-        - delimiter: " | "
-        - listValues: true
-#        - regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?
+  delimitedValues:
+    delimiter: " | "
+    listValues: true
+#     regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?
 
 scientificName:
-    - populated: true
-#    - taxonValues:
+  required: true
+#   taxonValues:
 #        - More complex lookups to check nomenclature and taxonomy
-    - listValues: true # Allows user to check values
+  listValues: true # Allows user to check values
 
 kingdom:
-    - populated: true
-    - equals: Animalia
+  required: true
+  equals: Animalia
 
 phylum:
-    - populated: true
-    - equals: Arthropoda
+  required: true
+  equals: Arthropoda
 
 class:
-    - populated: true
-    - equals: Insecta
+  required: true
+  equals: Insecta
 
 order:
-    - populated: true
-    - equals: Lepidoptera
+  required: true
+  equals: Lepidoptera
 
 taxonRank:
-    - populated: true # Because scientficName assumed populated
-    - equals: species # [species, subspecies, form]
-    - listValues: true # Not sure how to verify this with scientificName
+  required: true # Because scientficName assumed required
+  equals: species # [species, subspecies, form]
+  listValues: true # Not sure how to verify this with scientificName
 
 scientificNameAuthorship:
-    - populated: true # Would not be required for hybrids
-    - listValues: true
+  required: true # Would not be required for hybrids
+  listValues: true
 
 vernacularName:
-    - if:
-        - taxonRank:
-            - populated: true
-            - equals: subspecies
-        - populated: false # Fictionous example where subspecies should not have a vernacular name
-    - listValues: true
+  if:
+    taxonRank:
+      required: true
+      equals: subspecies
+    required: false # Fictionous example where subspecies should not have a vernacular name
+  listValues: true
 
 nomenclaturalCode:
-    - populated: true
-    - equals: ICZN # [ICZN, ICBN]
+  required: true
+  equals: ICZN # [ICZN, ICBN]
