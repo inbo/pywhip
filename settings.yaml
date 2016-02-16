@@ -25,66 +25,66 @@ type:
   if:
     basisOfRecord:
       required: true # Necessary to avoid empty values
-      equals: HumanObservation
-    equals: Event
+      allowed: HumanObservation
+    allowed: Event
 #     required: true # Not necessary, already covered by main required test
   if:
     basisOfRecord:
       required: true
-      equals: PreservedSpecimen
-    equals: PhysicalObject
+      allowed: PreservedSpecimen
+    allowed: PhysicalObject
   if:
     basisOfRecord:
       required: true
-      equals: Occurrence
-    equals: Text
+      allowed: Occurrence
+    allowed: Text
 #   listValues: true
 
 language:
   required: true # All other tests silently ignore empty values
-  equals: en # Equals is case sensitive
+  allowed: en # Equals is case sensitive
 
 license:
   required: true
-  equals: http://creativecommons.org/publicdomain/zero/1.0/
+  allowed: http://creativecommons.org/publicdomain/zero/1.0/
 
 rightsHolder:
   required: true
-  equals: INBO # Example of an institution specific test
+  allowed: INBO # Example of an institution specific test
 
 accessRights:
   required: true
-  equals: http://www.inbo.be/en/norms-for-data-use
+  allowed: http://www.inbo.be/en/norms-for-data-use
 
 datasetID:
   required: true
-  equals: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
+  allowed: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
 
 institutionCode:
   required: true
-  equals: INBO
+  allowed: INBO
 
 datasetName:
   required: true
-  equals: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
+  allowed: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
 
 ownerInstitutionCode:
   required: true
-  equals: [INBO, INBO/LB-BIM]
+  allowed: [INBO, INBO/LB-BIM]
 
 basisOfRecord:
   required: true
-  equals: [HumanObservation, PreservedSpecimen, Occurrence]
+  allowed: [HumanObservation, PreservedSpecimen, Occurrence]
 
 informationWithheld:
   required: true
-  equals: see metadata
+  allowed: see metadata
 
 dataGeneralizations:
   if:
     decimalLongitude:
       required: true
-    equals: "coordinates are generalized to centroid a 5x5km UTM grid"
+    allowed: "coordinates are generalized to centroid a 5x5km UTM grid"
     required: true # Necessary as equals accepts empty records
   if:
     decimalLongitude:
@@ -99,12 +99,13 @@ recordedBy:
   delimitedValues:
     delimiter: " | "
 #     regex: "observerID:*"
-    length: [, 20] # A simple test to check oddities. Alternative expressions: 10-20, >10
+    maxlength: 20 # A simple test to check oddities. Alternative expressions: 10-20, >10
     required: true
 
 individualCount:
   type: integer
-  numberRange: [1, 200] # Assumes integer or floats. This also covers to test not equal to 0.
+  minimim: 1 # Assumes integer or floats. This also covers to test not equal to 0.
+  maximum: 200 # Assumes integer or floats. This also covers to test not equal to 0.
 
 sex:
   delimitedValues:
@@ -112,13 +113,13 @@ sex:
     listValues: true # Will list delimited values
     if:
       lifeStage:
-        equals: adult
+        allowed: adult
         required: true
-      equals: [female, male] # Empty values also accepted here
+      allowed: [female, male] # Empty values also accepted here
   listValues: false # Would list undelimited values
 
 lifeStage:
-  equals: [adult]
+  allowed: [adult]
 
 associatedReferences:
   type: url
@@ -128,7 +129,7 @@ associatedReferences:
 
 samplingProtocol:
   required: true
-  equals: [casual observation, fixed sampling location, monitoring,
+  allowed: [casual observation, fixed sampling location, monitoring,
             recorded from collection, recorded from literature]
 
 samplingEffort:
@@ -136,7 +137,7 @@ samplingEffort:
   if:
     samplingProtocol:
       required: true
-      equals: fixed sampling location
+      allowed: fixed sampling location
     required: true
   if:
     samplingProtocol:
@@ -154,14 +155,14 @@ verbatimEventDate:
 
 continent:
   required: true
-  equals: Europe
+  allowed: Europe
 
 countryCode:
   required: true
-  equals: BE
+  allowed: BE
 
 stateProvince:
-  equals: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
+  allowed: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
 
 municipality:
   required: true
@@ -170,21 +171,24 @@ municipality:
 # verbatimLocality
 
 verbatimCoordinates:
-  regexFormat: 31U*
-  length: 8 # Or [8,8]
+  regex: 31U*
+  maxlength: 8
+  minlength: 8
   listValues: true
 
 # verbatimLatitude:
-#   numberRange: ...
+#   minimum: ...
+#   maximum: ...
 
 # verbatimLongitude:
-#   numberRange: ...
+#   minimum: ...
+#   maximum: ...
 
 verbatimCoordinateSystem:
   if:
     verbatimCoordinates:
       required: true
-    equals: UTM 5km # [Belgian Lambert 72, UTM 5km]
+    allowed: UTM 5km # [Belgian Lambert 72, UTM 5km]
   if:
     verbatimCoordinates:
       required: false
@@ -194,7 +198,7 @@ verbatimSRS:
     if:
       verbatimCoordinates:
         required: true
-      equals: WGS84 # [Belgian Datum 1972, ED50, WGS84]
+      allowed: WGS84 # [Belgian Datum 1972, ED50, WGS84]
     if:
       verbatimCoordinates:
         required: false
@@ -203,7 +207,8 @@ verbatimSRS:
 decimalLatitude:
   type: float
   numberFormat: .5f
-  numberRange: [50.68, 51.51]
+  minimum: 50.68
+  maximum: 51.51
 
 decimalLongitude:
   if:
@@ -216,14 +221,15 @@ decimalLongitude:
     required: false
   type: float
   numberFormat: .5f
-  numberRange: [2.54, 5.92]
+  minimum: 2.54
+  maximum: 5.92
 
 geodeticDatum:
   if:
     decimalLongitude:
       required: true
     required: true
-    equals: WGS84
+    allowed: WGS84
   if:
     decimalLatitude:
       required: false
@@ -234,7 +240,7 @@ coordinateUncertaintyInMeters:
     decimalLongitude:
       required: true
     required: true
-    equals: 3769 # Or use a range
+    allowed: 3769 # Or use a range
  if:
     decimalLatitude:
       required: false
@@ -245,7 +251,7 @@ georeferenceRemarks:
     decimalLongitude:
       required: true
     required: true
-    equals: coordinates are centroid of used grid square
+    allowed: coordinates are centroid of used grid square
   if:
     decimalLatitude:
       required: false
@@ -265,23 +271,23 @@ scientificName:
 
 kingdom:
   required: true
-  equals: Animalia
+  allowed: Animalia
 
 phylum:
   required: true
-  equals: Arthropoda
+  allowed: Arthropoda
 
 class:
   required: true
-  equals: Insecta
+  allowed: Insecta
 
 order:
   required: true
-  equals: Lepidoptera
+  allowed: Lepidoptera
 
 taxonRank:
   required: true # Because scientficName assumed required
-  equals: species # [species, subspecies, form]
+  allowed: species # [species, subspecies, form]
   listValues: true # Not sure how to verify this with scientificName
 
 scientificNameAuthorship:
@@ -292,10 +298,10 @@ vernacularName:
   if:
     taxonRank:
       required: true
-      equals: subspecies
+      allowed: subspecies
     required: false # Fictionous example where subspecies should not have a vernacular name
   listValues: true
 
 nomenclaturalCode:
   required: true
-  equals: ICZN # [ICZN, ICBN]
+  allowed: ICZN # [ICZN, ICBN]

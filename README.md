@@ -65,7 +65,7 @@ Does the data conform to a specific field type? Cerberus supports following dtyp
 * float
 * number (integer or float)
 * boolean
-* datetime
+* datetime (!the datatype itself, not formatted string)
 * dict (formally collections.mapping)
 * list (formally collections.sequence, excluding strings)
 * set
@@ -201,7 +201,7 @@ dateValues:
 - range: [1830-01-01, 2014-10-20] # Will match dates between specific date range (inclusive)
 ```
 
-### regexFormat
+### regex
 
 Does the data match a specific regex expression?
 
