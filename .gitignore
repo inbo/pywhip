@@ -61,4 +61,4 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-test/vlinders/*.zip
+examples/vlinders/*.zip
