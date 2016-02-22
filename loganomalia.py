@@ -5,9 +5,10 @@ Created on Fri Feb  5 15:12:07 2016
 @author: stijn_vanhoey
 """
 
-import json
 
 from dwca.darwincore.utils import qualname as qn
+
+
 
 class LogAnomaliaDWCA(object):
     def __init__(self):

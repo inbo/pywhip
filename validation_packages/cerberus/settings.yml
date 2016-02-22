@@ -7,7 +7,8 @@ rightsHolder:
 
 individualCount:
   numberRange: [5, 200]
-
+  minlength: 3
+  
 ownerInstitutionCode:
   required: true
   equals: [INBO, INBO/LB-BIM]

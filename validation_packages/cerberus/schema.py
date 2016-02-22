@@ -97,6 +97,10 @@ with DwCAReader(os.path.join(ABS_PATH, 'validator_testdata.zip')) as dwca:
     -- when working on a row, directly map to dict in the readme (+ unique samples)
 * based on information of dict -> report creation
     * html-dashboard => wat zijn de opties?
+        * First draft idea: Pandas dframe + conditional formatting: http://pandas.pydata.org/pandas-docs/stable/style.html
+        * templating engine, cfr. jinja2 achtig: HTML-format + invullen... http://jinja.pocoo.org/docs/dev/templates/
+        * HTML specific python-code creation: http://www.yattag.org/ or https://github.com/Knio/dominate
+    zou mooi zijn: http://tinyurl.com/gnnwb57
 """
 
 

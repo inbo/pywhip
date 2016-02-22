@@ -241,7 +241,7 @@ coordinateUncertaintyInMeters:
       required: true
     required: true
     allowed: 3769 # Or use a range
- if:
+  if:
     decimalLatitude:
       required: false
     required: false
