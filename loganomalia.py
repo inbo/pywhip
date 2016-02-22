@@ -9,7 +9,6 @@ Created on Fri Feb  5 15:12:07 2016
 from dwca.darwincore.utils import qualname as qn
 
 
-
 class LogAnomaliaDWCA(object):
     def __init__(self):
         self.log = {}
