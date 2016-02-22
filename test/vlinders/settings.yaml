@@ -1,0 +1,307 @@
+# Structure of the YAML is:
+#
+# Term:
+#     - TestType: argument(s)
+#     - TestType: argument(s)
+#
+# Below are the actual test settings for this dataset:
+#
+# http://dataset.inbo.be/dagvlinders-inbo-occurrences
+
+
+# Other tests not covered here:
+#
+# - list all terms that were not tested
+# - list all terms that are empty for all records
+# - list grouped unique values: scientificName, taxonRank, ...
+
+
+occurrenceID:
+  required: true
+  unique: true # Column based, covered by the IPT
+
+type:
+  required: true
+  if:
+    basisOfRecord:
+      required: true # Necessary to avoid empty values
+      allowed: HumanObservation
+    allowed: Event
+#     required: true # Not necessary, already covered by main required test
+  if:
+    basisOfRecord:
+      required: true
+      allowed: PreservedSpecimen
+    allowed: PhysicalObject
+  if:
+    basisOfRecord:
+      required: true
+      allowed: Occurrence
+    allowed: Text
+#   listValues: true
+
+language:
+  required: true # All other tests silently ignore empty values
+  allowed: en # Equals is case sensitive
+
+license:
+  required: true
+  allowed: http://creativecommons.org/publicdomain/zero/1.0/
+
+rightsHolder:
+  required: true
+  allowed: INBO # Example of an institution specific test
+
+accessRights:
+  required: true
+  allowed: http://www.inbo.be/en/norms-for-data-use
+
+datasetID:
+  required: true
+  allowed: http://doi.org/10.15468/njgbmh # Example of an dataset specific test
+
+institutionCode:
+  required: true
+  allowed: INBO
+
+datasetName:
+  required: true
+  allowed: "Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium"
+
+ownerInstitutionCode:
+  required: true
+  allowed: [INBO, INBO/LB-BIM]
+
+basisOfRecord:
+  required: true
+  allowed: [HumanObservation, PreservedSpecimen, Occurrence]
+
+informationWithheld:
+  required: true
+  allowed: see metadata
+
+dataGeneralizations:
+  if:
+    decimalLongitude:
+      required: true
+    allowed: "coordinates are generalized to centroid a 5x5km UTM grid"
+    required: true # Necessary as equals accepts empty records
+  if:
+    decimalLongitude:
+      required: false
+    required: false
+
+# dynamicProperties:
+#   type: json
+
+recordedBy:
+  required: true
+  delimitedValues:
+    delimiter: " | "
+#     regex: "observerID:*"
+    maxlength: 20 # A simple test to check oddities. Alternative expressions: 10-20, >10
+    required: true
+
+individualCount:
+  type: integer
+  minimim: 1 # Assumes integer or floats. This also covers to test not equal to 0.
+  maximum: 200 # Assumes integer or floats. This also covers to test not equal to 0.
+
+sex:
+  delimitedValues:
+    delimiter: " | "
+    listValues: true # Will list delimited values
+    if:
+      lifeStage:
+        allowed: adult
+        required: true
+      allowed: [female, male] # Empty values also accepted here
+  listValues: false # Would list undelimited values
+
+lifeStage:
+  allowed: [adult]
+
+associatedReferences:
+  type: url
+  listValues: true # Output the unique values for this term
+
+# eventID
+
+samplingProtocol:
+  required: true
+  allowed: [casual observation, fixed sampling location, monitoring,
+            recorded from collection, recorded from literature]
+
+samplingEffort:
+  type: json
+  if:
+    samplingProtocol:
+      required: true
+      allowed: fixed sampling location
+    required: true
+  if:
+    samplingProtocol:
+      required: false
+    required: false
+
+eventDate:
+  dateFormat: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
+  dateRange: [1830-01-01, 2014-10-20]
+
+verbatimEventDate:
+  dateFormat: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges
+
+# locationID
+
+continent:
+  required: true
+  allowed: Europe
+
+countryCode:
+  required: true
+  allowed: BE
+
+stateProvince:
+  allowed: [Antwerp, Brussels Capital Region, East Flanders, Flemish Brabant, Limburg, West Flanders]
+
+municipality:
+  required: true
+  listValues: true
+
+# verbatimLocality
+
+verbatimCoordinates:
+  regex: 31U*
+  maxlength: 8
+  minlength: 8
+  listValues: true
+
+# verbatimLatitude:
+#   minimum: ...
+#   maximum: ...
+
+# verbatimLongitude:
+#   minimum: ...
+#   maximum: ...
+
+verbatimCoordinateSystem:
+  if:
+    verbatimCoordinates:
+      required: true
+    allowed: UTM 5km # [Belgian Lambert 72, UTM 5km]
+  if:
+    verbatimCoordinates:
+      required: false
+    required: false
+
+verbatimSRS:
+    if:
+      verbatimCoordinates:
+        required: true
+      allowed: WGS84 # [Belgian Datum 1972, ED50, WGS84]
+    if:
+      verbatimCoordinates:
+        required: false
+      required: false
+
+decimalLatitude:
+  type: float
+  numberFormat: .5f
+  minimum: 50.68
+  maximum: 51.51
+
+decimalLongitude:
+  if:
+    decimalLatitude:
+      required: true
+    required: true
+  if:
+    decimalLatitude:
+      required: false
+    required: false
+  type: float
+  numberFormat: .5f
+  minimum: 2.54
+  maximum: 5.92
+
+geodeticDatum:
+  if:
+    decimalLongitude:
+      required: true
+    required: true
+    allowed: WGS84
+  if:
+    decimalLatitude:
+      required: false
+    required: false
+
+coordinateUncertaintyInMeters:
+  if:
+    decimalLongitude:
+      required: true
+    required: true
+    allowed: 3769 # Or use a range
+  if:
+    decimalLatitude:
+      required: false
+    required: false
+
+georeferenceRemarks:
+  if:
+    decimalLongitude:
+      required: true
+    required: true
+    allowed: coordinates are centroid of used grid square
+  if:
+    decimalLatitude:
+      required: false
+    required: false
+
+identifiedBy:
+  delimitedValues:
+    delimiter: " | "
+    listValues: true
+#     regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?
+
+scientificName:
+  required: true
+#   taxonValues:
+#        - More complex lookups to check nomenclature and taxonomy
+  listValues: true # Allows user to check values
+
+kingdom:
+  required: true
+  allowed: Animalia
+
+phylum:
+  required: true
+  allowed: Arthropoda
+
+class:
+  required: true
+  allowed: Insecta
+
+order:
+  required: true
+  allowed: Lepidoptera
+
+taxonRank:
+  required: true # Because scientficName assumed required
+  allowed: species # [species, subspecies, form]
+  listValues: true # Not sure how to verify this with scientificName
+
+scientificNameAuthorship:
+  required: true # Would not be required for hybrids
+  listValues: true
+
+vernacularName:
+  if:
+    taxonRank:
+      required: true
+      allowed: subspecies
+    required: false # Fictionous example where subspecies should not have a vernacular name
+  listValues: true
+
+nomenclaturalCode:
+  required: true
+  allowed: ICZN # [ICZN, ICBN]
