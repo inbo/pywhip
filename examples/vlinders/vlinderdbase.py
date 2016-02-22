@@ -15,4 +15,4 @@ with DwCAReader('./dwca-dagvlinders-inbo-occurrences-v1.2.zip') as dwca:
 
 
 #%% Read the YAML file
-schema = yaml.load(open('../settings.yaml'))
+schema = yaml.load(open('./settings.yaml'))

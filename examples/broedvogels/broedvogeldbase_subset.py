@@ -5,23 +5,33 @@ Created on Fri Feb  5 16:01:01 2016
 @author: stijn_vanhoey
 """
 
-from loganomalia import LogAnomaliaDWCA
+import yaml
+
+from dwcavalidator.validators import DwcaValidator
 from dwca.read import DwCAReader
 
-#set up logging for row_id failures
-logit = LogAnomaliaDWCA()
 
-#with DwCAReader(os.path.join(ABS_PATH,
-                        #'dwca-broedvogel-atlas-occurrences-v1.10.zip')) as dwca:
+#%% Read the archive
+with DwCAReader('./broedvogel_corrupted_subset.zip') as dwca:
+    test = dwca.get_row_by_index(1)
 
-# de idee: iedereen kan zijn test maken door test-sequenties op te bouwen:
+#%% Read the YAML file
+schema = yaml.load(open('./settings.yaml'))
+
+#%% Validate
+v = DwcaValidator(schema)
+v.allow_unknown = True
+
+errors = {}
 with DwCAReader('./broedvogel_corrupted_subset.zip') as dwca:
     for row in dwca:
-        logit.check_equal(row, 'language', 'en')
-        logit.check_equal(row, 'rightsHolder','INBO') #INTRO
-        #logit.check_verbatimSRS(row)
+        document = {k.split('/')[-1]: v for k, v in row.data.iteritems()}
 
-print logit.log
+        # validate each row and log the errors for each row
+        v.validate(document)
+        if len(v.errors) > 0:
+            errors[row.id] = v.errors
+print errors
 
 
 

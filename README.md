@@ -45,6 +45,7 @@ We could rely on the functionality of marshmallow, as provided in following exam
 Cerberus already provide a set of [validation rules](http://docs.python-cerberus.org/en/stable/usage.html#validation-rules), which can be used and extended for the validator case
 
 ### required
+*(cerberus supported)*
 
 Does the field contain data?
 
@@ -58,6 +59,7 @@ required: false # The term cannot contain data
 ```
 
 ### type
+*(partly cerberus supported)*
 
 Does the data conform to a specific field type? Cerberus supports following dtypes:
 * string
@@ -84,6 +86,7 @@ type: uri
 ```
 
 ### allowed
+*(cerberus supported)*)*
 
 Does the data equal a specific value? (cfr. equals)
 
@@ -111,6 +114,7 @@ unique: false # Default. Ignored
 ```
 
 ### minlength
+*(cerberus supported)*
 
 Is the length of the data string or list larger than the given value
 
@@ -119,10 +123,11 @@ Is the length of the data string or list larger than the given value
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-length: 8  # Character length is larger than 2
+minlength: 8  # Character length is larger than 2
 ```
 
 ### maxlength
+*(cerberus supported)*
 
 Is the length of the data string or list smaller than the given value
 
@@ -131,40 +136,38 @@ Is the length of the data string or list smaller than the given value
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-length: 20  # Character length is smaller than 20
+maxlength: 20  # Character length is smaller than 20
 ```
 
 ### minimum
+*(cerberus supported)*
 
 Minimum value allowed for any types that implement comparison operators.
 
 ```YAML
-# Expects: list of two integers or list of two floats, values will be compared as floats
+# Expects: int/float or other dtype supporting comparison; values will be compared as floats
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
 minimum: 0.5     # float
-minimum: 200     # integer
-minimum: [1,]    # More or equal than 1
-minimum: [,]     # Incorrect syntax
+minimum: 20     # integer
 ```
 
 ### maximum
+*(cerberus supported)*
 
 Maximum value allowed for any types that implement comparison operators.
 
 ```YAML
-# Expects: list of two integers or list of two floats, values will be compared as floats
+# Expects: int/float or other dtype supporting comparison; values will be compared as floats
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-maximum: [0.5,1] # Between 0.5 and 1 inclusive
-maximum: [,200]  # Less or equal than 200
-maximum: [1,]    # More or equal than 1
-maximum: [,]     # Incorrect syntax
+maximum: 0.75     # float
+maximum: 200     # integer
 ```
 
-### dateRange
+### daterange
 
 Does the date/datetime objects fall between a specific date range?
 
@@ -173,13 +176,13 @@ Does the date/datetime objects fall between a specific date range?
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-dateRange: [1830-01-01, 2014-10-20] # Between 1 Jan 1830 and 20 October 2014 inclusive
-dateRange: [, 2014-10-20] # Before 20 October 2014
-dateRange: [1830-01-01,] # After 1 Jan 1830
-dateRange: [,]     # Incorrect syntax
+daterange: [1830-01-01, 2014-10-20] # Between 1 Jan 1830 and 20 October 2014 inclusive
+daterange: [, 2014-10-20] # Before 20 October 2014
+daterange: [1830-01-01,] # After 1 Jan 1830
+daterange: [,]     # Incorrect syntax
 ```
 
-### numberFormat
+### numberformat
 
 Does the data conform to a [specific number format](https://mkaz.github.io/2012/10/10/python-string-format/)?
 
@@ -188,17 +191,15 @@ Does the data conform to a [specific number format](https://mkaz.github.io/2012/
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-numberFormat: .5f # 5 decimals
+numberformat: .5f # 5 decimals
 ```
 
-### dateFormat
+### dateformat
 
 Does the data conform to a specific date format?
 
 ```YAML
-dateValues:
-- equals: [YYYY-MM-DD, YYYY-MM, YYYY] # Will match specific date formats
-- range: [1830-01-01, 2014-10-20] # Will match dates between specific date range (inclusive)
+dateformat:[YYYY-MM-DD, YYYY-MM, YYYY] # Will match specific date formats
 ```
 
 ### regex
@@ -213,7 +214,7 @@ Does the data match a specific regex expression?
 regex: # No example yet
 ```
 
-### listValues
+### listvalues
 
 Not a test, will just list all unique values in the output.
 
@@ -222,8 +223,8 @@ Not a test, will just list all unique values in the output.
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-listValues: true
-listValues: false # Default. Ignored
+listvalues: true
+listvalues: false # Default. Ignored
 ```
 
 ### delimitedValues
@@ -232,20 +233,22 @@ Subfunction to work on delimited data within a field. Will alter the functionali
 
 ```YAML
 delimitedValues:
-    - delimiter: " | "  # Will use this delimiter for separating values.
+  delimiter: " | "  # Will use this delimiter for separating values.
                         # Depending on how well data is delimited, the
                         # following tests will fail or succeed
-    - populated: true   # No empty delimited values
-    - type: url
-    - equals: [male, female] # Delimited values equal male or female
-    - unique: true      # Syntax error, not supported
-    - length: 8         
-    - range: [1,2]
-    - numberFormat: .3f
-    - regex: ...
-    - listValues: true  # List unique delimited values across all records
-    - dateValues: ...   # Use dateValues subfunction
-    - delimitedValues   # Syntax error
+  required: true   # No empty delimited values
+  type: url
+  equals: [male, female] # Delimited values equal male or female
+  unique: true      # Syntax error, not supported
+  minlength: 8       
+  maxlength: 8             
+  minimum: 1
+  maximum: 1  
+  numberformat: .3f
+  regex: ...
+  listvalues: true  # List unique delimited values across all records
+  dateformat: ...   # Use dateValues subfunction
+  delimitedValues: ...  # Syntax error
 ```
 
 ### if

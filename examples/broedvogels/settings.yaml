@@ -22,14 +22,10 @@ language:
   required: true # All other tests silently ignore empty values
   allowed: en # Equals is case sensitive
 
-license:
-  required: true
-  allowed: http://creativecommons.org/publicdomain/zero/1.0/
-
 rightsHolder:
   required: true
   allowed: INBO # Example of an institution specific test
 
 nomenclaturalCode:
   required: true
-  allowed: ICZN # [ICZN, ICBN]
+  allowed: [ICZN, ICBN, ICZN] # 
