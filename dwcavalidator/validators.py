@@ -27,7 +27,9 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, uri
     """
-
+    def _validate_daterange(self, ref_value, field, value):
+        """
+        """
 
 
 
