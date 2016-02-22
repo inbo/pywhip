@@ -5,6 +5,8 @@ Created on Mon Feb 22 13:07:01 2016
 @author: stijn_vanhoey
 """
 
+from datetime import datetime
+from dateutil.parser import parse
 
 import json
 # https://pypi.python.org/pypi/rfc3987 regex on URI's en IRI's
@@ -25,13 +27,27 @@ class DwcaValidator(Validator):
         delimitedValues, if
 
     dtypes to add for the type comparison:
-        json, uri
+        json, urixw
     """
     def _validate_daterange(self, ref_value, field, value):
         """
+
+        Remarks
+        -------
+        the yaml-reader prepares datetime objects when possible, the dwca-reader
+        is not doing this, so compatibility need to be ensured
         """
+        # try to parse the datetime-format
+        event_date = parse(value)
 
+        # convert schema info to datetime to enable comparison
+        start_date = datetime.combine(ref_value[0], datetime.min.time())
+        end_date = datetime.combine(ref_value[1], datetime.min.time())
 
+        if event_date < start_date:
+            self._error(field, "date is before start limit " + start_date.isoformat())
+        if event_date > end_date:
+            self._error(field, "date is after end limit " + end_date.isoformat())
 
     def _validate_equals(self, ref_value, field, value):
         """ {'type': 'string'} """

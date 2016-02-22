@@ -11,9 +11,8 @@ import yaml
 from dwca.read import DwCAReader
 
 #%% Extract data dict from a row in the example DCA to test with
-ABS_PATH = '/home/stijn_vanhoey/githubs/temp/validator_testdata2'
 
-with DwCAReader(os.path.join(ABS_PATH, 'validator_testdata.zip')) as dwca:
+with DwCAReader('../../examples/broedvogels/broedvogel_corrupted_subset.zip') as dwca:
     temp = dwca.get_row_by_index(1)
 document = {k.split('/')[-1]: v for k, v in temp.data.iteritems()}
 # document is the dict for which different validations need to be performed
@@ -73,7 +72,7 @@ v = MyValidator(schema)
 v.allow_unknown = True
 
 errors = {}
-with DwCAReader(os.path.join(ABS_PATH, 'validator_testdata.zip')) as dwca:
+with DwCAReader('../../examples/broedvogels/broedvogel_corrupted_subset.zip') as dwca:
     for row in dwca:
         document = {k.split('/')[-1]: v for k, v in row.data.iteritems()}
 

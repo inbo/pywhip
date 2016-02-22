@@ -145,8 +145,8 @@ samplingEffort:
     required: false
 
 eventDate:
-  dateFormat: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
-  dateRange: [1830-01-01, 2014-10-20]
+  dateformat: [YYYY-MM-DD, YYYY-MM, YYYY] # No ranges defined
+  daterange: [1830-01-01, 2014-10-20]
 
 verbatimEventDate:
   dateFormat: [YYYY-MM-DD/YYYY-MM-DD, YYYY-MM/YYYY-MM, YYYY/YYYY] # Only accept ranges

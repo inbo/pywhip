@@ -5,9 +5,22 @@ Created on Mon Feb 22 15:46:18 2016
 @author: stijn_vanhoey
 """
 
+import yaml
 import unittest
 
 from dwcavalidator.validators import DwcaValidator
+
+class TestValidators(unittest.TestCase):
+
+    def test_daterange(self):
+        document = {'moment' : '20110101'}
+        yaml_string = """
+                        moment:
+                            daterange: [1830-01-01, 2014-10-20]
+                        """
+        schema = yaml.load(yaml_string)
+        val = DwcaValidator(schema)
+        self.assertTrue(val.validate(document))
 
 class TestDataTypes(unittest.TestCase):
 
