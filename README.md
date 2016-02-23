@@ -196,10 +196,11 @@ numberformat: .5f # 5 decimals
 
 ### dateformat
 
-Does the data conform to a specific date format?
+Does the data conform to a specific date format? Possibilities provided at
+http://strftime.org/
 
 ```YAML
-dateformat:[YYYY-MM-DD, YYYY-MM, YYYY] # Will match specific date formats
+dateformat:['%Y-%m-%d', '%Y-%m', '%Y'] # Will match specific date formats
 ```
 
 ### regex

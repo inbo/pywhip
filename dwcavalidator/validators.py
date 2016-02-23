@@ -34,8 +34,9 @@ class DwcaValidator(Validator):
 
         Remarks
         -------
-        the yaml-reader prepares datetime objects when possible, the dwca-reader
-        is not doing this, so compatibility need to be ensured
+        the yaml-reader prepares a datetime.date objects when possible,
+        the dwca-reader is not doing this, so compatibility need to be better
+        ensured
         """
         # try to parse the datetime-format
         event_date = parse(value)
@@ -45,9 +46,35 @@ class DwcaValidator(Validator):
         end_date = datetime.combine(ref_value[1], datetime.min.time())
 
         if event_date < start_date:
-            self._error(field, "date is before start limit " + start_date.isoformat())
+            self._error(field, "date is before start limit " + \
+                                                        start_date.isoformat())
         if event_date > end_date:
-            self._error(field, "date is after end limit " + end_date.isoformat())
+            self._error(field, "date is after end limit " + \
+                                                        end_date.isoformat())
+
+    def _validate_dateformat(self, ref_value, field, value):
+        """
+        dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
+        dateformat : '%Y-%m'
+        """
+        if isinstance(ref_value, list):
+            tester = False
+            for formatstr in ref_value: # check if at least one comply
+                try:
+                    datetime.strptime(value, formatstr)
+                    tester = True
+                except:
+                    pass
+        else:
+            try:
+                datetime.strptime(value, ref_value)
+                tester = True
+            except:
+                tester = False
+
+        if not tester:
+            self._error(field, "String format not compliant with" + \
+                                                                    formatstr)
 
     def _validate_equals(self, ref_value, field, value):
         """ {'type': 'string'} """
