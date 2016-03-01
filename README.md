@@ -12,12 +12,12 @@ Tests are performed per row, per term (field) and are independent of each other,
 
 ```YAML
 Term 1:
-- Test 1
-- Test 2
+  Test 1
+  Test 2
 
 Term 2:
-- Test 1
-- Test 3
+  Test 1
+  Test 3
 ```
 
 All validation information will be stored in a dictionary object, referring to the term, the type of test, and some logging information:
@@ -239,7 +239,7 @@ delimitedValues:
                         # following tests will fail or succeed
   required: true   # No empty delimited values
   type: url
-  equals: [male, female] # Delimited values equal male or female
+  allowed: [male, female] # Delimited values equal male or female
   unique: true      # Syntax error, not supported
   minlength: 8       
   maxlength: 8             
@@ -258,9 +258,9 @@ Subfunction to perform tests based on the tests on another term. All tests on th
 
 ```YAML
 if:
-    - basisOfRecord:                # Another term
-        - populated: true           # basisOfRecord must be populated
-        - equals: HumanObservation  # AND basisOfRecord must be "HumanObservation"
-    - equals: Event                 # Then the main term must be "Event"
-    - populated: true               # Then the main term must be "Populated"
+    basisOfRecord:                # Another term
+      populated: true           # basisOfRecord must be populated
+      allowed: HumanObservation  # AND basisOfRecord must be "HumanObservation"
+    allowed: Event                 # Then the main term must be "Event"
+    required: true               # Then the main term must be "Populated"
 ```
