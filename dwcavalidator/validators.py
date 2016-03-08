@@ -52,6 +52,19 @@ class DwcaValidator(Validator):
             self._error(field, "date is after end limit " + \
                                                         end_date.isoformat())
 
+    def _is_number(self, inputstring)                                                        :
+        """
+        """
+
+
+    def _validate_numberformat(self, ref_value, field, value):
+        """
+        """
+        # Test if it is a number...
+
+        # Test the formatting of the number
+        return None
+
     def _validate_dateformat(self, ref_value, field, value):
         """
         dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
@@ -92,6 +105,29 @@ class DwcaValidator(Validator):
         if value.isdigit():
             Validator._validate_min(self, ref_range[0], field, float(value))
             Validator._validate_max(self, ref_range[1], field, float(value))
+
+    def _validate_if(self, ifset, field, value):
+        # extract dict values -> conditions
+        conditions = {k: v for k, v in ifset.iteritems() if isinstance(v, dict)}
+        # extract dict values -> rules
+        rules = {k: v for k, v in ifset.iteritems() if not isinstance(v, dict)}
+
+        valid=True
+        # check for all conditions if they apply
+        for term, cond in conditions.iteritems():
+            subschema = {term : cond}
+            tempvalidation = DwcaValidator(subschema)
+            tempvalidation.allow_unknown = True
+            if not tempvalidation.validate(self.document):
+                valid = False
+
+        #others -> conditional rules applied when valid condition
+        if valid:
+            tempvalidation = DwcaValidator({field: rules})
+            tempvalidation.validate({field : self.document[field]})
+            #convert eventual errors to object itself
+            for field, err in tempvalidation.errors.items():
+                self._error(field, err)
 
 #%% dtypes
     def _validate_type_json(self, field, value):

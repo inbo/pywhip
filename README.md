@@ -228,12 +228,12 @@ listvalues: true
 listvalues: false # Default. Ignored
 ```
 
-### delimitedValues
+### delimitedvalues
 
 Subfunction to work on delimited data within a field. Will alter the functionality off all functions to work with the delimited data instead of the whole string. Requires `delimiter`.
 
 ```YAML
-delimitedValues:
+delimitedvalues:
   delimiter: " | "  # Will use this delimiter for separating values.
                         # Depending on how well data is delimited, the
                         # following tests will fail or succeed
@@ -249,7 +249,7 @@ delimitedValues:
   regex: ...
   listvalues: true  # List unique delimited values across all records
   dateformat: ...   # Use dateValues subfunction
-  delimitedValues: ...  # Syntax error
+  delimitedvalues: ...  # Syntax error
 ```
 
 ### if

@@ -38,7 +38,7 @@ type:
       required: true
       allowed: Occurrence
     allowed: Text
-#   listValues: true
+#   listvalues: true
 
 language:
   required: true # All other tests silently ignore empty values
@@ -110,20 +110,20 @@ individualCount:
 sex:
   delimitedValues:
     delimiter: " | "
-    listValues: true # Will list delimited values
+    listvalues: true # Will list delimited values
     if:
       lifeStage:
         allowed: adult
         required: true
       allowed: [female, male] # Empty values also accepted here
-  listValues: false # Would list undelimited values
+  listvalues: false # Would list undelimited values
 
 lifeStage:
   allowed: [adult]
 
 associatedReferences:
   type: url
-  listValues: true # Output the unique values for this term
+  listvalues: true # Output the unique values for this term
 
 # eventID
 
@@ -166,7 +166,7 @@ stateProvince:
 
 municipality:
   required: true
-  listValues: true
+  listvalues: true
 
 # verbatimLocality
 
@@ -174,7 +174,7 @@ verbatimCoordinates:
   regex: 31U*
   maxlength: 8
   minlength: 8
-  listValues: true
+  listvalues: true
 
 # verbatimLatitude:
 #   minimum: ...
@@ -260,14 +260,14 @@ georeferenceRemarks:
 identifiedBy:
   delimitedValues:
     delimiter: " | "
-    listValues: true
+    listvalues: true
 #     regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?
 
 scientificName:
   required: true
 #   taxonValues:
-#        - More complex lookups to check nomenclature and taxonomy
-  listValues: true # Allows user to check values
+#        - More complex lookupsf to check nomenclature and taxonomy
+  listvalues: true # Allows user to check values
 
 kingdom:
   required: true
@@ -288,11 +288,11 @@ order:
 taxonRank:
   required: true # Because scientficName assumed required
   allowed: species # [species, subspecies, form]
-  listValues: true # Not sure how to verify this with scientificName
+  listvalues: true # Not sure how to verify this with scientificName
 
 scientificNameAuthorship:
   required: true # Would not be required for hybrids
-  listValues: true
+  listvalues: true
 
 vernacularName:
   if:
@@ -300,7 +300,7 @@ vernacularName:
       required: true
       allowed: subspecies
     required: false # Fictionous example where subspecies should not have a vernacular name
-  listValues: true
+  listvalues: true
 
 nomenclaturalCode:
   required: true

@@ -3,6 +3,8 @@
 Created on Mon Feb 22 15:46:18 2016
 
 @author: stijn_vanhoey
+
+# using nosetests...
 """
 
 import yaml
@@ -44,7 +46,6 @@ class TestDateValidators(unittest.TestCase):
         document3 = {'moment' : '20150831'}
         self.assertFalse(val.validate(document3))
 
-
     def test_dateformat_line(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
         document = {'moment' : '1997-01-05'} # True
@@ -64,6 +65,76 @@ class TestDateValidators(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string_date3))
         document = {'moment' : '1997-01'} # False
         self.assertTrue(val.validate(document))
+
+
+class TestDelimitedValuesValidators(unittest.TestCase):
+
+    def setUp(self):
+        self.yaml_delimited1 = """
+                                    sex:
+                                        delimitedValues:
+                                            delimiter: " | "
+                                    """
+
+        self.yaml_delimited2 = """
+                                    age:
+                                        delimitedValues:
+                                            delimiter: " | "
+                                            if:
+                                                lifestage:
+                                                    allowed: juvenile
+                                                max: 20
+                                    """
+
+        self.yaml_delimited3 = """
+                                    stage:
+                                        delimitedValues:
+                                            delimiter: " | "
+                                            minimum: 1.
+                                            maximum: 8
+                                            numberformat: .3f
+                                    """
+
+        self.yaml_delimited4 = """
+                                    sex:
+                                        delimitedValues:
+                                            delimiter: " | "
+                                            listvalues
+                                    """
+
+    def test_delimiter(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited1))
+        document = {'sex' : 'male|female|male'} # True
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'male'} # True
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'male;female'} # False
+        self.assertFalse(val.validate(document))
+
+    def test_delimiter_if(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'ages' : '5|18|19', 'lifestage':'juvenile'} # True
+        self.assertTrue(val.validate(document))
+
+        document = {'ages' : '5|18|99', 'lifestage':'adult'} # True
+        self.assertTrue(val.validate(document))
+
+        document = {'ages' : '5|32', 'lifestage':'juvenile'} # False
+        self.assertFalse(val.validate(document))
+
+    def test_delimiter_nest(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited3))
+        document = {'sex' : 'male|female|male'} # True
+        self.assertTrue(val.validate(document))
+
+    def test_delimiter_enlist(self):
+        """combine the listvalues within the delimitedvalues
+        """
+        #to check how enlist well be handled... (let op unieke enkel behouden)
+
+
 
 class TestDataTypes(unittest.TestCase):
 
