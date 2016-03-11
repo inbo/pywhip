@@ -14,6 +14,8 @@ from rfc3987 import match
 
 from cerberus import Validator
 
+# TODO: oveschrijven(?!) van required, waarbij het gaat over ingevulde velden en niet over nodige fields (cfr. cererus is dat zo)
+
 class DwcaValidator(Validator):
     """
     directly available by cerberus:

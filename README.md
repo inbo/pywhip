@@ -235,8 +235,8 @@ Subfunction to work on delimited data within a field. Will alter the functionali
 ```YAML
 delimitedvalues:
   delimiter: " | "  # Will use this delimiter for separating values.
-                        # Depending on how well data is delimited, the
-                        # following tests will fail or succeed
+                    # Depending on how well data is delimited, the
+                    # following tests will fail or succeed
   required: true   # No empty delimited values
   type: url
   allowed: [male, female] # Delimited values equal male or female
