@@ -54,19 +54,6 @@ class DwcaValidator(Validator):
             self._error(field, "date is after end limit " + \
                                                         end_date.isoformat())
 
-    def _is_number(self, inputstring)                                                        :
-        """
-        """
-
-
-    def _validate_numberformat(self, ref_value, field, value):
-        """
-        """
-        # Test if it is a number...
-
-        # Test the formatting of the number
-        return None
-
     def _validate_dateformat(self, ref_value, field, value):
         """
         dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
@@ -100,7 +87,7 @@ class DwcaValidator(Validator):
                 self._error(field, "Must be equal to " + ref_value)
 
     def _validate_numberrange(self, ref_range, field, value):
-        # check is min < max
+        # check if min < max
         if ref_range[0] >= ref_range[1]:
             raise Exception('min > max in range value')
 
@@ -130,6 +117,28 @@ class DwcaValidator(Validator):
             #convert eventual errors to object itself
             for field, err in tempvalidation.errors.items():
                 self._error(field, err)
+
+    def _is_number(self, inputstring)                                                        :
+        """
+        """
+
+    def _validate_numberformat(self, ref_value, field, value):
+        """
+        """
+        # Test if it is a number...
+
+        # Test the formatting of the number
+        return None
+
+    def _validate_delimitedvalues(self, all_fields, field, value):
+        """
+        The delimitedvalues is actually a schema application on the subset of
+        values of the first string
+        """
+
+        return None
+
+
 
 #%% dtypes
     def _validate_type_json(self, field, value):

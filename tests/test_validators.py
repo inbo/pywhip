@@ -66,6 +66,7 @@ class TestDateValidator(unittest.TestCase):
         document = {'moment' : '1997-01'} # True
         self.assertTrue(val.validate(document))
 
+
 class TestNumberFormatValidator(unittest.TestCase):
 
     def setUp(self):
@@ -100,13 +101,13 @@ class TestDelimitedValuesValidator(unittest.TestCase):
     def setUp(self):
         self.yaml_delimited1 = """
                                     sex:
-                                        delimitedValues:
+                                        delimitedvalues:
                                             delimiter: " | "
                                     """
 
         self.yaml_delimited2 = """
                                     age:
-                                        delimitedValues:
+                                        delimitedvalues:
                                             delimiter: " | "
                                             if:
                                                 lifestage:
@@ -116,7 +117,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
         self.yaml_delimited3 = """
                                     stage:
-                                        delimitedValues:
+                                        delimitedvalues:
                                             delimiter: " | "
                                             min: 1.
                                             max: 8
@@ -125,9 +126,16 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
         self.yaml_delimited4 = """
                                     sex:
-                                        delimitedValues:
+                                        delimitedvalues:
                                             delimiter: " | "
                                             listvalues
+                                    """
+
+        self.yaml_delimited5 = """
+                                    sex:
+                                        delimitedvalues:
+                                            delimiter: " | "
+                                            empty: false
                                     """
 
     def test_delimiter_valid(self):
@@ -165,6 +173,10 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex' : 'male|female|male'} # True
         self.assertTrue(val.validate(document))
 
+    def test_delimiter_empty_not_allowed(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited5))
+        document = {'sex' : 'male|female|'} # False (pipe too much)
+        self.assertFalse(val.validate(document))
 
 #    def test_delimiter_enlist(self):
 #        """combine the listvalues within the delimitedvalues
