@@ -31,7 +31,7 @@ class DwcaValidator(Validator):
     """
 
     def __init__(self, *args):
-        """
+        """add preprocessing rules to alter the schema
         """
         super(DwcaValidator, self).__init__(*args)
         self.schema = self._schema_add_coerce_dtypes(self.schema)

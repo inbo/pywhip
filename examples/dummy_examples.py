@@ -28,10 +28,8 @@ testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
            'individualCount': u'1'}
 
 v = DwcaValidator(yaml.load(schema))
-#v = DwcaValidator(yaml.load(schema))
-#v = DwcaValidator(_preprocess_schema(yaml.load(schema)))
 v.allow_unknown = True
 
 #v.validate(document)
-v.validate(testdoc)
+v.validate({'individualCount': u'1'})
 print(v.errors)
