@@ -11,7 +11,6 @@ from dwcavalidator.validators import DwcaValidator
 
 
 #%% Read the YAML file
-#schema = yaml.load(open('./settings.yaml'))
 
 schema  ="""
                 decimalLatitude:

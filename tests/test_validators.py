@@ -208,14 +208,14 @@ class TestDataTypeValidator(unittest.TestCase):
         val.allow_unknown = True
         self.assertFalse(val.validate(document))
 
-    def test_uri_type(self):
+    def test_url_type(self):
         document = {'location': "https://github.com/LifeWatchINBO/dwca-validator"}
-        schema = {'location':{'type':'uri'}}
+        schema = {'location':{'type':'url'}}
         val = DwcaValidator(schema)
         self.assertTrue(val.validate(document))
 
-    def test_wrong_uri_type(self):
+    def test_wrong_url_type(self):
         document = {'location': "https/github.com/LifeWatchINBO/dwca-validator"}
-        schema = {'location':{'type':'uri'}}
+        schema = {'location':{'type':'url'}}
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))

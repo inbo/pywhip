@@ -171,7 +171,7 @@ class DwcaValidator(Validator):
         except:
             self._error(field, "is not a valid json type")
 
-    def _validate_type_uri(self, field, value):
+    def _validate_type_url(self, field, value):
         """ Enables validation for json objects
         """
         try:
