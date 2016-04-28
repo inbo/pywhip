@@ -28,6 +28,8 @@ class TestCoerceAddition(unittest.TestCase):
                                type : integer
                            percentage:
                                 type : number
+                           abundance:
+                                type : boolean
                            """
 
     def test_float_usage(self):
@@ -45,7 +47,7 @@ class TestCoerceAddition(unittest.TestCase):
         val.validate(document)
         self.assertNotEqual(val.errors,
                             {'decimalLatitude': 'must be of float type'},
-                            msg="addition of coerce to pre-interpret datatyps is failing")
+                            msg="addition of coerce to pre-interpret datatype float is failing")
 
     def test_int_usage(self):
         """see if the coerce is active, leading to correct dtype interpretation
@@ -69,7 +71,7 @@ class TestCoerceAddition(unittest.TestCase):
         val.validate(document)
         self.assertNotEqual(val.errors,
                             {'individualCount': 'must be of integer type'},
-                            msg="addition of coerce to pre-interpret datatyps is failing")
+                            msg="addition of coerce to pre-interpret datatype integer is failing")
 
     def test_number_usage(self):
         """see if the coerce is active, leading to correct dtype interpretation
@@ -87,5 +89,19 @@ class TestCoerceAddition(unittest.TestCase):
         val.validate(document)
         self.assertIn('must be of number type', val.errors['percentage'])
 
+    def test_boolean_usage(self):
+        """see if the coerce is active, leading to correct dtype interpretation
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': u'true'}
+        self.assertTrue(val.validate(document))
 
-
+    def test_bool_usage_coerce_fail(self):
+        """if failing this, the coerce addition failed to work
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': u'true'}
+        val.validate(document)
+        self.assertNotEqual(val.errors,
+                            {'abundance': 'must be of boolean type'},
+                            msg="addition of coerce to pre-interpret datatype boolean is failing")

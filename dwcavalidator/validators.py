@@ -48,6 +48,8 @@ class DwcaValidator(Validator):
                     rules['coerce'] = int
                 elif rules['type'] == 'number':
                     rules['coerce'] = float
+                elif rules['type'] == 'boolean':
+                    rules['coerce'] = bool
         return dict_schema
 
     def _validate_daterange(self, ref_value, field, value):

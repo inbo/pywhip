@@ -280,13 +280,6 @@ class TestCerberusTypeValidator(unittest.TestCase):
         document = {'abondance': True}
         self.assertTrue(val.validate(document))
 
-    def test_boolean2(self):
-        """test if a field is a boolean
-        """
-        val = DwcaValidator(yaml.load(self.yaml_dtypes))
-        document = {'abondance': 'True'}
-        self.assertTrue(val.validate(document))
-
     def test_datetime(self):
         """test if a field is a datetime object
         """
