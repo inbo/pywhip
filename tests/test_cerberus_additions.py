@@ -29,11 +29,27 @@ class TestCoerceAddition(unittest.TestCase):
         val.validate(document)
         self.assertEqual(val.errors, {'decimalLatitude': 'max value is 51.51'})
 
+    def test_float_usage_coerce_fail(self):
+        """if failing this, the coerce addition failed to work
+        """
+        val =  DwcaValidator(yaml.load(self.yaml_string))
+        document = {'decimalLatitude' : '51.55'}
+        val.validate(document)
+        self.assertNotEqual(val.errors, {'decimalLatitude': 'must be of float type'})
+
     def test_int_usage(self):
         val =  DwcaValidator(yaml.load(self.yaml_string))
         document = {'individualCount': u'1'}
         val.validate(document)
         self.assertEqual(val.errors, {'individualCount': 'min value is 2'})
+
+    def test_int_usage_coerce_fail(self):
+        """if failing this, the coerce addition failed to work
+        """
+        val =  DwcaValidator(yaml.load(self.yaml_string))
+        document = {'individualCount': u'1'}
+        val.validate(document)
+        self.assertNotEqual(val.errors, {'individualCount': 'must be of integer type'})
 
     def test_int_result(self):
         val =  DwcaValidator(yaml.load(self.yaml_string))
