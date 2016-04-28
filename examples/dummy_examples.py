@@ -31,5 +31,5 @@ v = DwcaValidator(yaml.load(schema))
 v.allow_unknown = True
 
 #v.validate(document)
-v.validate({'decimalLatitude' : '51.55'})
+v.validate(testdoc)
 print(v.errors)
