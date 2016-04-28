@@ -30,13 +30,11 @@ class DwcaValidator(Validator):
         json, urixw
     """
 
-    def validate(self, document, schema=None, update=False, normalize=True):
-        """extending parent validate method with a preprocessor
+    def __init__(self, *args):
         """
-        print super(DwcaValidator, self).__dict__
-        super(DwcaValidator, self).__init_processing(document, schema)
+        """
+        super(DwcaValidator, self).__init__(*args)
         self.schema = self._schema_add_coerce_dtypes(self.schema)
-        super(DwcaValidator, self).validate(document, self.schema, update, normalize)
 
     @staticmethod
     def _schema_add_coerce_dtypes(dict_schema):

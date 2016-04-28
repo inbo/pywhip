@@ -27,14 +27,13 @@ testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
            'decimalLatitude' : '51.55',
            'individualCount': u'1'}
 
-v = DwcaValidator(schema_loaded)
+v = DwcaValidator(yaml.load(schema))
 #v = DwcaValidator(yaml.load(schema))
 #v = DwcaValidator(_preprocess_schema(yaml.load(schema)))
 v.allow_unknown = True
 
-
 #v.validate(document)
-v.validate(document)
+v.validate(testdoc)
 print(v.errors)
 
 
