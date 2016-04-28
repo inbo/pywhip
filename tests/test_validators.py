@@ -140,7 +140,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
     def test_delimiter_valid(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male|female|male'} # True
+        document = {'sex' : 'male | female | male'} # True
         self.assertTrue(val.validate(document))
 
     def test_delimiter_single_occurence(self):
@@ -150,32 +150,32 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
     def test_delimiter_wrong_delimiter(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male;female'} # False
+        document = {'sex' : 'male ; female'} # False
         self.assertFalse(val.validate(document))
 
     def test_delimiter_if_condition_pass(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'ages' : '5|18|19', 'lifestage':'juvenile'} # True
+        document = {'ages' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
         self.assertTrue(val.validate(document))
 
     def test_delimiter_if_condition_nonpass(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'ages' : '5|18|99', 'lifestage':'adult'} # True
+        document = {'ages' : '5 | 18 | 99', 'lifestage':'adult'} # True
         self.assertTrue(val.validate(document))
 
     def test_delimiter_if_checkindication(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'ages' : '5|32', 'lifestage':'juvenile'} # False
+        document = {'ages' : '5 | 32', 'lifestage':'juvenile'} # False
         self.assertFalse(val.validate(document))
 
     def test_delimiter_nest(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited3))
-        document = {'sex' : 'male|female|male'} # True
+        document = {'sex' : 'male | female | male'} # True
         self.assertTrue(val.validate(document))
 
     def test_delimiter_empty_not_allowed(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited5))
-        document = {'sex' : 'male|female|'} # False (pipe too much)
+        document = {'sex' : 'male | female |'} # False (pipe too much)
         self.assertFalse(val.validate(document))
 
 #    def test_delimiter_enlist(self):

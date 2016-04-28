@@ -18,7 +18,7 @@
 
 occurrenceID:
   required: true
-  unique: true # Column based, covered by the IPT
+  #unique: true # Column based, covered by the IPT
 
 type:
   required: true
@@ -96,7 +96,7 @@ dataGeneralizations:
 
 recordedBy:
   required: true
-  delimitedValues:
+  delimitedvalues:
     delimiter: " | "
 #     regex: "observerID:*"
     maxlength: 20 # A simple test to check oddities. Alternative expressions: 10-20, >10
@@ -104,11 +104,11 @@ recordedBy:
 
 individualCount:
   type: integer
-  minimim: 1 # Assumes integer or floats. This also covers to test not equal to 0.
+  minimum: 1 # Assumes integer or floats. This also covers to test not equal to 0.
   maximum: 200 # Assumes integer or floats. This also covers to test not equal to 0.
 
 sex:
-  delimitedValues:
+  delimitedvalues:
     delimiter: " | "
     listvalues: true # Will list delimited values
     if:
@@ -122,7 +122,7 @@ lifeStage:
   allowed: [adult]
 
 associatedReferences:
-  type: url
+  type: uri  #url?
   listvalues: true # Output the unique values for this term
 
 # eventID
@@ -206,7 +206,7 @@ verbatimSRS:
 
 decimalLatitude:
   type: float
-  numberFormat: .5f
+  numberformat: .5f
   minimum: 50.68
   maximum: 51.51
 
@@ -220,7 +220,7 @@ decimalLongitude:
       required: false
     required: false
   type: float
-  numberFormat: .5f
+  numberformat: .5f
   minimum: 2.54
   maximum: 5.92
 
@@ -258,7 +258,7 @@ georeferenceRemarks:
     required: false
 
 identifiedBy:
-  delimitedValues:
+  delimitedvalues:
     delimiter: " | "
     listvalues: true
 #     regex: [First Last, F. Last] # How to cope with First name Last name, F. Last name?

@@ -14,8 +14,6 @@ from rfc3987 import match
 
 from cerberus import Validator
 
-# TODO: oveschrijven(?!) van required, waarbij het gaat over ingevulde velden en niet over nodige fields (cfr. cererus is dat zo)
-
 class DwcaValidator(Validator):
     """
     directly available by cerberus:
@@ -31,6 +29,27 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, urixw
     """
+
+    def validate(self, document, schema=None, update=False, normalize=True):
+        """extending parent validate method with a preprocessor
+        """
+        print super(DwcaValidator, self).__dict__
+        super(DwcaValidator, self).__init_processing(document, schema)
+        self.schema = self._schema_add_coerce_dtypes(self.schema)
+        super(DwcaValidator, self).validate(document, self.schema, update, normalize)
+
+    @staticmethod
+    def _schema_add_coerce_dtypes(dict_schema):
+        """add coerce rules to convert datatypes of int and float
+        """
+        for term, rules in dict_schema.iteritems():
+            if 'type' in rules.keys():
+                if rules['type'] == 'float':
+                    rules['coerce'] = float
+                elif rules['type'] == 'int' or rules['type'] == 'integer':
+                    rules['coerce'] = int
+        return dict_schema
+
     def _validate_daterange(self, ref_value, field, value):
         """
 
@@ -123,7 +142,7 @@ class DwcaValidator(Validator):
         """
 
     def _validate_numberformat(self, ref_value, field, value):
-        """
+        """todo check from rfc3987 import match options
         """
         # Test if it is a number...
 
@@ -136,6 +155,11 @@ class DwcaValidator(Validator):
         values of the first string
         """
 
+        return None
+
+    def _validate_listvalues(self):
+        """
+        """
         return None
 
 
