@@ -24,7 +24,7 @@ schema  ="""
 
 testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
            'decimalLatitude' : '51.55',
-           'individualCount': u'1'}
+           'individualCount': u'pa'}
 
 v = DwcaValidator(yaml.load(schema))
 v.allow_unknown = True

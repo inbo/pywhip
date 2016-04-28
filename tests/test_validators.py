@@ -9,6 +9,7 @@ Created on Mon Feb 22 15:46:18 2016
 
 import yaml
 import unittest
+from datetime import datetime
 
 from dwcavalidator.validators import DwcaValidator
 
@@ -219,6 +220,79 @@ class TestDataTypeValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))
 
+class TestCerberusTypeValidator(unittest.TestCase):
+    """
+    int, float and number are tested here as if they are already interpreted in
+    the document as such. The test for the string representations (with coerce)
+    are given in test_cerberus_additions
+    """
+
+    def setUp(self):
+        self.yaml_dtypes = """
+                           age:
+                               type: integer
+                           decimalLatitude:
+                               type: float
+                           percentage:
+                               type: number
+                           datum:
+                               type: datetime
+                           abondance:
+                               type: boolean
+                           code:
+                               type: string
+                           """
+
+    def test_str(self):
+        """test if a field is a string
+        """
+        val = DwcaValidator(yaml.load(self.yaml_dtypes))
+        document = {'code': 'ICZN'}
+        self.assertTrue(val.validate(document))
+
+    def test_int(self):
+        """test if a field is an integer
+        """
+        val = DwcaValidator(yaml.load(self.yaml_dtypes))
+        document = {'age': 5}
+        self.assertTrue(val.validate(document))
+
+    def test_float(self):
+        """test if a field is a float
+        """
+        val = DwcaValidator(yaml.load(self.yaml_dtypes))
+        document = {'decimalLatitude': 51.2}
+        self.assertTrue(val.validate(document))
+
+    def test_number(self):
+        """test if a field is a number
+        """
+        val = DwcaValidator(yaml.load(self.yaml_dtypes))
+        document = {'percentage': 2.2}
+        self.assertTrue(val.validate(document))
+        document = {'percentage': 2}
+        self.assertTrue(val.validate(document))
+
+    def test_boolean(self):
+        """test if a field is a boolean
+        """
+        val = DwcaValidator(yaml.load(self.yaml_dtypes))
+        document = {'abondance': True}
+        self.assertTrue(val.validate(document))
+
+    def test_boolean2(self):
+        """test if a field is a boolean
+        """
+        val = DwcaValidator(yaml.load(self.yaml_dtypes))
+        document = {'abondance': 'True'}
+        self.assertTrue(val.validate(document))
+
+    def test_datetime(self):
+        """test if a field is a datetime object
+        """
+        val = DwcaValidator(yaml.load(self.yaml_dtypes))
+        document = {'datum': datetime(2016, 11, 2)}
+        self.assertTrue(val.validate(document))
 
 class TestCerberusValidator(unittest.TestCase):
 

@@ -26,7 +26,7 @@ class TestCoerceAddition(unittest.TestCase):
                                type : float
                            individualCount:
                                type : integer
-                            percentage:
+                           percentage:
                                 type : number
                            """
 
@@ -52,7 +52,13 @@ class TestCoerceAddition(unittest.TestCase):
         """
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'individualCount': u'1'}
-        val.validate(document)
+        self.assertTrue(val.validate(document))
+
+    def test_int_already(self):
+        """see if the coerce is active, leading to correct dtype interpretation
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'individualCount': 2}
         self.assertTrue(val.validate(document))
 
     def test_int_usage_coerce_fail(self):
@@ -70,5 +76,16 @@ class TestCoerceAddition(unittest.TestCase):
         """
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'percentage': u'1.2'}
-        val.validate(document)
         self.assertTrue(val.validate(document))
+
+    def test_no_number_usage(self):
+        """check the error statement providing info about datatype when coerce
+        not possible
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'percentage': u'tien'}
+        val.validate(document)
+        self.assertIn('must be of number type', val.errors['percentage'])
+
+
+
