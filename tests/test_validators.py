@@ -67,122 +67,121 @@ class TestDateValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
 
 
-class TestNumberFormatValidator(unittest.TestCase):
+#class TestNumberFormatValidator(unittest.TestCase):
+#
+#    def setUp(self):
+#        self.yaml_numberformat1 = """
+#                                    size:
+#                                        numberformat: ".5f"
+#                                    """
+#
+#        self.yaml_numberformat2 = """
+#                                    age:
+#                                        numberformat: "d"
+#                                    """
+#
+#    def test_numberformat_float(self):
+#        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
+#        document = {'size' : '0.14372'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_numberformat_integer_as_integer(self):
+#        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
+#        document = {'age' : '2'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_numberformat_integer_as_float(self):
+#        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
+#        document = {'age' : '2.2'} # False
+#        self.assertFalse(val.validate(document))
 
-    def setUp(self):
-        self.yaml_numberformat1 = """
-                                    size:
-                                        numberformat: ".5f"
-                                    """
 
-        self.yaml_numberformat2 = """
-                                    age:
-                                        numberformat: "d"
-                                    """
-
-    def test_numberformat_float(self):
-        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
-        document = {'size' : '0.14372'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_numberformat_integer_as_integer(self):
-        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
-        document = {'age' : '2'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_numberformat_integer_as_float(self):
-        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
-        document = {'age' : '2.2'} # False
-        self.assertFalse(val.validate(document))
-
-
-class TestDelimitedValuesValidator(unittest.TestCase):
-
-    def setUp(self):
-        self.yaml_delimited1 = """
-                                    sex:
-                                        delimitedvalues:
-                                            delimiter: " | "
-                                    """
-
-        self.yaml_delimited2 = """
-                                    age:
-                                        delimitedvalues:
-                                            delimiter: " | "
-                                            if:
-                                                lifestage:
-                                                    allowed: juvenile
-                                                max: 20
-                                    """
-
-        self.yaml_delimited3 = """
-                                    stage:
-                                        delimitedvalues:
-                                            delimiter: " | "
-                                            min: 1.
-                                            max: 8
-                                            numberformat: .3f
-                                    """
-
-        self.yaml_delimited4 = """
-                                    sex:
-                                        delimitedvalues:
-                                            delimiter: " | "
-                                            listvalues
-                                    """
-
-        self.yaml_delimited5 = """
-                                    sex:
-                                        delimitedvalues:
-                                            delimiter: " | "
-                                            empty: false
-                                    """
-
-    def test_delimiter_valid(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male | female | male'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_delimiter_single_occurence(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_delimiter_wrong_delimiter(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male ; female'} # False
-        self.assertFalse(val.validate(document))
-
-    def test_delimiter_if_condition_pass(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'ages' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_delimiter_if_condition_nonpass(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'ages' : '5 | 18 | 99', 'lifestage':'adult'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_delimiter_if_checkindication(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'ages' : '5 | 32', 'lifestage':'juvenile'} # False
-        self.assertFalse(val.validate(document))
-
-    def test_delimiter_nest(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited3))
-        document = {'sex' : 'male | female | male'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_delimiter_empty_not_allowed(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited5))
-        document = {'sex' : 'male | female |'} # False (pipe too much)
-        self.assertFalse(val.validate(document))
-
-#    def test_delimiter_enlist(self):
-#        """combine the listvalues within the delimitedvalues
-#        """
-#        #to check how enlist well be handled... (let op unieke enkel behouden)
-
+#class TestDelimitedValuesValidator(unittest.TestCase):
+#
+#    def setUp(self):
+#        self.yaml_delimited1 = """
+#                                    sex:
+#                                        delimitedvalues:
+#                                            delimiter: " | "
+#                                    """
+#
+#        self.yaml_delimited2 = """
+#                                    age:
+#                                        delimitedvalues:
+#                                            delimiter: " | "
+#                                            if:
+#                                                lifestage:
+#                                                    allowed: juvenile
+#                                                max: 20
+#                                    """
+#
+#        self.yaml_delimited3 = """
+#                                    stage:
+#                                        delimitedvalues:
+#                                            delimiter: " | "
+#                                            min: 1.
+#                                            max: 8
+#                                            numberformat: .3f
+#                                    """
+#
+#        self.yaml_delimited4 = """
+#                                    sex:
+#                                        delimitedvalues:
+#                                            delimiter: " | "
+#                                            listvalues
+#                                    """
+#
+#        self.yaml_delimited5 = """
+#                                    sex:
+#                                        delimitedvalues:
+#                                            delimiter: " | "
+#                                            empty: false
+#                                    """
+#
+#    def test_delimiter_valid(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited1))
+#        document = {'sex' : 'male | female | male'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_delimiter_single_occurence(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited1))
+#        document = {'sex' : 'male'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_delimiter_wrong_delimiter(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited1))
+#        document = {'sex' : 'male ; female'} # False
+#        self.assertFalse(val.validate(document))
+#
+#    def test_delimiter_if_condition_pass(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+#        document = {'ages' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_delimiter_if_condition_nonpass(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+#        document = {'ages' : '5 | 18 | 99', 'lifestage':'adult'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_delimiter_if_checkindication(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+#        document = {'ages' : '5 | 32', 'lifestage':'juvenile'} # False
+#        self.assertFalse(val.validate(document))
+#
+#    def test_delimiter_nest(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited3))
+#        document = {'sex' : 'male | female | male'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_delimiter_empty_not_allowed(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited5))
+#        document = {'sex' : 'male | female |'} # False (pipe too much)
+#        self.assertFalse(val.validate(document))
+#
+##    def test_delimiter_enlist(self):
+##        """combine the listvalues within the delimitedvalues
+##        """
+##        #to check how enlist well be handled... (let op unieke enkel behouden)
 
 class TestDataTypeValidator(unittest.TestCase):
 
@@ -219,3 +218,29 @@ class TestDataTypeValidator(unittest.TestCase):
         schema = {'location':{'type':'url'}}
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))
+
+
+class TestCerberusValidator(unittest.TestCase):
+
+    def setUp(self):
+        self.yaml_required = """
+                             sex:
+                                 required: False
+                             moment:
+                                 required: True
+                             """
+
+    def test_required(self):
+        """test if a field (key) is present
+        """
+        val = DwcaValidator(yaml.load(self.yaml_required))
+        document = {'moment' : '2016-12-11'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : '2016-12-11'}
+        self.assertFalse(val.validate(document))
+
+
+
+
+

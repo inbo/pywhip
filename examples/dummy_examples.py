@@ -32,3 +32,21 @@ v.allow_unknown = True
 #v.validate(document)
 v.validate(testdoc)
 print(v.errors)
+
+#%%
+
+schema = """
+         sex:
+             required: True
+         moment:
+             required: False
+         """
+
+testdoc = {'moment' : '2016-12-11'}
+
+v = DwcaValidator(yaml.load(schema))
+v.allow_unknown = True
+
+#v.validate(document)
+v.validate(testdoc)
+print(v.errors)

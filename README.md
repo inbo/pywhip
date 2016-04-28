@@ -51,11 +51,11 @@ Does the field contain data?
 
 ``` YAML
 # Expects: boolean
-# Records without data: is being tested
-# Records of wrong data type: n/a
+# Records term is present: is being tested
+# String fields with empty values will still be validated, even when required is set to True. f you don’t want to accept empty values, see the empty rule
 
-required: true # The term must contain data
-required: false # The term cannot contain data
+required: true # The term must be present
+required: false # The term is optional
 ```
 
 ### type
