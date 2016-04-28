@@ -15,16 +15,15 @@ from dwcavalidator.validators import DwcaValidator
 schema  ="""
                 decimalLatitude:
                     type : float
-                    min : 50.68
-                    max : 51.51
+                    nullable : True
                 individualCount:
                     type : integer
                     min : 2
          """
 
 testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
-           'decimalLatitude' : '51.55',
-           'individualCount': u'pa'}
+           'decimalLatitude' : None,
+           'individualCount': u'2'}
 
 v = DwcaValidator(yaml.load(schema))
 v.allow_unknown = True
@@ -32,6 +31,22 @@ v.allow_unknown = True
 #v.validate(document)
 v.validate(testdoc)
 print(v.errors)
+
+#%%
+
+to_float = lambda v: v if v == '' else float(v)
+
+v = DwcaValidator({'flag': {'type': 'boolean', 'coerce': to_float}})
+v.validate({'flag': ''})
+print v.document, v.errors
+
+#%%
+
+schema = {'name': {'empty': True}}
+document = {'name': None}
+v = DwcaValidator(schema)
+v.validate(document, schema)
+v.errors
 
 #%%
 

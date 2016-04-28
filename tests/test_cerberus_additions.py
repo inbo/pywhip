@@ -11,6 +11,7 @@ import yaml
 
 from dwcavalidator.validators import DwcaValidator
 
+
 class TestCoerceAddition(unittest.TestCase):
     """
     The validator adapts the provided schema with additional coerce statements

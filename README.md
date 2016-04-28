@@ -61,18 +61,26 @@ required: false # The term is optional
 ### type
 *(partly cerberus supported)*
 
-Does the data conform to a specific field type? Cerberus supports following dtypes:
+Does the data conform to a specific field type?
+
+Cerberus supports following dtypes, which are also supported by the DWCA validator:
 * string
 * integer
 * float
 * number (integer or float)
 * boolean
 * datetime (!the datatype itself, not formatted string)
+
+Following Cerberus dtypes are not supported by the DWAC Validator:
 * dict (formally collections.mapping)
 * list (formally collections.sequence, excluding strings)
 * set
 
-The dwac validator uses a custom rule for dates, embedded in dateFormat. Furthermore, uri and json formats will be explicitly supported as group type.
+Following dtypes are added to the DWCA Validator, not supported by Cerberus:
+* url
+* json
+
+The DWCA Validator uses a custom rule for dates, embedded in dateFormat.
 
 ```YAML
 # Expects: string
@@ -81,8 +89,9 @@ The dwac validator uses a custom rule for dates, embedded in dateFormat. Further
 
 type: integer
 type: float
+type: boolean
 type: json
-type: uri
+type: url
 ```
 
 ### allowed
