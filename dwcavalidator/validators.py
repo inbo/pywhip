@@ -30,10 +30,10 @@ class DwcaValidator(Validator):
         json, urixw
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """add preprocessing rules to alter the schema
         """
-        super(DwcaValidator, self).__init__(*args)
+        super(DwcaValidator, self).__init__(*args, **kwargs)
         self.schema = self._schema_add_coerce_dtypes(self.schema)
 
     @staticmethod
@@ -50,9 +50,6 @@ class DwcaValidator(Validator):
                     rules['coerce'] = float
                 elif rules['type'] == 'boolean':
                     rules['coerce'] = bool
-
-                # add
-
 
         return dict_schema
 

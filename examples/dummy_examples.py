@@ -9,6 +9,13 @@ import yaml
 from dwca.read import DwCAReader
 from dwcavalidator.validators import DwcaValidator
 
+def empty_string_none(doc):
+    """convert empty strings to None values
+    """
+    for key, value in doc.iteritems():
+        if value == "":
+            doc[key] = None
+    return doc
 
 #%% Read the YAML file
 
@@ -22,31 +29,142 @@ schema  ="""
          """
 
 testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
-           'decimalLatitude' : None,
+           'decimalLatitude' : '',
            'individualCount': u'2'}
 
 v = DwcaValidator(yaml.load(schema))
 v.allow_unknown = True
 
 #v.validate(document)
+v.validate(empty_string_none(testdoc))
+#v.validate(testdoc)
+print(v.errors)
+
+#%%
+
+schema  ="""
+                decimalLatitude:
+                    type : float
+                    nullable : True
+         """
+
+testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
+           'decimalLatitude' : ''}
+
+v = DwcaValidator(yaml.load(schema))
+v.allow_unknown = True
+
+#v.validate(document)
+v.validate(empty_string_none(testdoc))
+#v.validate(testdoc)
+print(v.errors)
+
+#%%
+
+schema  ="""
+                decimalLatitude:
+                    type : float
+                    min : 3
+         """
+
+v = DwcaValidator(yaml.load(schema))
+v.allow_unknown = True
+
+testdoc = {'decimalLatitude' : '4.'}
+v.validate(empty_string_none(testdoc))
+print(v.errors)
+
+testdoc = {'decimalLatitude' : '4'}
+v.validate(empty_string_none(testdoc))
+print(v.errors)
+
+testdoc = {'decimalLatitude' : ''}
+v.validate(empty_string_none(testdoc))
+print(v.errors)
+
+testdoc = {'decimalLatitude' : '2.'}
+v.validate(empty_string_none(testdoc))
+print(v.errors)
+
+
+#%% Read the YAML file
+
+schema  ="""
+        decimalLatitude:
+            oneof :
+                - allowed : ''
+                - min : 3.
+                  coerce : !!python/name:float
+                  type : float
+         """
+
+v = Validator(yaml.load(schema))
+v.allow_unknown = True
+
+testdoc = {'decimalLatitude' : '4.'}
+v.validate(testdoc)
+print(v.errors)
+
+testdoc = {'decimalLatitude' : '4'}
+v.validate(testdoc)
+print(v.errors)
+
+testdoc = {'decimalLatitude' : ''}
+v.validate(testdoc)
+print(v.errors)
+
+testdoc = {'decimalLatitude' : '2.'}
 v.validate(testdoc)
 print(v.errors)
 
 #%%
 
-to_float = lambda v: v if v == '' else float(v)
+def to_float(value):
+    """
+    """
+    if value == "":
+        return None
+    else:
+        return float(value)
 
-v = DwcaValidator({'flag': {'type': 'boolean', 'coerce': to_float}})
-v.validate({'flag': ''})
+v = Validator({'flag': {'type': 'integer', 'coerce' : to_float, 'nullable' : True}})
+v.validate({'flag': None})
 print v.document, v.errors
 
 #%%
+# todo: we'll keep this structure (integrates cerberus + consistent); but update coerce structure to handle this type of list datatypes
 
-schema = {'name': {'empty': True}}
-document = {'name': None}
+from cerberus import Validator
+
+#schema = {'name': {'type': 'float', 'coerce' : to_float, 'nullable' : True}}
+schema = {'name': {'oneof' : [{'type': 'float',
+                               'coerce' : float},
+                              {'allowed' : ''}],
+                    'nullable' : True }}
+
+document = {'name': '4.2'}  # should be ok
+v = Validator(schema)
+v.validate(document, schema)
+print v.document, v.errors#, v.schema
+
+document = {'name': None} # should be ok
+v = Validator(schema)
+v.validate(document, schema)
+print v.document, v.errors#, v.schema
+
+document = {'name': ''}  # should be ok as well
+v = Validator(schema)
+v.validate(document, schema)
+print v.document, v.errors#, v.schema
+
+
+#%%
+# todo: we'll keep this structure (integrates cerberus + consistent); but update coerce structure to handle this type of list datatypes
+schema = {'name': {'type': 'float', 'min' : 3}}
+document = {'name': ''}
 v = DwcaValidator(schema)
 v.validate(document, schema)
-v.errors
+print v.document, v.errors, v.schema
 
 #%%
 
