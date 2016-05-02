@@ -106,3 +106,50 @@ class TestCoerceAddition(unittest.TestCase):
         self.assertNotEqual(val.errors,
                             {'abundance': 'must be of boolean type'},
                             msg="addition of coerce to pre-interpret datatype boolean is failing")
+    def test_nested_coerce_of_rules(self):
+        """type statements can be in any level of the *of rules
+        """
+        schema  ="""
+                decimalLatitude:
+                    oneof :
+                        - allowed : ''
+                        - min : 3.
+                          type : 'float'
+                 """
+        val = DwcaValidator(yaml.load(schema))
+        document = {'decimalLatitude': '4'}
+        self.assertTrue(val.validate(document))
+
+    def test_nested_coerce_if(self):
+        """type statements can be in if structure
+        TODO
+        """
+        return None
+
+    def test_nested_coerce_delimited(self):
+        """type statements can be in delimited values structure
+        TODO
+        """
+        return None
+
+class TestEmptyStringConversion(unittest.TestCase):
+    """Test conversion from empty strings to None values before performing the
+    evaluation
+    """
+
+    def setUp(self):
+        self.yaml_string = """
+                           abundance:
+                                type : float
+                           """
+    def test_empty_string(self):
+        """conversion empty string to None in document
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': ''}
+        val.validate(document)
+        self.assertEqual(val.document,
+                    {'abundance': None},
+                    msg="pre-conversion of empty strings to None not supported")
+
+

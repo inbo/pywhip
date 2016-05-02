@@ -10,7 +10,8 @@ from dwca.read import DwCAReader
 from dwcavalidator.validators import DwcaValidator
 
 def empty_string_none(doc):
-    """convert empty strings to None values
+    """convert empty strings to None values - assuming that the document
+    structure will always be key:value (coming from DwcaReader)
     """
     for key, value in doc.iteritems():
         if value == "":
@@ -20,12 +21,11 @@ def empty_string_none(doc):
 #%% Read the YAML file
 
 schema  ="""
-                decimalLatitude:
-                    type : float
-                    nullable : True
-                individualCount:
-                    type : integer
-                    min : 2
+            decimalLatitude:
+                type : float
+            individualCount:
+                type : integer
+                min : 2
          """
 
 testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
@@ -42,29 +42,48 @@ print(v.errors)
 
 #%%
 
-schema  ="""
-                decimalLatitude:
-                    type : float
-                    nullable : True
-         """
+schema = """
+           age:
+               type: integer
+           decimalLatitude:
+               type: float
+           percentage:
+               type: number
+           datum:
+               type: datetime
+           abondance:
+               type: boolean
+           code:
+               type: string
+           """
+val = DwcaValidator(yaml.load(schema))
+document = {'code': 'ICZN'}
+#assertTrue(val.validate(document))
 
-testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
-           'decimalLatitude' : ''}
-
-v = DwcaValidator(yaml.load(schema))
-v.allow_unknown = True
-
-#v.validate(document)
-v.validate(empty_string_none(testdoc))
-#v.validate(testdoc)
-print(v.errors)
 
 #%%
 
 schema  ="""
                 decimalLatitude:
                     type : float
-                    min : 3
+         """
+
+testdoc = {'decimalLatitude' : ''}
+
+v = DwcaValidator(yaml.load(schema))
+
+#v.validate(document)
+v.validate(testdoc)
+#v.validate(testdoc)
+print(v.errors, v.document)
+
+#%%
+
+schema  ="""
+            decimalLatitude:
+                type : float
+                min : 3
+                nullable : True
          """
 
 v = DwcaValidator(yaml.load(schema))
@@ -94,18 +113,17 @@ schema  ="""
             oneof :
                 - allowed : ''
                 - min : 3.
-                  coerce : !!python/name:float
                   type : float
          """
 
-v = Validator(yaml.load(schema))
+v = DwcaValidator(yaml.load(schema))
 v.allow_unknown = True
 
 testdoc = {'decimalLatitude' : '4.'}
 v.validate(testdoc)
 print(v.errors)
 
-testdoc = {'decimalLatitude' : '4'}
+testdoc = {'decimalLatitude' : 'ab'}
 v.validate(testdoc)
 print(v.errors)
 
@@ -116,6 +134,13 @@ print(v.errors)
 testdoc = {'decimalLatitude' : '2.'}
 v.validate(testdoc)
 print(v.errors)
+
+#%%
+dict_schema =  yaml.load(schema)
+for term, rules in dict_schema.iteritems():
+    print term, rules
+    if 'type' in rules.keys():
+        print rules
 
 #%%
 

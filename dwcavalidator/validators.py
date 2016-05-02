@@ -35,10 +35,30 @@ class DwcaValidator(Validator):
         """
         super(DwcaValidator, self).__init__(*args, **kwargs)
         self.schema = self._schema_add_coerce_dtypes(self.schema)
+        # default rule to ignore None values on reader
+        self.ignore_none_values = True
+
+    def validate(self, document, *args, **kwargs):
+        """adds document parsing to the validation process
+        """
+        document = self.empty_string_none(document)
+        return super(DwcaValidator, self).validate(document, *args, **kwargs)
+
+    @staticmethod
+    def empty_string_none(doc):
+        """convert empty strings to None values - assuming that the document
+        structure will always be key:value (coming from DwcaReader)
+        """
+        for key, value in doc.iteritems():
+            if value == "":
+                doc[key] = None
+        return doc
 
     @staticmethod
     def _schema_add_coerce_dtypes(dict_schema):
-        """add coerce rules to convert datatypes of int and float
+        """add coerce rules to convert datatypes of int and float,
+        due to the schema validation that works like a recursive method inside
+        *of-methods coerce is alos automatically activated inside *of rules
         """
         for term, rules in dict_schema.iteritems():
             if 'type' in rules.keys():
@@ -118,6 +138,12 @@ class DwcaValidator(Validator):
             Validator._validate_max(self, ref_range[1], field, float(value))
 
     def _validate_if(self, ifset, field, value):
+        """
+        TODO: check if def _validate_validator(self, validator, field, value)
+        is more convenient to use (cfr. also line 960 in cerberus)
+
+        or registries, new recently...
+        """
         # extract dict values -> conditions
         conditions = {k: v for k, v in ifset.iteritems() if isinstance(v, dict)}
         # extract dict values -> rules
