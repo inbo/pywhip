@@ -132,9 +132,10 @@ class TestCoerceAddition(unittest.TestCase):
         """
         return None
 
-class TestEmptyStringConversion(unittest.TestCase):
+class TestEmptyStringHandling(unittest.TestCase):
     """Test conversion from empty strings to None values before performing the
-    evaluation
+    evaluation and evaluate the default handling of empty strings and None
+    values
     """
 
     def setUp(self):
@@ -151,5 +152,19 @@ class TestEmptyStringConversion(unittest.TestCase):
         self.assertEqual(val.document,
                     {'abundance': None},
                     msg="pre-conversion of empty strings to None not supported")
+
+    def test_default_ignore_empty_string(self):
+        """empty string (converted to None values) should be ignored by default
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': ''}
+        self.assertTrue(val.validate(document))
+
+    def test_default_ignore_none(self):
+        """None values should be ignored by default
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': None}
+        self.assertTrue(val.validate(document))
 
 
