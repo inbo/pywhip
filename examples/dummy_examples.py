@@ -9,16 +9,7 @@ import yaml
 from dwca.read import DwCAReader
 from dwcavalidator.validators import DwcaValidator
 
-def empty_string_none(doc):
-    """convert empty strings to None values - assuming that the document
-    structure will always be key:value (coming from DwcaReader)
-    """
-    for key, value in doc.iteritems():
-        if value == "":
-            doc[key] = None
-    return doc
-
-#%% Read the YAML file
+#%%
 
 schema  ="""
             decimalLatitude:
@@ -62,15 +53,21 @@ document = {'code': 'ICZN'}
 
 
 #%%
+from cerberus import Validator
 
 schema  ="""
-                decimalLatitude:
-                    type : float
+            decimalLatitude:
+                readonly : True
+                nullable : True
+                min : 5
+            individualCount:
+                type : integer
+                min : 2
          """
 
-testdoc = {'decimalLatitude' : ''}
+testdoc = {'decimalLatitude': 4, 'individualCount' : 4}
 
-v = DwcaValidator(yaml.load(schema))
+v = Validator(yaml.load(schema))
 
 #v.validate(document)
 v.validate(testdoc)
@@ -81,15 +78,14 @@ print(v.errors, v.document)
 
 schema  ="""
             decimalLatitude:
-                type : float
-                min : 3
+                minlength : 3
                 nullable : True
          """
 
-v = DwcaValidator(yaml.load(schema))
+v = Validator(yaml.load(schema))
 v.allow_unknown = True
 
-testdoc = {'decimalLatitude' : '4.'}
+testdoc = {'decimalLatitude' : '29'}
 v.validate(empty_string_none(testdoc))
 print(v.errors)
 

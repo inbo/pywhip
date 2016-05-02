@@ -221,6 +221,29 @@ class TestDataTypeValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))
 
+class TestLengthValidator(unittest.TestCase):
+    """
+    lenght is a new validator type created for the DwcaValidator
+    """
+
+    def setUp(self):
+        self.yaml_length = """
+                             verbatimCoordinateSystem:
+                                 length : 5
+                             coordinateSystem:
+                                 length : 1
+                             """
+
+    def test_length(self):
+        """test if the string has proper minimal length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'verbatimCoordinateSystem' : '31UDS'}
+        self.assertTrue(val.validate(document))
+        document = {'verbatimCoordinateSystem' : '3'}
+        self.assertFalse(val.validate(document))
+
+
 class TestCerberusTypeValidator(unittest.TestCase):
     """
     int, float and number are tested here as if they are already interpreted in
@@ -289,6 +312,8 @@ class TestCerberusTypeValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
 
 class TestCerberusValidator(unittest.TestCase):
+    """Test validation methods that are native to Cerberus already
+    """
 
     def setUp(self):
         self.yaml_required = """
@@ -296,6 +321,27 @@ class TestCerberusValidator(unittest.TestCase):
                                  required: False
                              moment:
                                  required: True
+                             """
+
+        self.yaml_length = """
+                             verbatimCoordinateSystem:
+                                 minlength : 5
+                             coordinateSystem:
+                                 maxlength : 5
+                             code:
+                                 minlength : 2
+                                 type : integer
+                             """
+
+        self.yaml_value = """
+                             individualCount:
+                                 min : 5
+                                 max :
+                             coordinateSystem:
+                                 maxlength : 5
+                             code:
+                                 minlength : 2
+                                 type : integer
                              """
 
     def test_required(self):
@@ -308,6 +354,38 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'sex' : '2016-12-11'}
         self.assertFalse(val.validate(document))
 
+    def test_minlength(self):
+        """test if the string has proper minimal length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'verbatimCoordinateSystem' : '31UDS76C'}
+        self.assertTrue(val.validate(document))
+        document = {'verbatimCoordinateSystem' : '5'}
+        self.assertFalse(val.validate(document))
+
+    def test_maxlength(self):
+        """test if the string has proper maximal length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'coordinateSystem' : '31U'}
+        self.assertTrue(val.validate(document))
+        document = {'coordinateSystem' : '31UDS76C'}
+        self.assertFalse(val.validate(document))
+
+    def test_minlength_ignored_by_type(self):
+        """test if an integer is ignored by length-options
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'code' : '5'}
+        self.assertTrue(val.validate(document))
+
+
+#    def test_allowed(self):
+#        """test if the value is one of the allowed values
+#        """
+#        val = DwcaValidator(yaml.load(self.yaml_required))
+#        document = {'moment' : '2016-12-11'}
+#        self.assertTrue(val.validate(document)
 
 
 

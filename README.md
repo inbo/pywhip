@@ -42,12 +42,12 @@ We could rely on the functionality of marshmallow, as provided in following exam
 
 ## Test types
 
-Cerberus already provide a set of [validation rules](http://docs.python-cerberus.org/en/stable/usage.html#validation-rules), which can be used and extended for the validator case
+Cerberus already provide a set of [validation rules](http://docs.python-cerberus.org/en/stable/usage.html#validation-rules), which can be used and extended for the validator case. In the following list, the rules available in the DwcaValidator are enlisted.
 
 ### required
 *(cerberus supported)*
 
-Does the field contain data?
+Does the field is part of the document?
 
 ``` YAML
 # Expects: boolean
@@ -71,12 +71,12 @@ Cerberus supports following dtypes, which are also supported by the DWCA validat
 * boolean
 * datetime (!the datatype itself, not formatted string)
 
-Following Cerberus dtypes are not supported by the DWAC Validator:
+Following Cerberus dtypes are not supported by the Dwca Validator:
 * dict (formally collections.mapping)
 * list (formally collections.sequence, excluding strings)
 * set
 
-Following dtypes are added to the DWCA Validator, not supported by Cerberus:
+Following dtypes are added to the Dwca Validator, not supported by Cerberus:
 * url
 * json
 
@@ -94,56 +94,58 @@ type: json
 type: url
 ```
 
-### allowed
-*(cerberus supported)*)*
+It is important to understand that the DwcaReader will read all fields as string types initially. When no `type` validator is added, the value will be interpreted and tested as a string value. By incorporating a `type` validator, DwcaValidator will first try to interpret the value as the type to test it for (e.g. integer, float). When succeeded, the other tests will be applied on the interpreted value (integer, float).
 
-Does the data equal a specific value? (cfr. equals)
+### length
 
-```YAML
-# Expects: string or list
-# Records without data: are ignored
-# Records of wrong data type: all considered strings
-
-allowed: male
-allowed: [male, female] # Male or female
-```
-
-### unique
-
-Does this term contain unique values across all rows?
-(Currently not planned for development)
-
-```YAML
-# Expects: boolean
-# Records without data: are ignored??
-# Records of wrong data type: all considered strings
-
-unique: true # All values must be unique
-unique: false # Default. Ignored
-```
-
-### minlength
-*(cerberus supported)*
-
-Is the length of the data string or list larger than the given value
+Is the length of the data string equal to the given value?
 
 ```YAML
 # Expects: integer
 # Records without data: are ignored
-# Records of wrong data type: all considered strings
+# Records of wrong data type: only active with strings
 
-minlength: 8  # Character length is larger than 2
+length: 8  # Character length is equal to 8
+```
+
+**Remark:**
+
+The behaviour of length (and also `minlength` and `maxlength`) depends on the usage of the `length` validation in combination with the `type` validation or not. When no `type` validation is added (or tests for string, which is default in the Dwcareader), the length will interpret the field as string:
+
+```YAML
+maxlength: 2  
+type : string  
+```
+will invoke an error for the field : `{'individualCount' : '100'}`. However, when requiring an integer value:
+
+```YAML
+maxlength: 2
+type : integer
+```
+the field `{'individualCount' : '100'}` will be converted to `{'individualCount' : 100}` (100 as integer) and `length` will ignore the integer. It makes more sense to test this with the `min` and `max` validators (see further).
+
+### minlength
+*(cerberus supported)*
+
+Is the length of the data string larger than the given value (inclusive the value itself)?
+
+```YAML
+# Expects: integer
+# Records without data: are ignored
+# Records of wrong data type: only active with strings
+
+minlength: 8  # Character length is larger than 8
 ```
 
 ### maxlength
 *(cerberus supported)*
 
-Is the length of the data string or list smaller than the given value
+Is the length of the data string smaller than the given value (inclusive the value itself)?
 
 ```YAML
 # Expects: integer
 # Records without data: are ignored
-# Records of wrong data type: all considered strings
+# Records of wrong data type: only active with strings
 
 maxlength: 20  # Character length is smaller than 20
 ```
@@ -174,6 +176,34 @@ Maximum value allowed for any types that implement comparison operators.
 
 maximum: 0.75     # float
 maximum: 200     # integer
+```
+
+### allowed
+*(cerberus supported)*)*
+
+Does the data equal a specific value? (cfr. equals)
+
+```YAML
+# Expects: string or list
+# Records without data: are ignored
+# Records of wrong data type: all considered strings
+
+allowed: male
+allowed: [male, female] # male or female
+```
+
+### unique
+
+Does this term contain unique values across all rows?
+(Currently not planned for development)
+
+```YAML
+# Expects: boolean
+# Records without data: are ignored??
+# Records of wrong data type: all considered strings
+
+unique: true # All values must be unique
+unique: false # Default. Ignored
 ```
 
 ### daterange
@@ -273,3 +303,11 @@ if:
     allowed: Event                 # Then the main term must be "Event"
     required: true               # Then the main term must be "Populated"
 ```
+
+## Cerberus other rules
+
+### readonly
+There is no use-case to apply this rule within the context of the DwcaValidator
+
+### nullable
+Default True within DwcaValidator, for both '' and None values

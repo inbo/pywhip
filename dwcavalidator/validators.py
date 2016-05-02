@@ -121,7 +121,7 @@ class DwcaValidator(Validator):
                                                                     formatstr)
 
     def _validate_equals(self, ref_value, field, value):
-        """ {'type': 'string'} """
+        """ {'type': string} """
         if isinstance(ref_value, list):
             Validator._validate_allowed(self, ref_value, field, value)
         else:
@@ -129,6 +129,8 @@ class DwcaValidator(Validator):
                 self._error(field, "Must be equal to " + ref_value)
 
     def _validate_numberrange(self, ref_range, field, value):
+        """
+        """
         # check if min < max
         if ref_range[0] >= ref_range[1]:
             raise Exception('min > max in range value')
@@ -136,6 +138,14 @@ class DwcaValidator(Validator):
         if value.isdigit():
             Validator._validate_min(self, ref_range[0], field, float(value))
             Validator._validate_max(self, ref_range[1], field, float(value))
+
+    def _validate_length(self, length, field, value):
+        """{'type': integer}
+        check length of a given string
+        """
+        if isinstance(value, str) and len(value) != length:
+            self._error(field, "".join(["length mismatch: ", str(len(value)),
+                                        " instead of ", str(length)]))
 
     def _validate_if(self, ifset, field, value):
         """
