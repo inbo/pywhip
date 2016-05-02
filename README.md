@@ -150,33 +150,43 @@ Is the length of the data string smaller than the given value (inclusive the val
 maxlength: 20  # Character length is smaller than 20
 ```
 
-### minimum
+### min
 *(cerberus supported)*
 
 Minimum value allowed for any types that implement comparison operators.
 
 ```YAML
-# Expects: int/float or other dtype supporting comparison; values will be compared as floats
+# Expects: int/float; values will be compared as floats
 # Records without data: are ignored
-# Records of wrong data type: fail test
+# Records of wrong data type: ignore (data types are tested separately with `type`)
 
-minimum: 0.5     # float
-minimum: 20     # integer
+min: 0.5     # float
+min: 20     # integer
 ```
 
-### maximum
+**Remark**
+
+It is important to combine the test with an appropriate data type validation to enable the test.
+
+### max
 *(cerberus supported)*
 
 Maximum value allowed for any types that implement comparison operators.
 
 ```YAML
-# Expects: int/float or other dtype supporting comparison; values will be compared as floats
+# Expects: int/float; values will be compared as floats
 # Records without data: are ignored
-# Records of wrong data type: fail test
+# Records of wrong data type: ignore (data types are tested separately with `type`)
 
-maximum: 0.75     # float
-maximum: 200     # integer
+max: 0.75     # float
+max: 200     # integer
 ```
+
+**Remark**
+
+It is important to combine the test with an appropriate data type validation to enable the test.
+
+(TODO: add equals to, in order to enable value comparison: 1.00 is also 1, which is not possible with allowed at the moment)
 
 ### allowed
 *(cerberus supported)*)*

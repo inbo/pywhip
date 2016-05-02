@@ -13,21 +13,21 @@ from dwcavalidator.validators import DwcaValidator
 
 schema  ="""
             decimalLatitude:
-                type : float
+                length : 5
             individualCount:
-                type : integer
                 min : 2
+                type : integer
          """
 
 testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
-           'decimalLatitude' : '',
-           'individualCount': u'2'}
+           'decimalLatitude' : '12345',
+           'individualCount': u'1'}
 
 v = DwcaValidator(yaml.load(schema))
 v.allow_unknown = True
 
 #v.validate(document)
-v.validate(empty_string_none(testdoc))
+v.validate(testdoc)
 #v.validate(testdoc)
 print(v.errors)
 
@@ -57,15 +57,13 @@ from cerberus import Validator
 
 schema  ="""
             decimalLatitude:
-                readonly : True
-                nullable : True
                 min : 5
             individualCount:
                 type : integer
                 min : 2
          """
 
-testdoc = {'decimalLatitude': 4, 'individualCount' : 4}
+testdoc = {'decimalLatitude': '4', 'individualCount' : 4}
 
 v = Validator(yaml.load(schema))
 

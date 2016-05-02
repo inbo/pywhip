@@ -336,12 +336,11 @@ class TestCerberusValidator(unittest.TestCase):
         self.yaml_value = """
                              individualCount:
                                  min : 5
-                                 max :
-                             coordinateSystem:
-                                 maxlength : 5
+                             percentage:
+                                 min : 5.5
                              code:
-                                 minlength : 2
                                  type : integer
+                                 min : 3
                              """
 
     def test_required(self):
@@ -379,6 +378,39 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'code' : '5'}
         self.assertTrue(val.validate(document))
 
+    def test_min_float(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'percentage' : 6.}
+        self.assertTrue(val.validate(document))
+        document = {'percentage' : 2.1}
+        self.assertFalse(val.validate(document))
+
+    def test_min_int(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'individualCount' : 6}
+        self.assertTrue(val.validate(document))
+        document = {'individualCount' : 2}
+        self.assertFalse(val.validate(document))
+
+    def test_min_int_coerce(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'code' : '6'}
+        self.assertTrue(val.validate(document))
+        document = {'code' : '2'}
+        self.assertFalse(val.validate(document))
+
+    def test_min_int_string(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'individualCount' : 'vijf'} #ignore this
+        self.assertTrue(val.validate(document))
 
 #    def test_allowed(self):
 #        """test if the value is one of the allowed values
