@@ -206,7 +206,7 @@ This test is used for numerical values and should be combined with a `type` test
 ### allowed
 *(cerberus supported)*)*
 
-Does the data equal a specific value? (cfr. equals)
+Does the data is the same sequence of characters?
 
 ```YAML
 # Expects: string or list
@@ -215,20 +215,6 @@ Does the data equal a specific value? (cfr. equals)
 
 allowed: male
 allowed: [male, female] # male or female
-```
-
-### unique
-
-Does this term contain unique values across all rows?
-(Currently not planned for development)
-
-```YAML
-# Expects: boolean
-# Records without data: are ignored??
-# Records of wrong data type: all considered strings
-
-unique: true # All values must be unique
-unique: false # Default. Ignored
 ```
 
 ### daterange
