@@ -121,12 +121,13 @@ class DwcaValidator(Validator):
                                                                     formatstr)
 
     def _validate_equals(self, ref_value, field, value):
-        """ {'type': string} """
-        if isinstance(ref_value, list):
-            Validator._validate_allowed(self, ref_value, field, value)
-        else:
-            if value != ref_value:
-                self._error(field, "Must be equal to " + ref_value)
+        """ {'type': [integer, float]} """
+        if (isinstance(value, int) or isinstance(value, float)) and \
+                                                float(ref_value) != value:
+            self._error(field, "".join(["value should be equal to ",
+                                        str(ref_value),
+                                        " instead of ",
+                                        str(value)]))
 
     def _validate_numberrange(self, ref_range, field, value):
         """

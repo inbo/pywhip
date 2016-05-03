@@ -166,7 +166,7 @@ min: 20     # integer
 
 **Remark**
 
-It is important to combine the test with an appropriate data type validation to enable the test.
+It is important to combine the test with an appropriate data type validation to enable the test when using numeric values
 
 ### max
 *(cerberus supported)*
@@ -184,9 +184,24 @@ max: 200     # integer
 
 **Remark**
 
-It is important to combine the test with an appropriate data type validation to enable the test.
+It is important to combine the test with an appropriate data type validation to enable the test when using numeric values
 
-(TODO: add equals to, in order to enable value comparison: 1.00 is also 1, which is not possible with allowed at the moment)
+### equals
+
+Does the data value equals to a given numerical value?
+
+```YAML
+# Expects: int/float; values will be compared as floats
+# Records without data: are ignored
+# Records of wrong data type: only active with integer or float (data types are tested separately with `type`)
+
+equals: 0.75     # float
+equals: 200     # integer
+```
+
+**Remark**
+This test is used for numerical values and should be combined with a `type` test to activate the test. The usage is of particular interest if values should be accepted, but the decimal precision is not important. For example: 0.75 will also accept 0.750 and 200 also 200.0. When the value need to be completely the same, the usage of `allowed` (works on strings) is advisable (see next).
+
 
 ### allowed
 *(cerberus supported)*)*

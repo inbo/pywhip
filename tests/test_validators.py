@@ -243,6 +243,39 @@ class TestLengthValidator(unittest.TestCase):
         document = {'verbatimCoordinateSystem' : '3'}
         self.assertFalse(val.validate(document))
 
+class TestEqualsValidator(unittest.TestCase):
+    """
+    equals is a new validator type created for the DwcaValidator that works on
+    integer and float values
+    """
+
+    def setUp(self):
+        self.yaml_length = """
+                             individualCount:
+                                 equals : 1
+                             precision:
+                                 equals : 200.
+                             """
+
+    def test_euqals_int(self):
+        """test if the integer value equals the given value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        # here not type test needed in schema, value given as integer
+        document = {'individualCount' : 1.000}
+        self.assertTrue(val.validate(document))
+        document = {'individualCount' : 2}
+        self.assertFalse(val.validate(document))
+
+    def test_euqals_float(self):
+        """test if the float value equals the given value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        # here not type test needed in schema, value given as float
+        document = {'precision' : 200.00}
+        self.assertTrue(val.validate(document))
+        document = {'precision' : 200.001}
+        self.assertFalse(val.validate(document))
 
 class TestCerberusTypeValidator(unittest.TestCase):
     """
@@ -336,8 +369,10 @@ class TestCerberusValidator(unittest.TestCase):
         self.yaml_value = """
                              individualCount:
                                  min : 5
+                                 max : 8
                              percentage:
                                  min : 5.5
+                                 max : 8.1
                              code:
                                  type : integer
                                  min : 3
@@ -378,21 +413,21 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'code' : '5'}
         self.assertTrue(val.validate(document))
 
-    def test_min_float(self):
+    def test_minmax_float(self):
         """test if the value has minimal value
         """
         val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'percentage' : 6.}
-        self.assertTrue(val.validate(document))
+        document = {'percentage' : 9.}
+        self.assertFalse(val.validate(document))
         document = {'percentage' : 2.1}
         self.assertFalse(val.validate(document))
 
-    def test_min_int(self):
+    def test_minmax_int(self):
         """test if the value has minimal value
         """
         val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'individualCount' : 6}
-        self.assertTrue(val.validate(document))
+        document = {'individualCount' : 9}
+        self.assertFalse(val.validate(document))
         document = {'individualCount' : 2}
         self.assertFalse(val.validate(document))
 

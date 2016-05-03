@@ -15,13 +15,13 @@ schema  ="""
             decimalLatitude:
                 length : 5
             individualCount:
+                type:integer
                 min : 2
-                type : integer
          """
 
 testdoc = {'accessRights': u'http://www.inbo.be/en/norms-for-data-use',
            'decimalLatitude' : '12345',
-           'individualCount': u'1'}
+           'individualCount': '1'}
 
 v = DwcaValidator(yaml.load(schema))
 v.allow_unknown = True
