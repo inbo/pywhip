@@ -13,6 +13,7 @@ import json
 from rfc3987 import match
 
 from cerberus import Validator
+from cerberus import errors
 
 class DwcaValidator(Validator):
     """
@@ -37,6 +38,7 @@ class DwcaValidator(Validator):
         self.schema = self._schema_add_coerce_dtypes(self.schema)
         # default rule to ignore None values on reader
         self.ignore_none_values = True
+        # optional TODO: add more control logic: eg. min/max no sense without type validation
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -63,15 +65,36 @@ class DwcaValidator(Validator):
         for term, rules in dict_schema.iteritems():
             if 'type' in rules.keys():
                 if rules['type'] == 'float':
-                    rules['coerce'] = float
+                    to_float = lambda v: float(v) if v else v
+                    rules['coerce'] = to_float
                 elif rules['type'] == 'int' or rules['type'] == 'integer':
-                    rules['coerce'] = int
+                    to_int = lambda v: int(v) if v else v
+                    rules['coerce'] = to_int
                 elif rules['type'] == 'number':
-                    rules['coerce'] = float
+                    rules['coerce'] = to_float
                 elif rules['type'] == 'boolean':
-                    rules['coerce'] = bool
+                    to_bool = lambda v: bool(v) if v else v
+                    rules['coerce'] = to_bool
 
         return dict_schema
+
+    def _validate_min(self, min_value, field, value):
+        """ {'nullable': False } """
+        # overwrite cerberus min to only consider int and float
+        if (isinstance(value, int) or isinstance(value, float)) and \
+                                        float(min_value) > value:
+            self._error(field, errors.MIN_VALUE)
+        elif isinstance(value, str):
+            self._error(field, 'min validation ignores string type, add type validation')
+
+    def _validate_max(self, min_value, field, value):
+        """ {'nullable': False } """
+        # overwrite cerberus max to only consider int and float
+        if (isinstance(value, int) or isinstance(value, float)) and \
+                                        float(min_value) < value:
+            self._error(field, errors.MAX_VALUE)
+        elif isinstance(value, str):
+            self._error(field, 'max validation ignores string type, add type validation')
 
     def _validate_daterange(self, ref_value, field, value):
         """ {'type': 'list'} """

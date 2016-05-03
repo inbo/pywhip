@@ -377,6 +377,12 @@ class TestCerberusValidator(unittest.TestCase):
                                  type : integer
                                  min : 3
                              """
+        self.yaml_string = """
+                             individualCount:
+                                 min : 5
+                             code:
+                                 max : 3
+                             """
 
         self.yaml_allow = """
                           sex:
@@ -448,16 +454,29 @@ class TestCerberusValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
 
     def test_min_int_string(self):
-        """test if the value has minimal value
+        """test if the value has minimal value with string input
         """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'individualCount' : 'vijf'} #ignore this
-        self.assertTrue(val.validate(document))
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'individualCount' : 'vijf'} # provide error on type mismatch
+        val.validate(document)
+        self.assertEqual(val.errors,
+                    {'individualCount': 'min validation ignores string type, add type validation'},
+                    msg="alert on datatype mismatch for min evaluation fails")
+
+    def test_max_int_string(self):
+        """test if the value has maximal value with string input
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'code' : 'vijf'} # provide error on type mismatch
+        val.validate(document)
+        self.assertEqual(val.errors,
+                    {'code': 'max validation ignores string type, add type validation'},
+                    msg="alert on datatype mismatch for min evaluation fails")
 
     def test_allowed_string(self):
         """test if the value is the allowed value
         """
-        val = DwcaValidator(yaml.load(self.yaml_required))
+        val = DwcaValidator(yaml.load(self.yaml_allow))
         document = {'rightsHolder' : 'INBO'}
         self.assertTrue(val.validate(document))
         document = {'rightsHolder' : 'ILVO'}
@@ -466,7 +485,7 @@ class TestCerberusValidator(unittest.TestCase):
     def test_allowed_list(self):
         """test if the value is one of the allowed values
         """
-        val = DwcaValidator(yaml.load(self.yaml_required))
+        val = DwcaValidator(yaml.load(self.yaml_allow))
         document = {'rightsHolder' : 'INBO'}
         self.assertTrue(val.validate(document))
         document = {'rightsHolder' : 'ILVO'}
