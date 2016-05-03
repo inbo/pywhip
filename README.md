@@ -209,11 +209,11 @@ This test is used for numerical values and should be combined with a `type` test
 Does the data is the same sequence of characters?
 
 ```YAML
-# Expects: string or list
+# Expects: list with one or more strings
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-allowed: male
+allowed: [male]
 allowed: [male, female] # male or female
 ```
 
