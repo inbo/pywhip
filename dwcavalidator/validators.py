@@ -74,14 +74,14 @@ class DwcaValidator(Validator):
         return dict_schema
 
     def _validate_daterange(self, ref_value, field, value):
-        """
+        """ {'type': 'list'} """
 
-        Remarks
-        -------
-        the yaml-reader prepares a datetime.date objects when possible,
-        the dwca-reader is not doing this, so compatibility need to be better
-        ensured
-        """
+        # Remarks
+        # -------
+        #the yaml-reader prepares a datetime.date objects when possible,
+        #the dwca-reader is not doing this, so compatibility need to be better
+        #ensured
+
         # try to parse the datetime-format
         event_date = parse(value)
 
@@ -97,10 +97,10 @@ class DwcaValidator(Validator):
                                                         end_date.isoformat())
 
     def _validate_dateformat(self, ref_value, field, value):
-        """
-        dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
-        dateformat : '%Y-%m'
-        """
+        """ {'type': ['string', 'list']} """
+        #dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
+        #dateformat : '%Y-%m'
+
         if isinstance(ref_value, list):
             tester = False
             for formatstr in ref_value: # check if at least one comply
@@ -121,7 +121,7 @@ class DwcaValidator(Validator):
                                                                     formatstr)
 
     def _validate_equals(self, ref_value, field, value):
-        """ {'type': [integer, float]} """
+        """ {'type': ['integer', 'float']} """
         if (isinstance(value, int) or isinstance(value, float)) and \
                                                 float(ref_value) != value:
             self._error(field, "".join(["value should be equal to ",
@@ -130,8 +130,7 @@ class DwcaValidator(Validator):
                                         str(value)]))
 
     def _validate_numberrange(self, ref_range, field, value):
-        """
-        """
+        """ {'type': 'list'} """
         # check if min < max
         if ref_range[0] >= ref_range[1]:
             raise Exception('min > max in range value')
@@ -141,20 +140,18 @@ class DwcaValidator(Validator):
             Validator._validate_max(self, ref_range[1], field, float(value))
 
     def _validate_length(self, length, field, value):
-        """{'type': integer}
-        check length of a given string
-        """
+        """ {'type': 'integer'} """
+        #check length of a given string
         if isinstance(value, str) and len(value) != length:
             self._error(field, "".join(["length mismatch: ", str(len(value)),
                                         " instead of ", str(length)]))
 
     def _validate_if(self, ifset, field, value):
-        """
-        TODO: check if def _validate_validator(self, validator, field, value)
-        is more convenient to use (cfr. also line 960 in cerberus)
+        """ {'type': 'dict'} """
+        #TODO: check if def _validate_validator(self, validator, field, value)
+        #is more convenient to use (cfr. also line 960 in cerberus)
+        #or registries, new recently...
 
-        or registries, new recently...
-        """
         # extract dict values -> conditions
         conditions = {k: v for k, v in ifset.iteritems() if isinstance(v, dict)}
         # extract dict values -> rules
@@ -182,24 +179,22 @@ class DwcaValidator(Validator):
         """
 
     def _validate_numberformat(self, ref_value, field, value):
-        """todo check from rfc3987 import match options
-        """
+        """ {'type': 'string'} """
+        #todo check from rfc3987 import match options
         # Test if it is a number...
 
         # Test the formatting of the number
         return None
 
     def _validate_delimitedvalues(self, all_fields, field, value):
-        """
-        The delimitedvalues is actually a schema application on the subset of
-        values of the first string
-        """
+        """ {'type' : 'dict', 'required' : 'delimiter'} """
+        #The delimitedvalues is actually a schema application on the subset of
+        #values of the first string
 
         return None
 
     def _validate_listvalues(self):
-        """
-        """
+        """ {'type': 'boolean'} """
         return None
 
 
