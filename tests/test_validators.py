@@ -18,9 +18,10 @@ class TestDateValidator(unittest.TestCase):
 
     def setUp(self):
         self.yaml_string_date1 = """
-                                    moment:
-                                        daterange: [1830-01-01, 2014-10-20]
-                                    """
+                                 moment:
+                                     mindate: 1830-01-01
+                                     maxdate: 2014-10-20
+                                 """
         self.yaml_string_date2 = """
                                     moment:
                                         dateformat: ['%Y-%m-%d', '%Y-%m', '%Y']
@@ -45,8 +46,12 @@ class TestDateValidator(unittest.TestCase):
     def test_daterange_out(self):
         # outside the range
         val =  DwcaValidator(yaml.load(self.yaml_string_date1))
-        document3 = {'moment' : '20150831'} # False
-        self.assertFalse(val.validate(document3))
+        document = {'moment' : '17000101'} # False
+        self.assertFalse(val.validate(document))
+
+        val =  DwcaValidator(yaml.load(self.yaml_string_date1))
+        document = {'moment' : '20150831'} # False
+        self.assertFalse(val.validate(document))
 
     def test_dateformat_line(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))

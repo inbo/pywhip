@@ -5,7 +5,7 @@ Created on Mon Feb 22 13:07:01 2016
 @author: stijn_vanhoey
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.parser import parse
 
 import json
@@ -98,8 +98,8 @@ class DwcaValidator(Validator):
         elif isinstance(value, str):
             self._error(field, 'max validation ignores string type, add type validation')
 
-    def _validate_daterange(self, ref_value, field, value):
-        """ {'type': 'list'} """
+    def _validate_mindate(self, min_date, field, value):
+        """ {'type': ['date', 'datetime']} """
 
         # Remarks
         # -------
@@ -108,18 +108,41 @@ class DwcaValidator(Validator):
         #ensured
 
         # try to parse the datetime-format
-        event_date = parse(value)
+        try:
+            event_date = parse(value)
+        except:
+            self._error(field, "could not be interpreted as datetime")
 
         # convert schema info to datetime to enable comparison
-        start_date = datetime.combine(ref_value[0], datetime.min.time())
-        end_date = datetime.combine(ref_value[1], datetime.min.time())
+        if isinstance(min_date, date):
+            min_date = datetime.combine(min_date, datetime.min.time())
 
-        if event_date < start_date:
-            self._error(field, "date is before start limit " + \
-                                                        start_date.isoformat())
-        if event_date > end_date:
-            self._error(field, "date is after end limit " + \
-                                                        end_date.isoformat())
+        if event_date < min_date:
+            self._error(field, "date is before min limit " + \
+                                                min_date.date().isoformat())
+
+    def _validate_maxdate(self, max_date, field, value):
+        """ {'type': ['date', 'datetime']} """
+
+        # Remarks
+        # -------
+        #the yaml-reader prepares a datetime.date objects when possible,
+        #the dwca-reader is not doing this, so compatibility need to be better
+        #ensured
+
+        # try to parse the datetime-format
+        try:
+            event_date = parse(value)
+        except:
+            self._error(field, "could not be interpreted as datetime")
+
+        # convert schema info to datetime to enable comparison
+        if isinstance(max_date, date):
+            max_date = datetime.combine(max_date, datetime.min.time())
+
+        if event_date > max_date:
+            self._error(field, "date is after max limit " + \
+                                                max_date.date().isoformat())
 
     def _validate_dateformat(self, ref_value, field, value):
         """ {'type': ['string', 'list']} """

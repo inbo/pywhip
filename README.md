@@ -217,19 +217,30 @@ allowed: [male]
 allowed: [male, female] # male or female
 ```
 
-### daterange
+### mindate
 
-Does the date/datetime objects fall between a specific date range?
+Does the date/datetime objects fall before a given date?
 
 ```YAML
-# Expects: list of two dates
+# Expects: date string
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-daterange: [1830-01-01, 2014-10-20] # Between 1 Jan 1830 and 20 October 2014 inclusive
-daterange: [, 2014-10-20] # Before 20 October 2014
-daterange: [1830-01-01,] # After 1 Jan 1830
-daterange: [,]     # Incorrect syntax
+mindate: 1830-01-01  # After 1 Jan 1830
+mindate: 2014-10-20 # After 20 October 2014
+```
+
+### maxdate
+
+Does the date/datetime objects fall after a given date?
+
+```YAML
+# Expects: date string
+# Records without data: are ignored
+# Records of wrong data type: fail test
+
+mindate: 1830-01-01  # After 1 Jan 1830
+mindate: 2014-10-20 # After 20 October 2014
 ```
 
 ### numberformat
