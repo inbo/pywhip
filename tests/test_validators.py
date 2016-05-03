@@ -378,6 +378,13 @@ class TestCerberusValidator(unittest.TestCase):
                                  min : 3
                              """
 
+        self.yaml_allow = """
+                          sex:
+                              allowed : [male, female]
+                          rightsHolder:
+                              allowed : [INBO]
+                          """
+
     def test_required(self):
         """test if a field (key) is present
         """
@@ -447,12 +454,29 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'individualCount' : 'vijf'} #ignore this
         self.assertTrue(val.validate(document))
 
-#    def test_allowed(self):
-#        """test if the value is one of the allowed values
-#        """
-#        val = DwcaValidator(yaml.load(self.yaml_required))
-#        document = {'moment' : '2016-12-11'}
-#        self.assertTrue(val.validate(document)
+    def test_allowed_string(self):
+        """test if the value is the allowed value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_required))
+        document = {'rightsHolder' : 'INBO'}
+        self.assertTrue(val.validate(document))
+        document = {'rightsHolder' : 'ILVO'}
+        self.assertFalse(val.validate(document))
+
+    def test_allowed_list(self):
+        """test if the value is one of the allowed values
+        """
+        val = DwcaValidator(yaml.load(self.yaml_required))
+        document = {'rightsHolder' : 'INBO'}
+        self.assertTrue(val.validate(document))
+        document = {'rightsHolder' : 'ILVO'}
+        self.assertFalse(val.validate(document))
+
+
+
+
+
+
 
 
 
