@@ -38,7 +38,9 @@ class DwcaValidator(Validator):
         self.schema = self._schema_add_coerce_dtypes(self.schema)
         # default rule to ignore None values on reader
         self.ignore_none_values = True
-        # optional TODO: add more control logic: eg. min/max no sense without type validation
+        # optional TODO: add more control logic (currently errors in each entry)
+        #  eg. min/max no sense without type validation
+        #  eg. length no sense with type validation
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -168,6 +170,8 @@ class DwcaValidator(Validator):
         if isinstance(value, str) and len(value) != length:
             self._error(field, "".join(["length mismatch: ", str(len(value)),
                                         " instead of ", str(length)]))
+        elif not isinstance(value, str):
+            self._error(field, 'length validation only active on strings')
 
     def _validate_if(self, ifset, field, value):
         """ {'type': 'dict'} """
