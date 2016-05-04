@@ -98,6 +98,16 @@ class DwcaValidator(Validator):
         elif isinstance(value, str):
             self._error(field, 'max validation ignores string type, add type validation')
 
+    def _parse_date(self, field, date_string):
+        """
+        """
+        try:
+            event_date = parse(date_string)
+            return event_date
+        except:
+            self._error(field, "could not be interpreted as date or datetime")
+            return None
+
     def _validate_mindate(self, min_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
@@ -107,19 +117,16 @@ class DwcaValidator(Validator):
         #the dwca-reader is not doing this, so compatibility need to be better
         #ensured
 
-        # try to parse the datetime-format
-        try:
-            event_date = parse(value)
-        except:
-            self._error(field, "could not be interpreted as datetime")
-
         # convert schema info to datetime to enable comparison
         if isinstance(min_date, date):
             min_date = datetime.combine(min_date, datetime.min.time())
 
-        if event_date < min_date:
-            self._error(field, "date is before min limit " + \
-                                                min_date.date().isoformat())
+        # try to parse the datetime-format
+        event_date = self._parse_date(field, value)
+        if event_date:
+            if event_date < min_date:
+                self._error(field, "date is before min limit " + \
+                                                    min_date.date().isoformat())
 
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
@@ -130,19 +137,16 @@ class DwcaValidator(Validator):
         #the dwca-reader is not doing this, so compatibility need to be better
         #ensured
 
-        # try to parse the datetime-format
-        try:
-            event_date = parse(value)
-        except:
-            self._error(field, "could not be interpreted as datetime")
-
         # convert schema info to datetime to enable comparison
         if isinstance(max_date, date):
             max_date = datetime.combine(max_date, datetime.min.time())
 
-        if event_date > max_date:
-            self._error(field, "date is after max limit " + \
-                                                max_date.date().isoformat())
+        # try to parse the datetime-format
+        event_date = self._parse_date(field, value)
+        if event_date:
+            if event_date > max_date:
+                self._error(field, "date is after max limit " + \
+                                                    max_date.date().isoformat())
 
     def _validate_dateformat(self, ref_value, field, value):
         """ {'type': ['string', 'list']} """

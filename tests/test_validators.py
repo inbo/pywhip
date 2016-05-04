@@ -30,6 +30,10 @@ class TestDateValidator(unittest.TestCase):
                                     moment:
                                         dateformat: '%Y-%m'
                                     """
+        self.yaml_string_date4 = """
+                                 moment:
+                                     maxdate: 2014-10-20
+                                 """
 
     def test_daterange_iso(self):
         # isoformat
@@ -52,6 +56,13 @@ class TestDateValidator(unittest.TestCase):
         val =  DwcaValidator(yaml.load(self.yaml_string_date1))
         document = {'moment' : '20150831'} # False
         self.assertFalse(val.validate(document))
+
+    def test_daterange_nodate(self):
+        val =  DwcaValidator(yaml.load(self.yaml_string_date4))
+        document = {'moment' : '1700101'} # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'moment': 'could not be interpreted as date or datetime'})
 
     def test_dateformat_line(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
