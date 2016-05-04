@@ -243,17 +243,23 @@ mindate: 1830-01-01  # After 1 Jan 1830
 mindate: 2014-10-20 # After 20 October 2014
 ```
 
-### numberprecision
+### numberformat
 
-Does the data conform to a specific number precision?
+Does the float number conform to a specific precision format?
 
 ```YAML
-# Expects: string
+# Expects: string and need to be combined with `type` : float validator
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-numberformat: .5f # 5 decimals
+numberformat: '.5' # 5 decimals, left side of the decimal not specified, e.g. 1.12345 or 12.12345
+numberformat: '3.5' # 3 digits at the left side of the decimal and 5 decimal digits, e.g. 123.12345
+numberformat: '4.' # 4 digits at the left side, right side not specified, e.g. 1234. or 1234.12
 ```
+
+**Remark**
+
+Float numbers are stored in a double-precision floating-point format. Hence, the check for the numberformat is done before the actual conversion to float numbers in order to do the other tests (e.g. min, max,...)
 
 ### dateformat
 

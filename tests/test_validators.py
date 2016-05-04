@@ -85,29 +85,51 @@ class TestDateValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
 
 
-#class TestNumberPrecisionValidator(unittest.TestCase):
-#
-#    def setUp(self):
-#        self.yaml_numberformat1 = """
-#                                    size:
-#                                        numberformat: 5
-#                                    """
-#
-#        self.yaml_numberformat2 = """
-#                                    size:
-#                                        numberformat: 0
-#                                    """
-#
-#    def test_numberprecision_float(self):
-#        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
-#        document = {'size' : '0.14372'} # True
-#        self.assertTrue(val.validate(document))
-#
-#    def test_numberformat_integer_as_float(self):
-#        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
-#        document = {'age' : '2.2'} # False
-#        self.assertFalse(val.validate(document))
+class TestNumberFormatValidator(unittest.TestCase):
 
+    def setUp(self):
+        self.yaml_numberformat1 = """
+                                    size:
+                                        numberformat: '.5'
+                                    """
+
+        self.yaml_numberformat2 = """
+                                    size:
+                                        numberformat: '3.5'
+                                    """
+
+        self.yaml_numberformat3 = """
+                                    size:
+                                        numberformat: '4.'
+                                    """
+
+    def test_numberformat_right(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
+        document = {'size' : '0.14372'} # True
+        self.assertTrue(val.validate(document))
+        document = {'size' : '0.1437'} # False
+        self.assertFalse(val.validate(document))
+
+    def test_numberformat_both(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
+        document = {'size' : '123.14372'} # True
+        self.assertTrue(val.validate(document))
+        document = {'size' : '0.1437'} # False
+        self.assertFalse(val.validate(document))
+
+    def test_numberformat_left(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
+        document = {'size' : '1234.14372'} # True
+        self.assertTrue(val.validate(document))
+        document = {'size' : '123.12'} # False
+        self.assertFalse(val.validate(document))
+
+    def test_numberformat_integer(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
+        document = {'size' : '1234.'} # True
+        self.assertTrue(val.validate(document))
+        document = {'size' : '1234'} # True
+        self.assertTrue(val.validate(document))
 
 #class TestDelimitedValuesValidator(unittest.TestCase):
 #

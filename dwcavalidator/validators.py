@@ -4,7 +4,7 @@ Created on Mon Feb 22 13:07:01 2016
 
 @author: stijn_vanhoey
 """
-
+import re
 from datetime import datetime, date
 from dateutil.parser import parse
 
@@ -35,14 +35,22 @@ class DwcaValidator(Validator):
         """add preprocessing rules to alter the schema
         """
         super(DwcaValidator, self).__init__(*args, **kwargs)
+
+        # add coerce rules when type validations are required
         self.schema = self._schema_add_coerce_dtypes(self.schema)
+
         # default rule to ignore None values on reader
         self.ignore_none_values = True
+
+        # prepare the string version of each document in the namespace
+        self.document_str_version = None
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
         """
         document = self.empty_string_none(document)
+        # store a dwcareader string version of the document
+        self.document_str_version = document.copy() # ok in terms of memory, since Dwca is working row-based
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
 
     @staticmethod
@@ -233,17 +241,28 @@ class DwcaValidator(Validator):
             for field, err in tempvalidation.errors.items():
                 self._error(field, err)
 
-    def _is_number(self, inputstring)                                                        :
-        """
-        """
+    def _validate_numberformat(self, formatter, field, value):
+        """ {'type': ['string'], 'regex': '[1-9].[1-9]|[1-9].$|^.[1-9]'} """
 
-    def _validate_numberformat(self, ref_value, field, value):
-        """ {'type': 'string'} """
-        # https://docs.python.org/3/library/string.html#formatspec
-        # Test if it is a number...
+        value_str = self.document_str_version[field]
+        if re.match("[1-9].[1-9]", formatter):
+            value_parsed = [len(side) for side in value_str.split(".")]
+        elif re.match(".[1-9]", formatter):
+            if "." in value_str:
+                value_parsed = [len(value_str.split(".")[1])]
+            else:
+                value_parsed = [0]
+        elif re.match("[1-9].", formatter):
+            value_parsed = [len(value_str.split(".")[0])]
 
-        # Test the formatting of the number
-        return None
+        formatter_parsed = [int(length) for length in formatter.split(".") \
+                                                        if not length == '']
+
+        if formatter_parsed != value_parsed:
+            self._error(field, "".join(["numberformat of value ",
+                                        value_str,
+                                        " not in agreement with ",
+                                        formatter]))
 
     def _validate_delimitedvalues(self, all_fields, field, value):
         """ {'type' : 'dict', 'required' : 'delimiter'} """
