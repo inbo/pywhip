@@ -254,7 +254,7 @@ Does the float number conform to a specific precision format?
 
 numberformat: '.5' # 5 decimals, left side of the decimal not specified, e.g. 1.12345 or 12.12345
 numberformat: '3.5' # 3 digits at the left side of the decimal and 5 decimal digits, e.g. 123.12345
-numberformat: '4.' # 4 digits at the left side, right side not specified, e.g. 1234. or 1234.12
+numberformat: '4.' # 4 digits at the left side, right side not specified, e.g. 1234., 1234.12 or also the integer 1234
 ```
 
 **Remark**
