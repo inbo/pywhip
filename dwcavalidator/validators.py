@@ -197,6 +197,14 @@ class DwcaValidator(Validator):
         elif not isinstance(value, str):
             self._error(field, 'length validation only active on strings')
 
+    def _validate_maxlength(self, *args, **kwargs):
+        """ {'type': 'integer', 'excludes': 'type'} """
+        super(DwcaValidator, self)._validate_maxlength(*args, **kwargs)
+
+    def _validate_minlength(self, *args, **kwargs):
+        """ {'type': 'integer', 'excludes': 'type'} """
+        super(DwcaValidator, self)._validate_minlength(*args, **kwargs)
+
     def _validate_if(self, ifset, field, value):
         """ {'type': 'dict'} """
         #TODO: check if def _validate_validator(self, validator, field, value)

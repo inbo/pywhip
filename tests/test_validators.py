@@ -374,7 +374,6 @@ class TestCerberusValidator(unittest.TestCase):
                                  maxlength : 5
                              code:
                                  minlength : 2
-                                 type : integer
                              """
 
         self.yaml_value = """
@@ -438,7 +437,7 @@ class TestCerberusValidator(unittest.TestCase):
         """test if an integer is ignored by length-options
         """
         val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'code' : '5'}
+        document = {'code' : 5}
         self.assertTrue(val.validate(document))
 
     def test_minmax_float(self):
