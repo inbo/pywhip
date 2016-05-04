@@ -38,9 +38,6 @@ class DwcaValidator(Validator):
         self.schema = self._schema_add_coerce_dtypes(self.schema)
         # default rule to ignore None values on reader
         self.ignore_none_values = True
-        # optional TODO: add more control logic (currently errors in each entry)
-        #  eg. min/max no sense without type validation
-        #  eg. length no sense with type validation
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -81,7 +78,7 @@ class DwcaValidator(Validator):
         return dict_schema
 
     def _validate_min(self, min_value, field, value):
-        """ {'nullable': False } """
+        """ {'nullable': False, 'dependencies': ['type']} """
         # overwrite cerberus min to only consider int and float
         if (isinstance(value, int) or isinstance(value, float)) and \
                                         float(min_value) > value:
@@ -99,7 +96,7 @@ class DwcaValidator(Validator):
             self._error(field, 'max validation ignores string type, add type validation')
 
     def _parse_date(self, field, date_string):
-        """
+        """try to parse a string to date and log error when failing
         """
         try:
             event_date = parse(date_string)
@@ -192,7 +189,7 @@ class DwcaValidator(Validator):
             self._validate_max(self, ref_range[1], field, float(value))
 
     def _validate_length(self, length, field, value):
-        """ {'type': 'integer'} """
+        """ {'type': 'integer', 'excludes': 'type'} """
         #check length of a given string
         if isinstance(value, str) and len(value) != length:
             self._error(field, "".join(["length mismatch: ", str(len(value)),
@@ -234,7 +231,7 @@ class DwcaValidator(Validator):
 
     def _validate_numberformat(self, ref_value, field, value):
         """ {'type': 'string'} """
-        #todo check from rfc3987 import match options
+        # https://docs.python.org/3/library/string.html#formatspec
         # Test if it is a number...
 
         # Test the formatting of the number

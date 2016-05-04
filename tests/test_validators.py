@@ -85,31 +85,26 @@ class TestDateValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
 
 
-#class TestNumberFormatValidator(unittest.TestCase):
+#class TestNumberPrecisionValidator(unittest.TestCase):
 #
 #    def setUp(self):
 #        self.yaml_numberformat1 = """
 #                                    size:
-#                                        numberformat: ".5f"
+#                                        numberformat: 5
 #                                    """
 #
 #        self.yaml_numberformat2 = """
-#                                    age:
-#                                        numberformat: "d"
+#                                    size:
+#                                        numberformat: 0
 #                                    """
 #
-#    def test_numberformat_float(self):
+#    def test_numberprecision_float(self):
 #        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
 #        document = {'size' : '0.14372'} # True
 #        self.assertTrue(val.validate(document))
 #
-#    def test_numberformat_integer_as_integer(self):
-#        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
-#        document = {'age' : '2'} # True
-#        self.assertTrue(val.validate(document))
-#
 #    def test_numberformat_integer_as_float(self):
-#        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
+#        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
 #        document = {'age' : '2.2'} # False
 #        self.assertFalse(val.validate(document))
 
@@ -386,9 +381,11 @@ class TestCerberusValidator(unittest.TestCase):
                              individualCount:
                                  min : 5
                                  max : 8
+                                 type : integer
                              percentage:
                                  min : 5.5
                                  max : 8.1
+                                 type : float
                              code:
                                  type : integer
                                  min : 3
@@ -396,8 +393,10 @@ class TestCerberusValidator(unittest.TestCase):
         self.yaml_string = """
                              individualCount:
                                  min : 5
+                                 type : string
                              code:
                                  max : 3
+                                 type : string
                              """
 
         self.yaml_allow = """

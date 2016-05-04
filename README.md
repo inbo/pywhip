@@ -243,9 +243,9 @@ mindate: 1830-01-01  # After 1 Jan 1830
 mindate: 2014-10-20 # After 20 October 2014
 ```
 
-### numberformat
+### numberprecision
 
-Does the data conform to a [specific number format](https://mkaz.github.io/2012/10/10/python-string-format/)?
+Does the data conform to a specific number precision?
 
 ```YAML
 # Expects: string
