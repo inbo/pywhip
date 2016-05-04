@@ -188,8 +188,8 @@ class DwcaValidator(Validator):
             raise Exception('min > max in range value')
 
         if value.isdigit():
-            Validator._validate_min(self, ref_range[0], field, float(value))
-            Validator._validate_max(self, ref_range[1], field, float(value))
+            self._validate_min(self, ref_range[0], field, float(value))
+            self._validate_max(self, ref_range[1], field, float(value))
 
     def _validate_length(self, length, field, value):
         """ {'type': 'integer'} """

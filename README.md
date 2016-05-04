@@ -265,6 +265,7 @@ dateformat:['%Y-%m-%d', '%Y-%m', '%Y'] # Will match specific date formats
 ```
 
 ### regex
+*(cerberus supported)*
 
 Does the data match a specific regex expression?
 
