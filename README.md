@@ -80,7 +80,7 @@ Following dtypes are added to the Dwca Validator, not supported by Cerberus:
 * url
 * json
 
-The DWCA Validator uses a custom rule for dates, embedded in dateFormat.
+The DWCA Validator uses a custom rule for dates, embedded in dateformat.
 
 ```YAML
 # Expects: string
@@ -308,15 +308,14 @@ delimitedvalues:
   required: true   # No empty delimited values
   type: url
   allowed: [male, female] # Delimited values equal male or female
-  unique: true      # Syntax error, not supported
   minlength: 8       
   maxlength: 8             
-  minimum: 1
-  maximum: 1  
+  min: 1
+  max: 1  
   numberformat: .3f
   regex: ...
-  listvalues: true  # List unique delimited values across all records
-  dateformat: ...   # Use dateValues subfunction
+  listvalues: true  # List unique delimited values across all records - TODO
+  dateformat: ...   # Use datevalues subfunction
   delimitedvalues: ...  # Syntax error
 ```
 

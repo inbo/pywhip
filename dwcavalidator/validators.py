@@ -14,6 +14,10 @@ from rfc3987 import match
 
 from cerberus import Validator
 from cerberus import errors
+from cerberus.errors import ErrorDefinition
+
+toy_error_handler = errors.ToyErrorHandler()
+DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
 
 class DwcaValidator(Validator):
     """
@@ -264,18 +268,41 @@ class DwcaValidator(Validator):
             for field, err in tempvalidation.errors.items():
                 self._error(field, err)
 
-    def _validate_delimitedvalues(self, all_fields, field, value):
+
+    def _validate_delimitedvalues(self, ruleset, field, value):
         """ {'type' : 'dict'} """
-        #The delimitedvalues is actually a schema application on the subset of
-        #values of the first string
+        # loosely constructed dusch as the __validate_schema_sequence
 
+        # convert field string to list of values
+        if not 'delimiter' in ruleset.keys():
+            raise ValueError('Define delimiter as rule in delimitedvalues')
+        value = [el for el in value.split(ruleset['delimiter'])]
 
-        return None
+        #check for empty string (edge case where we do not want 'male | ')
+        if '' in value:
+            self._error(field, "contains empty string combined with delimiters")
+
+        #check for doubles ('male | female | male' needs error)
+        if len(value) != len(set(value)):
+            self._error(field, "contains duplicate values in delimitedvalues")
+
+        # reorganise schema to be used in child_validator
+        ruleset.pop('delimiter')
+        schema = dict(((i, ruleset) for i in range(len(value))))
+
+        validator = self._get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=schema, allow_unknown=self.allow_unknown)
+
+        validator.validate(dict(((i, v) for i, v in enumerate(value))),
+                           normalize=True)
+        if validator._errors:
+            self._drop_nodes_from_errorpaths(validator._errors, [], [2])
+            self._error(field, DELIMITER_SCHEMA, validator._errors)
 
     def _validate_listvalues(self):
         """ {'type': 'boolean'} """
         return None
-
 
 
 #%% dtypes
