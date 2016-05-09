@@ -213,6 +213,29 @@ class DwcaValidator(Validator):
         """ {'type': 'integer', 'excludes': 'type'} """
         super(DwcaValidator, self)._validate_minlength(*args, **kwargs)
 
+    def _validate_numberformat(self, formatter, field, value):
+        """ {'type': ['string'], 'regex': '[1-9].[1-9]|[1-9].$|^.[1-9]'} """
+
+        value_str = self.document_str_version[field]
+        if re.match("[1-9].[1-9]", formatter):
+            value_parsed = [len(side) for side in value_str.split(".")]
+        elif re.match(".[1-9]", formatter):
+            if "." in value_str:
+                value_parsed = [len(value_str.split(".")[1])]
+            else:
+                value_parsed = [0]
+        elif re.match("[1-9].", formatter):
+            value_parsed = [len(value_str.split(".")[0])]
+
+        formatter_parsed = [int(length) for length in formatter.split(".") \
+                                                        if not length == '']
+
+        if formatter_parsed != value_parsed:
+            self._error(field, "".join(["numberformat of value ",
+                                        value_str,
+                                        " not in agreement with ",
+                                        formatter]))
+
     def _validate_if(self, ifset, field, value):
         """ {'type': 'dict'} """
         #TODO: check if def _validate_validator(self, validator, field, value)
@@ -240,29 +263,6 @@ class DwcaValidator(Validator):
             #convert eventual errors to object itself
             for field, err in tempvalidation.errors.items():
                 self._error(field, err)
-
-    def _validate_numberformat(self, formatter, field, value):
-        """ {'type': ['string'], 'regex': '[1-9].[1-9]|[1-9].$|^.[1-9]'} """
-
-        value_str = self.document_str_version[field]
-        if re.match("[1-9].[1-9]", formatter):
-            value_parsed = [len(side) for side in value_str.split(".")]
-        elif re.match(".[1-9]", formatter):
-            if "." in value_str:
-                value_parsed = [len(value_str.split(".")[1])]
-            else:
-                value_parsed = [0]
-        elif re.match("[1-9].", formatter):
-            value_parsed = [len(value_str.split(".")[0])]
-
-        formatter_parsed = [int(length) for length in formatter.split(".") \
-                                                        if not length == '']
-
-        if formatter_parsed != value_parsed:
-            self._error(field, "".join(["numberformat of value ",
-                                        value_str,
-                                        " not in agreement with ",
-                                        formatter]))
 
     def _validate_delimitedvalues(self, all_fields, field, value):
         """ {'type' : 'dict'} """
