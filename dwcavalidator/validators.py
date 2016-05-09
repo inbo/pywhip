@@ -37,6 +37,8 @@ class DwcaValidator(Validator):
         json, urixw
     """
 
+    priority_validations = ('empty', 'nullable', 'readonly', 'type')
+
     def __init__(self, *args, **kwargs):
         """add preprocessing rules to alter the schema
         """
@@ -47,9 +49,10 @@ class DwcaValidator(Validator):
 
         # add coerce rules when type validations are required
         self.schema = self._schema_add_coerce_dtypes(self.schema)
+        self.schema = self._schema_add_empty(self.schema)
 
         # default rule to ignore None values on reader
-        self.ignore_none_values = True
+        #self.ignore_none_values = True
 
         # prepare the string version of each document in the namespace
         self.document_str_version = None
@@ -59,7 +62,6 @@ class DwcaValidator(Validator):
         """
         # store a dwcareader string version of the document
         self.document_str_version = document.copy() # ok in terms of memory, since Dwca is working row-based
-
         document = self.empty_string_none(document)
 
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
@@ -93,8 +95,37 @@ class DwcaValidator(Validator):
                 elif rules['type'] == 'boolean':
                     to_bool = lambda v: bool(v) if v else v
                     rules['coerce'] = to_bool
-
         return dict_schema
+
+    @staticmethod
+    def _schema_add_empty(dict_schema):
+        """the empty rule should be added for each of the fields
+        (should be possible to simplify using mandatory_validations, but this
+        provides bug in cerberus that needs further check)
+        """
+        for term, rules in dict_schema.iteritems():
+            if not 'empty' in rules.keys():
+                rules['empty'] = True
+        return dict_schema
+
+    def _validate_nullable(self, nullable, field, value):
+        """ {'type': 'boolean'} """
+        # basically bypass the nullable test
+        if not self.document_str_version[field]:
+            return True
+        else:
+            return None
+
+    def _validate_empty(self, empty, field, value):
+        """ {'type': 'boolean'} """
+        # port the nullable logic to the empty logic
+        value_str = self.document_str_version[field]
+        if isinstance(value_str, _str_type) and len(value_str) == 0:
+            if not empty:
+                self._error(field, errors.EMPTY_NOT_ALLOWED)
+                return True
+            else:
+                return True
 
     def _validate_min(self, min_value, field, value):
         """ {'nullable': False, 'dependencies': ['type']} """
@@ -303,13 +334,6 @@ class DwcaValidator(Validator):
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, DELIMITER_SCHEMA, validator._errors)
-
-#    def _validate_empty(self, empty, field, value):
-#        """ {'type': 'boolean'} """
-#
-#        value_str = self.document_str_version[field]
-#        if isinstance(value_str, _str_type) and len(value_str) == 0 and not empty:
-#            self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_listvalues(self):
         """ {'type': 'boolean'} """
