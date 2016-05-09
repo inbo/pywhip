@@ -162,7 +162,7 @@ class TestEmptyStringHandling(unittest.TestCase):
         self.assertTrue(val.validate(document))
 
     def test_default_ignore_none(self):
-        """None values should be ignored by default
+        """
         """
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'abundance': None}

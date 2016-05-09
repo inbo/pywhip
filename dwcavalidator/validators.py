@@ -7,6 +7,8 @@ Created on Mon Feb 22 13:07:01 2016
 import re
 from datetime import datetime, date
 from dateutil.parser import parse
+from cerberus.platform import _str_type
+
 
 import json
 # https://pypi.python.org/pypi/rfc3987 regex on URI's en IRI's
@@ -40,6 +42,9 @@ class DwcaValidator(Validator):
         """
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
+        if not self.schema:
+            raise Exception('provide a schema to initiate Validator')
+
         # add coerce rules when type validations are required
         self.schema = self._schema_add_coerce_dtypes(self.schema)
 
@@ -52,9 +57,11 @@ class DwcaValidator(Validator):
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
         """
-        document = self.empty_string_none(document)
         # store a dwcareader string version of the document
         self.document_str_version = document.copy() # ok in terms of memory, since Dwca is working row-based
+
+        document = self.empty_string_none(document)
+
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
 
     @staticmethod
@@ -242,9 +249,6 @@ class DwcaValidator(Validator):
 
     def _validate_if(self, ifset, field, value):
         """ {'type': 'dict'} """
-        #TODO: check if def _validate_validator(self, validator, field, value)
-        #is more convenient to use (cfr. also line 960 in cerberus)
-        #or registries, new recently...
 
         # extract dict values -> conditions
         conditions = {k: v for k, v in ifset.iteritems() if isinstance(v, dict)}
@@ -299,6 +303,13 @@ class DwcaValidator(Validator):
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, DELIMITER_SCHEMA, validator._errors)
+
+#    def _validate_empty(self, empty, field, value):
+#        """ {'type': 'boolean'} """
+#
+#        value_str = self.document_str_version[field]
+#        if isinstance(value_str, _str_type) and len(value_str) == 0 and not empty:
+#            self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_listvalues(self):
         """ {'type': 'boolean'} """
