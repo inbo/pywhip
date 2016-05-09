@@ -265,9 +265,10 @@ class DwcaValidator(Validator):
                                         formatter]))
 
     def _validate_delimitedvalues(self, all_fields, field, value):
-        """ {'type' : 'dict', 'required' : 'delimiter'} """
+        """ {'type' : 'dict'} """
         #The delimitedvalues is actually a schema application on the subset of
         #values of the first string
+
 
         return None
 

@@ -160,7 +160,7 @@ class TestNumberFormatValidator(unittest.TestCase):
 #                                            delimiter: " | "
 #                                            min: 1.
 #                                            max: 8
-#                                            numberformat: .3f
+#                                            numberformat: '.3'
 #                                    """
 #
 #        self.yaml_delimited4 = """
