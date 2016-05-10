@@ -36,7 +36,7 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, urixw
     """
-    #mandatory_validations = ('empty', 'nullable', 'readonly', 'type')
+    mandatory_validations = ('empty', 'nullable')
     priority_validations = ('empty', 'nullable', 'readonly', 'type')
 
     def __init__(self, *args, **kwargs):
@@ -363,20 +363,18 @@ class DwcaValidator(Validator):
 
 
 #%% dtypes
-    def _validate_type_json(self, field, value):
+    def _validate_type_json(self, value):
         """ Enables validation for json objects
         """
         try:
             json.loads(value)
+            return True
         except:
-            self._error(field, "is not a valid json type")
+            pass
 
-    def _validate_type_url(self, field, value):
+    def _validate_type_url(self, value):
         """ Enables validation for json objects
         """
-        try:
-            assert match(value, rule='URI')
-        except:
-            self._error(field, "is not a valid uri type")
-
+        if match(value, rule='URI'):
+            return True
 
