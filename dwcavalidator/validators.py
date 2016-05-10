@@ -7,8 +7,7 @@ Created on Mon Feb 22 13:07:01 2016
 import re
 from datetime import datetime, date
 from dateutil.parser import parse
-from cerberus.platform import _str_type
-
+from collections import Mapping
 
 import json
 # https://pypi.python.org/pypi/rfc3987 regex on URI's en IRI's
@@ -17,6 +16,7 @@ from rfc3987 import match
 from cerberus import Validator
 from cerberus import errors
 from cerberus.errors import ErrorDefinition
+from cerberus.platform import _str_type
 
 toy_error_handler = errors.ToyErrorHandler()
 DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
@@ -65,6 +65,8 @@ class DwcaValidator(Validator):
         document = self.empty_string_none(document)
 
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
+
+    __call__ = validate
 
     @staticmethod
     def empty_string_none(doc):
