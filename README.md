@@ -217,6 +217,17 @@ allowed: [male]
 allowed: [male, female] # male or female
 ```
 
+### empty
+
+Empty values are default accepted. If no empty values should be present for a particular field, `empty` can be put to `False`
+
+```YAML
+# Expects: boolean
+# Records of wrong data type: only considered strings (default in Dwc)
+
+empty: False
+```
+
 ### mindate
 
 Does the date/datetime objects fall before a given date?
