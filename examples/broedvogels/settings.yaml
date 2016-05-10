@@ -1,0 +1,31 @@
+# Structure of the YAML is:
+#
+# Term:
+#     - TestType: argument(s)
+#     - TestType: argument(s)
+#
+##
+# Corruptions made by purpose for development:
+##
+## rightsholder
+# INBO:BROEDVOGELATLAS:AH:00000763:00070
+# INBO:BROEDVOGELATLAS:AH:00000477:00070
+## language
+# INBO:BROEDVOGELATLAS:AH:00000512:00070
+# INBO:BROEDVOGELATLAS:AH:00000905:00070
+# INBO:BROEDVOGELATLAS:AH:00000368:00070
+## nomenclature code
+# INBO:BROEDVOGELATLAS:AH:00000763:00070
+# INBO:BROEDVOGELATLAS:AH:00000368:00070
+
+language:
+  required: true # All other tests silently ignore empty values
+  allowed: en # Equals is case sensitive
+
+rightsHolder:
+  required: true
+  allowed: INBO # Example of an institution specific test
+
+nomenclaturalCode:
+  required: true
+  allowed: [ICZN, ICBN, ICZN] # 

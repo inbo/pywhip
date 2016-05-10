@@ -12,12 +12,12 @@ Tests are performed per row, per term (field) and are independent of each other,
 
 ```YAML
 Term 1:
-- Test 1
-- Test 2
+  Test 1
+  Test 2
 
 Term 2:
-- Test 1
-- Test 3
+  Test 1
+  Test 3
 ```
 
 All validation information will be stored in a dictionary object, referring to the term, the type of test, and some logging information:
@@ -42,22 +42,45 @@ We could rely on the functionality of marshmallow, as provided in following exam
 
 ## Test types
 
-### populated
+Cerberus already provide a set of [validation rules](http://docs.python-cerberus.org/en/stable/usage.html#validation-rules), which can be used and extended for the validator case. In the following list, the rules available in the DwcaValidator are enlisted.
 
-Does the field contain data?
+### required
+*(cerberus supported)*
+
+Does the field is part of the document?
 
 ``` YAML
 # Expects: boolean
-# Records without data: is being tested
-# Records of wrong data type: n/a
+# Records term is present: is being tested
+# String fields with empty values will still be validated, even when required is set to True. f you don’t want to accept empty values, see the empty rule
 
-populated: true # The term must contain data
-populated: false # The term cannot contain data
+required: true # The term must be present
+required: false # The term is optional
 ```
 
 ### type
+*(partly cerberus supported)*
 
 Does the data conform to a specific field type?
+
+Cerberus supports following dtypes, which are also supported by the DWCA validator:
+* string
+* integer
+* float
+* number (integer or float)
+* boolean
+* datetime (!the datatype itself, not formatted string)
+
+Following Cerberus dtypes are not supported by the Dwca Validator:
+* dict (formally collections.mapping)
+* list (formally collections.sequence, excluding strings)
+* set
+
+Following dtypes are added to the Dwca Validator, not supported by Cerberus:
+* url
+* json
+
+The DWCA Validator uses a custom rule for dates, embedded in dateformat.
 
 ```YAML
 # Expects: string
@@ -66,102 +89,200 @@ Does the data conform to a specific field type?
 
 type: integer
 type: float
+type: boolean
 type: json
-type: uri
+type: url
 ```
 
-### equals
-
-Does the data equal a specific value?
-
-```YAML
-# Expects: string or list
-# Records without data: are ignored
-# Records of wrong data type: all considered strings
-
-equals: male
-equals: [male, female] # Male or female
-```
-
-### unique
-
-Does this term contain unique values across all rows?
-
-```YAML
-# Expects: boolean
-# Records without data: are ignored??
-# Records of wrong data type: all considered strings
-
-unique: true # All values must be unique
-unique: false # Default. Ignored
-```
+It is important to understand that the DwcaReader will read all fields as string types initially. When no `type` validator is added, the value will be interpreted and tested as a string value. By incorporating a `type` validator, DwcaValidator will first try to interpret the value as the type to test it for (e.g. integer, float). When succeeded, the other tests will be applied on the interpreted value (integer, float).
 
 ### length
 
-Does the data character length fall between a specific range?
+Is the length of the data string equal to the given value?
 
 ```YAML
-# Expects: integer or list of two integers
+# Expects: integer
+# Records without data: are ignored
+# Records of wrong data type: only active with strings
+
+length: 8  # Character length is equal to 8
+```
+
+**Remark:**
+
+The behaviour of length (and also `minlength` and `maxlength`) depends on the usage of the `length` validation in combination with the `type` validation or not. When no `type` validation is added (or tests for string, which is default in the Dwcareader), the length will interpret the field as string:
+
+```YAML
+maxlength: 2  
+type : string  
+```
+will invoke an error for the field : `{'individualCount' : '100'}`. However, when requiring an integer value:
+
+```YAML
+maxlength: 2
+type : integer
+```
+the field `{'individualCount' : '100'}` will be converted to `{'individualCount' : 100}` (100 as integer) and `length` will ignore the integer. It makes more sense to test this with the `min` and `max` validators (see further).
+
+### minlength
+*(cerberus supported)*
+
+Is the length of the data string larger than the given value (inclusive the value itself)?
+
+```YAML
+# Expects: integer
+# Records without data: are ignored
+# Records of wrong data type: only active with strings
+
+minlength: 8  # Character length is larger than 8
+```
+
+### maxlength
+*(cerberus supported)*
+
+Is the length of the data string smaller than the given value (inclusive the value itself)?
+
+```YAML
+# Expects: integer
+# Records without data: are ignored
+# Records of wrong data type: only active with strings
+
+maxlength: 20  # Character length is smaller than 20
+```
+
+### min
+*(cerberus supported)*
+
+Minimum value allowed for any types that implement comparison operators.
+
+```YAML
+# Expects: int/float; values will be compared as floats
+# Records without data: are ignored
+# Records of wrong data type: ignore (data types are tested separately with `type`)
+
+min: 0.5     # float
+min: 20     # integer
+```
+
+**Remark**
+
+It is important to combine the test with an appropriate data type validation to enable the test when using numeric values
+
+### max
+*(cerberus supported)*
+
+Maximum value allowed for any types that implement comparison operators.
+
+```YAML
+# Expects: int/float; values will be compared as floats
+# Records without data: are ignored
+# Records of wrong data type: ignore (data types are tested separately with `type`)
+
+max: 0.75     # float
+max: 200     # integer
+```
+
+**Remark**
+
+It is important to combine the test with an appropriate data type validation to enable the test when using numeric values
+
+### equals
+
+Does the data value equals to a given numerical value?
+
+```YAML
+# Expects: int/float; values will be compared as floats
+# Records without data: are ignored
+# Records of wrong data type: only active with integer or float (data types are tested separately with `type`)
+
+equals: 0.75     # float
+equals: 200     # integer
+```
+
+**Remark**
+This test is used for numerical values and should be combined with a `type` test to activate the test. The usage is of particular interest if values should be accepted, but the decimal precision is not important. For example: 0.75 will also accept 0.750 and 200 also 200.0. When the value need to be completely the same, the usage of `allowed` (works on strings) is advisable (see next).
+
+
+### allowed
+*(cerberus supported)*)*
+
+Does the data is the same sequence of characters?
+
+```YAML
+# Expects: list with one or more strings
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-length: 8
-length: [2,4] # Character length is between 2 and 8 inclusive
+allowed: [male]
+allowed: [male, female] # male or female
 ```
 
-### numberRange
+### empty
 
-Does the data fall between a specific numeric range?
+Empty values are default accepted. If no empty values should be present for a particular field, `empty` can be put to `False`
 
 ```YAML
-# Expects: list of two integers or list of two floats, values will be compared as floats
+# Expects: boolean
+# Records of wrong data type: only considered strings (default in Dwc)
+
+empty: False
+```
+
+### mindate
+
+Does the date/datetime objects fall before a given date?
+
+```YAML
+# Expects: date string
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-numberRange: [0.5,1] # Between 0.5 and 1 inclusive
-numberRange: [,200]  # Less or equal than 200
-numberRange: [1,]    # More or equal than 1
-numberRange: [,]     # Incorrect syntax
+mindate: 1830-01-01  # After 1 Jan 1830
+mindate: 2014-10-20 # After 20 October 2014
 ```
 
-### dateRange
+### maxdate
 
-Does the date/datetime objects fall between a specific date range?
+Does the date/datetime objects fall after a given date?
 
 ```YAML
-# Expects: list of two dates
+# Expects: date string
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-dateRange: [1830-01-01, 2014-10-20] # Between 1 Jan 1830 and 20 October 2014 inclusive
-dateRange: [, 2014-10-20] # Before 20 October 2014
-dateRange: [1830-01-01,] # After 1 Jan 1830
-dateRange: [,]     # Incorrect syntax
+mindate: 1830-01-01  # After 1 Jan 1830
+mindate: 2014-10-20 # After 20 October 2014
 ```
 
-### numberFormat
+### numberformat
 
-Does the data conform to a [specific number format](https://mkaz.github.io/2012/10/10/python-string-format/)?
+Does the float number conform to a specific precision format?
 
 ```YAML
-# Expects: string
+# Expects: string and need to be combined with `type` : float validator
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-numberFormat: .5f # 5 decimals
+numberformat: '.5' # 5 decimals, left side of the decimal not specified, e.g. 1.12345 or 12.12345
+numberformat: '3.5' # 3 digits at the left side of the decimal and 5 decimal digits, e.g. 123.12345
+numberformat: '4.' # 4 digits at the left side, right side not specified, e.g. 1234., 1234.12 or also the integer 1234
 ```
 
-### dateFormat
+**Remark**
 
-Does the data conform to a specific date format?
+Float numbers are stored in a double-precision floating-point format. Hence, the check for the numberformat is done before the actual conversion to float numbers in order to do the other tests (e.g. min, max,...)
+
+### dateformat
+
+Does the data conform to a specific date format? Possibilities provided at
+http://strftime.org/
 
 ```YAML
-dateValues:
-- equals: [YYYY-MM-DD, YYYY-MM, YYYY] # Will match specific date formats
-- range: [1830-01-01, 2014-10-20] # Will match dates between specific date range (inclusive)
+dateformat:['%Y-%m-%d', '%Y-%m', '%Y'] # Will match specific date formats
 ```
 
-### regexFormat
+### regex
+*(cerberus supported)*
 
 Does the data match a specific regex expression?
 
@@ -173,7 +294,7 @@ Does the data match a specific regex expression?
 regex: # No example yet
 ```
 
-### listValues
+### listvalues
 
 Not a test, will just list all unique values in the output.
 
@@ -182,30 +303,31 @@ Not a test, will just list all unique values in the output.
 # Records without data: are ignored
 # Records of wrong data type: all considered strings
 
-listValues: true
-listValues: false # Default. Ignored
+listvalues: true
+listvalues: false # Default. Ignored
 ```
 
-### delimitedValues
+### delimitedvalues
 
 Subfunction to work on delimited data within a field. Will alter the functionality off all functions to work with the delimited data instead of the whole string. Requires `delimiter`.
 
 ```YAML
-delimitedValues:
-    - delimiter: " | "  # Will use this delimiter for separating values.
-                        # Depending on how well data is delimited, the
-                        # following tests will fail or succeed
-    - populated: true   # No empty delimited values
-    - type: url
-    - equals: [male, female] # Delimited values equal male or female
-    - unique: true      # Syntax error, not supported
-    - length: 8         
-    - range: [1,2]
-    - numberFormat: .3f
-    - regex: ...
-    - listValues: true  # List unique delimited values across all records
-    - dateValues: ...   # Use dateValues subfunction
-    - delimitedValues   # Syntax error
+delimitedvalues:
+  delimiter: " | "  # Will use this delimiter for separating values.
+                    # Depending on how well data is delimited, the
+                    # following tests will fail or succeed
+  required: true   # No empty delimited values
+  type: url
+  allowed: [male, female] # Delimited values equal male or female
+  minlength: 8       
+  maxlength: 8             
+  min: 1
+  max: 1  
+  numberformat: .3f
+  regex: ...
+  listvalues: true  # List unique delimited values across all records - TODO
+  dateformat: ...   # Use datevalues subfunction
+  delimitedvalues: ...  # Syntax error
 ```
 
 ### if
@@ -214,9 +336,17 @@ Subfunction to perform tests based on the tests on another term. All tests on th
 
 ```YAML
 if:
-    - basisOfRecord:                # Another term
-        - populated: true           # basisOfRecord must be populated
-        - equals: HumanObservation  # AND basisOfRecord must be "HumanObservation"
-    - equals: Event                 # Then the main term must be "Event"
-    - populated: true               # Then the main term must be "Populated"
+    basisOfRecord:                # Another term
+      populated: true           # basisOfRecord must be populated
+      allowed: HumanObservation  # AND basisOfRecord must be "HumanObservation"
+    allowed: Event                 # Then the main term must be "Event"
+    required: true               # Then the main term must be "Populated"
 ```
+
+## Cerberus other rules
+
+### readonly
+There is no use-case to apply this rule within the context of the DwcaValidator
+
+### nullable
+Default True within DwcaValidator, for both '' and None values
