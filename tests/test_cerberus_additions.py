@@ -144,6 +144,21 @@ class TestEmptyStringHandling(unittest.TestCase):
                            abundance:
                                 type : float
                            """
+
+        self.empty1 = """
+                        number:
+                            min: 2
+                            empty: False
+                            type: integer
+                        """
+
+        self.empty2 = """
+                        number:
+                            min: 2
+                            empty: True
+                            type: integer
+                        """
+
     def test_empty_string(self):
         """conversion empty string to None in document
         """
@@ -162,10 +177,21 @@ class TestEmptyStringHandling(unittest.TestCase):
         self.assertTrue(val.validate(document))
 
     def test_default_ignore_none(self):
-        """
+        """None values are just ignored by default
         """
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'abundance': None}
         self.assertTrue(val.validate(document))
 
+    def test_empty_notallowed(self):
+        document = {'number': ''}
+        val = DwcaValidator(yaml.load(self.empty1))
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'number': 'empty values not allowed'})
+
+    def test_empty_allow_explicit(self):
+        document = {'number': ''}
+        val = DwcaValidator(yaml.load(self.empty2))
+        self.assertTrue(val.validate(document))
 

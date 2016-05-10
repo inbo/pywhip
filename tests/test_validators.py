@@ -251,21 +251,6 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 ##        """
 ##        #to check how enlist well be handled... (let op unieke enkel behouden)
 
-#class TestEmptyValidator(unittest.TestCase):
-#
-#    def setUp(self):
-#        self.empty1 = """
-#                        number:
-#                            min: 2
-#                            empty: False
-#                            type: integer
-#                        """
-#
-#    def test_empty_allow(self):
-#        document = {'number': ''}
-#        val = DwcaValidator(yaml.load(self.empty1))
-#        self.assertFalse(val.validate(document))
-
 class TestDataTypeValidator(unittest.TestCase):
 
     def test_json_type(self):

@@ -7,7 +7,7 @@ Created on Mon Feb 22 13:07:01 2016
 import re
 from datetime import datetime, date
 from dateutil.parser import parse
-from collections import Mapping
+from collections import Mapping, Sequence
 
 import json
 # https://pypi.python.org/pypi/rfc3987 regex on URI's en IRI's
@@ -36,7 +36,7 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, urixw
     """
-
+    #mandatory_validations = ('empty', 'nullable', 'readonly', 'type')
     priority_validations = ('empty', 'nullable', 'readonly', 'type')
 
     def __init__(self, *args, **kwargs):
@@ -48,8 +48,8 @@ class DwcaValidator(Validator):
             raise Exception('provide a schema to initiate Validator')
 
         # add coerce rules when type validations are required
-        self.schema = self._schema_add_coerce_dtypes(self.schema)
         self.schema = self._schema_add_empty(self.schema)
+        self._resolve_coerce(self.schema)
 
         # default rule to ignore None values on reader
         #self.ignore_none_values = True
@@ -79,25 +79,45 @@ class DwcaValidator(Validator):
         return doc
 
     @staticmethod
-    def _schema_add_coerce_dtypes(dict_schema):
-        """add coerce rules to convert datatypes of int and float,
-        due to the schema validation that works like a recursive method inside
-        *of-methods coerce is alos automatically activated inside *of rules
+    def _add_coerce(rules):
+        """provide the appropriate coerce lambda functions
         """
-        for term, rules in dict_schema.iteritems():
-            if 'type' in rules.keys():
-                if rules['type'] == 'float':
-                    to_float = lambda v: float(v) if v else v
-                    rules['coerce'] = to_float
-                elif rules['type'] == 'int' or rules['type'] == 'integer':
-                    to_int = lambda v: int(v) if v else v
-                    rules['coerce'] = to_int
-                elif rules['type'] == 'number':
-                    rules['coerce'] = to_float
-                elif rules['type'] == 'boolean':
-                    to_bool = lambda v: bool(v) if v else v
-                    rules['coerce'] = to_bool
-        return dict_schema
+        to_float = lambda v: float(v) if v else v
+        if rules['type'] == 'float':
+            rules['coerce'] = to_float
+        elif rules['type'] == 'int' or rules['type'] == 'integer':
+            to_int = lambda v: int(v) if v else v
+            rules['coerce'] = to_int
+        elif rules['type'] == 'number':
+            rules['coerce'] = to_float
+        elif rules['type'] == 'boolean':
+            to_bool = lambda v: bool(v) if v else v
+            rules['coerce'] = to_bool
+
+    def _resolve_coerce(self, schema):
+        """add coerce rules to convert datatypes of int and float,
+        recusively using the rules combinations of cerberus:
+        {TERM : {RULE: --> str (STOP)
+                       --> list/Sequence --> str (STOP)
+                                         --> dict => (if type: ADD) + RECALL
+                       --> dict/Mapping => (if type: ADD) + RECALL
+                      }}
+        """
+        for term, rules in schema.iteritems():
+            if isinstance(rules, _str_type):
+                continue
+            elif isinstance(rules, Sequence):
+                for subschema in rules:
+                    if isinstance(subschema, Mapping):
+                        if 'type' in subschema.keys():
+                             self._add_coerce(subschema)
+                        self._resolve_coerce(subschema)
+            elif isinstance(rules, Mapping):
+               if 'type' in rules.keys():
+                   self._add_coerce(rules)
+               self._resolve_coerce(rules)
+            else:
+                NotImplemented
 
     @staticmethod
     def _schema_add_empty(dict_schema):
