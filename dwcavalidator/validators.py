@@ -308,22 +308,19 @@ class DwcaValidator(Validator):
         # extract dict values -> rules
         rules = {k: v for k, v in ifset.iteritems() if not isinstance(v, dict)}
 
-        valid=True
-        # check for all conditions if they apply
-        for term, cond in conditions.iteritems():
-            subschema = {term : cond}
-            tempvalidation = DwcaValidator(subschema)
-            tempvalidation.allow_unknown = True
-            if not tempvalidation.validate(self.document):
-                valid = False
+        #TODO: check the crumb functioning and revise!
+        validator = self._get_child_validator(
+            document_crumb=field, schema_crumb=(field, 'schema'),
+            schema=conditions, allow_unknown=True)
 
-        #others -> conditional rules applied when valid condition
-        if valid:
-            tempvalidation = DwcaValidator({field: rules})
-            tempvalidation.validate({field : self.document[field]})
-            #convert eventual errors to object itself
-            for field, err in tempvalidation.errors.items():
-                self._error(field, err)
+        if not validator.validate(self.document, normalize=True):
+            validator2 = self._get_child_validator(
+                document_crumb=field, schema_crumb=(field, 'schema'),
+                schema={field: rules}, allow_unknown=True)
+            validator2.validate(self.document[field], normalize=True)
+            if validator2._errors:
+                self._drop_nodes_from_errorpaths(validator._errors, [], [2])
+                self._error(field, "test", validator._errors)
 
 
     def _validate_delimitedvalues(self, ruleset, field, value):

@@ -251,6 +251,33 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 ##        """
 ##        #to check how enlist well be handled... (let op unieke enkel behouden)
 
+class TestIfValidator(unittest.TestCase):
+
+
+    def setUp(self):
+        self.yaml_if = """
+                            type:
+                                if:
+                                    basisOfRecord:
+                                        allowed: [HumanObservation]
+                                allowed: [Event]
+                                empty: False
+                            basisOfRecord:
+                                allowed: [HumanObservation, Machine]
+                            """
+
+    def test_if(self):
+        schema = yaml.load(self.yaml_if)
+        document = {'basisOfRecord': 'HumanObservation', 'type': 'Event'}
+        val = DwcaValidator(schema)
+        self.assertTrue(val.validate(document))
+
+    def test_ifnot(self):
+        schema = yaml.load(self.yaml_if)
+        document = {'basisOfRecord': 'HumanObservation', 'type': 'Measurement'}
+        val = DwcaValidator(schema)
+        self.assertFalse(val.validate(document))
+
 class TestDataTypeValidator(unittest.TestCase):
 
     def test_json_type(self):

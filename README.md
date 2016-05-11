@@ -336,11 +336,11 @@ Subfunction to perform tests based on the tests on another term. All tests on th
 
 ```YAML
 if:
-    basisOfRecord:                # Another term
+    basisOfRecord:              # Another term
       populated: true           # basisOfRecord must be populated
-      allowed: HumanObservation  # AND basisOfRecord must be "HumanObservation"
-    allowed: Event                 # Then the main term must be "Event"
-    required: true               # Then the main term must be "Populated"
+      allowed: HumanObservation # AND basisOfRecord must be "HumanObservation"
+    allowed: Event              # Then the main term must be "Event"
+    empty: False              # Then the main term can not be empty
 ```
 
 ## Cerberus other rules
