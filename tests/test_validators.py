@@ -153,6 +153,8 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                                                 lifestage:
                                                     allowed: juvenile
                                                 max: 20
+                                    lifestage:
+                                        allowed: [juvenile, adult]
                                     """
 
         self.yaml_delimited3 = """
@@ -231,20 +233,20 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         with self.assertRaises(ValueError):
             val.validate(document)
 
-#    def test_delimiter_if_condition_pass(self):
-#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-#        document = {'ages' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
-#        self.assertTrue(val.validate(document))
+    def test_delimiter_if_condition_pass(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
+        self.assertTrue(val.validate(document))
 
-#    def test_delimiter_if_condition_nonpass(self):
-#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-#        document = {'ages' : '5 | 18 | 99', 'lifestage':'adult'} # True
-#        self.assertTrue(val.validate(document))
+    def test_delimiter_if_condition_nonpass(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age' : '5 | 18 | 99', 'lifestage':'adult'} # True
+        self.assertTrue(val.validate(document))
 
-#    def test_delimiter_if_checkindication(self):
-#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-#        document = {'ages' : '5 | 32', 'lifestage':'juvenile'} # False
-#        self.assertFalse(val.validate(document))
+    def test_delimiter_if_checkindication(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age' : '5 | 32', 'lifestage':'juvenile'} # False
+        self.assertFalse(val.validate(document))
 
 ##    def test_delimiter_enlist(self):
 ##        """combine the listvalues within the delimitedvalues

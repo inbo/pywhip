@@ -20,6 +20,7 @@ from cerberus.platform import _str_type
 
 toy_error_handler = errors.ToyErrorHandler()
 DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
+IF_SCHEMA = ErrorDefinition(0x82, 'if')
 
 class DwcaValidator(Validator):
     """
@@ -308,19 +309,19 @@ class DwcaValidator(Validator):
         # extract dict values -> rules
         rules = {k: v for k, v in ifset.iteritems() if not isinstance(v, dict)}
 
-        #TODO: check the crumb functioning and revise!
-        validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'schema'),
-            schema=conditions, allow_unknown=True)
+        tempvalidator = DwcaValidator(conditions)
+        tempvalidator.allow_unknown = True
 
-        if not validator.validate(self.document, normalize=True):
-            validator2 = self._get_child_validator(
+        if tempvalidator.validate(self.document, normalize=False):
+            validator = self._get_child_validator(
                 document_crumb=field, schema_crumb=(field, 'schema'),
                 schema={field: rules}, allow_unknown=True)
-            validator2.validate(self.document[field], normalize=True)
-            if validator2._errors:
-                self._drop_nodes_from_errorpaths(validator._errors, [], [2])
-                self._error(field, "test", validator._errors)
+            validator.validate(self.document, normalize=False)
+            if validator._errors:
+                self._drop_nodes_from_errorpaths(validator._errors, [1], [2])
+                self._error(field, IF_SCHEMA, validator._errors)
+        else:
+            self._error(field, "condition not fulfilled in if statement")
 
 
     def _validate_delimitedvalues(self, ruleset, field, value):
