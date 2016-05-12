@@ -151,7 +151,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                                             delimiter: " | "
                                             if:
                                                 lifestage:
-                                                    allowed: juvenile
+                                                    allowed: [juvenile]
                                                 max: 20
                                     lifestage:
                                         allowed: [juvenile, adult]
