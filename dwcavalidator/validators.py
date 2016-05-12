@@ -312,11 +312,11 @@ class DwcaValidator(Validator):
         tempvalidator = DwcaValidator(conditions)
         tempvalidator.allow_unknown = True
 
-        if tempvalidator.validate(self.document, normalize=False):
+        if tempvalidator.validate(self.document_str_version, normalize=False):
             validator = self._get_child_validator(
                 document_crumb=field, schema_crumb=(field, 'schema'),
                 schema={field: rules}, allow_unknown=True)
-            validator.validate(self.document, normalize=False)
+            validator.validate(self.document_str_version, normalize=False)
             if validator._errors:
                 self._drop_nodes_from_errorpaths(validator._errors, [1], [2])
                 self._error(field, IF_SCHEMA, validator._errors)
