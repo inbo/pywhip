@@ -188,7 +188,7 @@ It is important to combine the test with an appropriate data type validation to 
 
 ### equals
 
-Does the data value equals to a given numerical value?
+Does the data value equal to a given numerical value?
 
 ```YAML
 # Expects: int/float; values will be compared as floats
@@ -204,7 +204,7 @@ This test is used for numerical values and should be combined with a `type` test
 
 
 ### allowed
-*(cerberus supported)*)*
+*(cerberus supported)*
 
 Does the data is the same sequence of characters?
 
