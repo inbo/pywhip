@@ -55,7 +55,6 @@ Cerberus supports following dtypes, which are also supported by the DWCA validat
 * float
 * number (integer or float)
 * boolean
-* datetime (!the datatype itself, not formatted string)
 
 Following Cerberus dtypes are not supported by the Dwca Validator:
 * dict (formally collections.mapping)
