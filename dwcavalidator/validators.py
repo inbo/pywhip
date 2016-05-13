@@ -128,7 +128,7 @@ class DwcaValidator(Validator):
         """
         for term, rules in dict_schema.iteritems():
             if not 'empty' in rules.keys():
-                rules['empty'] = True
+                rules['empty'] = False
         return dict_schema
 
     def _validate_nullable(self, nullable, field, value):
