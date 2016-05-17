@@ -282,6 +282,18 @@ class TestIfValidator(unittest.TestCase):
                                 type: integer
                             """
 
+        self.yaml_ifcombi = """
+                            basisOfRecord:
+                                empty: false
+                                allowed: [HumanObservation, PreservedSpecimen]
+                                if:
+                                    collectionCode:
+                                        empty: true
+                                    allowed: [PreservedSpecimen]
+                            collectionCode:
+                                empty: true
+                            """
+
     def test_if(self):
         schema = yaml.load(self.yaml_if)
         document = {'basisOfRecord': 'HumanObservation', 'type': 'Event'}
@@ -310,6 +322,14 @@ class TestIfValidator(unittest.TestCase):
         """
         schema = yaml.load(self.yaml_ifif)
         document = {'age' : '21', 'lifestage':'adult'} #True
+        val = DwcaValidator(schema)
+        self.assertTrue(val.validate(document))
+
+     def test_multiple_if_combi(self):
+        """document satisfies if and non-if clauses
+        """
+        schema = yaml.load(self.yaml_ifif)
+        document = {'basisOfRecord': 'PreservedSpecimen', 'collectionCode': ''}
         val = DwcaValidator(schema)
         self.assertTrue(val.validate(document))
 
