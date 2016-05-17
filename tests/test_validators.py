@@ -233,15 +233,15 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         with self.assertRaises(ValueError):
             val.validate(document)
 
-    def test_delimiter_if_condition_pass(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'age' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
-        self.assertTrue(val.validate(document))
-
-    def test_delimiter_if_condition_nonpass(self):
-        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'age' : '5 | 18 | 99', 'lifestage':'adult'} # True
-        self.assertTrue(val.validate(document))
+#    def test_delimiter_if_condition_pass(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+#        document = {'age' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
+#        self.assertTrue(val.validate(document))
+#
+#    def test_delimiter_if_condition_nonpass(self):
+#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+#        document = {'age' : '5 | 18 | 99', 'lifestage':'adult'} # True
+#        self.assertFalse(val.validate(document))
 
     def test_delimiter_if_checkindication(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
@@ -255,17 +255,31 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
 class TestIfValidator(unittest.TestCase):
 
-
     def setUp(self):
         self.yaml_if = """
-                            type:
+                        type:
+                            if:
+                                basisOfRecord:
+                                    allowed: [HumanObservation]
+                            allowed: [Event]
+                            empty: False
+                        basisOfRecord:
+                            allowed: [HumanObservation, Machine]
+                        """
+
+        self.yaml_ifif = """
+                            lifestage:
                                 if:
-                                    basisOfRecord:
-                                        allowed: [HumanObservation]
-                                allowed: [Event]
-                                empty: False
-                            basisOfRecord:
-                                allowed: [HumanObservation, Machine]
+                                    - age:
+                                          min: 20
+                                          type: integer
+                                      allowed: [adult]
+                                    - age:
+                                          min: 20
+                                          type: integer
+                                      maxlength: 6
+                            age:
+                                type: integer
                             """
 
     def test_if(self):
@@ -279,6 +293,25 @@ class TestIfValidator(unittest.TestCase):
         document = {'basisOfRecord': 'HumanObservation', 'type': 'Measurement'}
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))
+
+    def test_multiple_if_error(self):
+        """term trespasses both if clauses at the same time
+        """
+        schema = yaml.load(self.yaml_ifif)
+        document = {'age' : '21', 'lifestage':'juvenile'} #True
+        val = DwcaValidator(schema)
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'lifestage': {'if_0': {'lifestage': 'unallowed value juvenile'},
+                         'if_1': {'lifestage': 'max length is 6'}}})
+
+    def test_multiple_if_pass(self):
+        """document satisfies both if clauses at the same time
+        """
+        schema = yaml.load(self.yaml_ifif)
+        document = {'age' : '21', 'lifestage':'adult'} #True
+        val = DwcaValidator(schema)
+        self.assertTrue(val.validate(document))
 
 class TestDataTypeValidator(unittest.TestCase):
 
