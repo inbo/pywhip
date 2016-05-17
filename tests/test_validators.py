@@ -325,13 +325,23 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         self.assertTrue(val.validate(document))
 
-     def test_multiple_if_combi(self):
+    def test_multiple_if_combi(self):
         """document satisfies if and non-if clauses
         """
-        schema = yaml.load(self.yaml_ifif)
+        schema = yaml.load(self.yaml_ifcombi)
         document = {'basisOfRecord': 'PreservedSpecimen', 'collectionCode': ''}
         val = DwcaValidator(schema)
         self.assertTrue(val.validate(document))
+
+    def test_multiple_if_combi_nonpass(self):
+        """document satisfies if and non-if clauses
+        """
+        schema = yaml.load(self.yaml_ifcombi)
+        document = {'basisOfRecord': 'HumanObservation', 'collectionCode': ''}
+        val = DwcaValidator(schema)
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'basisOfRecord': {'if': 'unallowed value HumanObservation'}})
 
 class TestDataTypeValidator(unittest.TestCase):
 
