@@ -20,6 +20,7 @@ from cerberus.platform import _str_type
 
 toy_error_handler = errors.ToyErrorHandler()
 DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
+IF_SCHEMA = ErrorDefinition(0x82, 'if')
 
 class DwcaValidator(Validator):
     """
@@ -127,7 +128,7 @@ class DwcaValidator(Validator):
         """
         for term, rules in dict_schema.iteritems():
             if not 'empty' in rules.keys():
-                rules['empty'] = True
+                rules['empty'] = False
         return dict_schema
 
     def _validate_nullable(self, nullable, field, value):
@@ -301,29 +302,50 @@ class DwcaValidator(Validator):
                                         formatter]))
 
     def _validate_if(self, ifset, field, value):
-        """ {'type': 'dict'} """
+        """ {'type': ['dict', 'list']} """
 
-        # extract dict values -> conditions
-        conditions = {k: v for k, v in ifset.iteritems() if isinstance(v, dict)}
-        # extract dict values -> rules
-        rules = {k: v for k, v in ifset.iteritems() if not isinstance(v, dict)}
+        if isinstance(ifset, Mapping):
+            # extract dict values -> conditions
+            conditions = {k: v for k, v in ifset.iteritems() if isinstance(v, dict)}
+            # extract dict values -> rules
+            rules = {k: v for k, v in ifset.iteritems() if not isinstance(v, dict)}
 
-        valid=True
-        # check for all conditions if they apply
-        for term, cond in conditions.iteritems():
-            subschema = {term : cond}
-            tempvalidation = DwcaValidator(subschema)
-            tempvalidation.allow_unknown = True
-            if not tempvalidation.validate(self.document):
-                valid = False
+            tempvalidator = DwcaValidator(conditions)
+            tempvalidator.allow_unknown = True
 
-        #others -> conditional rules applied when valid condition
-        if valid:
-            tempvalidation = DwcaValidator({field: rules})
-            tempvalidation.validate({field : self.document[field]})
-            #convert eventual errors to object itself
-            for field, err in tempvalidation.errors.items():
-                self._error(field, err)
+            if tempvalidator.validate(self.document_str_version, normalize=True):
+                validator = self._get_child_validator(
+                    document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
+                    schema={field: rules}, allow_unknown=True)
+                validator.validate(self.document_str_version, normalize=True)
+
+                if validator._errors:
+                    self._drop_nodes_from_errorpaths(validator._errors, [2], [2])
+                    self._error(field, IF_SCHEMA, validator._errors)
+#            else:
+#                self._error(field, "condition not fulfilled in if statement")
+
+        elif isinstance(ifset, Sequence) and not isinstance(ifset, _str_type):
+            for i, ifsubschema in enumerate(ifset):
+                # extract dict values -> conditions
+                conditions = {k: v for k, v in ifsubschema.iteritems() if isinstance(v, dict)}
+                # extract dict values -> rules
+                rules = {k: v for k, v in ifsubschema.iteritems() if not isinstance(v, dict)}
+
+                tempvalidator = DwcaValidator(conditions)
+                tempvalidator.allow_unknown = True
+
+                if tempvalidator.validate(self.document_str_version, normalize=True):
+                    validator = self._get_child_validator(
+                        document_crumb=(field, ''.join(['if_', str(i)])), schema_crumb=(field, 'if'),
+                        schema={field: rules}, allow_unknown=True)
+                    validator.validate(self.document_str_version, normalize=True)
+
+                    if validator._errors:
+                        self._drop_nodes_from_errorpaths(validator._errors, [], [])
+                        self._error(field, IF_SCHEMA, validator._errors)
+#                else:
+#                    self._error(field, "condition not fulfilled in if statement")
 
 
     def _validate_delimitedvalues(self, ruleset, field, value):
@@ -348,7 +370,7 @@ class DwcaValidator(Validator):
         schema = dict(((i, ruleset) for i in range(len(value))))
 
         validator = self._get_child_validator(
-            document_crumb=field, schema_crumb=(field, 'schema'),
+            document_crumb=field, schema_crumb=(field, 'delimitedvalues'),
             schema=schema, allow_unknown=self.allow_unknown)
 
         validator.validate(dict(((i, v) for i, v in enumerate(value))),

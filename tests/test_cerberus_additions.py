@@ -170,11 +170,12 @@ class TestEmptyStringHandling(unittest.TestCase):
                     msg="pre-conversion of empty strings to None not supported")
 
     def test_default_ignore_empty_string(self):
-        """empty string (converted to None values) should be ignored by default
+        """empty string (converted to None values) should provide an error
+        by default
         """
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'abundance': ''}
-        self.assertTrue(val.validate(document))
+        self.assertFalse(val.validate(document))
 
     def test_default_ignore_none(self):
         """None values are just ignored by default

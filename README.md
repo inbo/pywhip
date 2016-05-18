@@ -44,20 +44,6 @@ We could rely on the functionality of marshmallow, as provided in following exam
 
 Cerberus already provide a set of [validation rules](http://docs.python-cerberus.org/en/stable/usage.html#validation-rules), which can be used and extended for the validator case. In the following list, the rules available in the DwcaValidator are enlisted.
 
-### required
-*(cerberus supported)*
-
-Does the field is part of the document?
-
-``` YAML
-# Expects: boolean
-# Records term is present: is being tested
-# String fields with empty values will still be validated, even when required is set to True. f you don’t want to accept empty values, see the empty rule
-
-required: true # The term must be present
-required: false # The term is optional
-```
-
 ### type
 *(partly cerberus supported)*
 
@@ -69,7 +55,6 @@ Cerberus supports following dtypes, which are also supported by the DWCA validat
 * float
 * number (integer or float)
 * boolean
-* datetime (!the datatype itself, not formatted string)
 
 Following Cerberus dtypes are not supported by the Dwca Validator:
 * dict (formally collections.mapping)
@@ -219,13 +204,13 @@ allowed: [male, female] # male or female
 
 ### empty
 
-Empty values are default accepted. If no empty values should be present for a particular field, `empty` can be put to `False`
+Empty values are default not accepted. If an empty values should be present for a particular field, `empty` can be put to `True`
 
 ```YAML
 # Expects: boolean
 # Records of wrong data type: only considered strings (default in Dwc)
 
-empty: False
+empty: True
 ```
 
 ### mindate
@@ -336,11 +321,11 @@ Subfunction to perform tests based on the tests on another term. All tests on th
 
 ```YAML
 if:
-    basisOfRecord:                # Another term
+    basisOfRecord:              # Another term
       populated: true           # basisOfRecord must be populated
-      allowed: HumanObservation  # AND basisOfRecord must be "HumanObservation"
-    allowed: Event                 # Then the main term must be "Event"
-    required: true               # Then the main term must be "Populated"
+      allowed: HumanObservation # AND basisOfRecord must be "HumanObservation"
+    allowed: Event              # Then the main term must be "Event"
+    empty: False              # Then the main term can not be empty
 ```
 
 ## Cerberus other rules
