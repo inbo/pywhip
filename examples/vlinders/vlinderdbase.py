@@ -13,7 +13,6 @@ from dwcavalidator.validators import DwcaValidator
 #%% Read the YAML file
 schema = yaml.load(open('./settings.yaml'))
 
-
 v = DwcaValidator(schema)
 v.allow_unknown = True
 
