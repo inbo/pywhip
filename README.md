@@ -328,6 +328,20 @@ if:
     empty: False              # Then the main term can not be empty
 ```
 
+To combine multiple if-statements, these need to be grouped as follows:
+
+```YAML
+if:
+    - age:
+          min: 20
+          type: integer
+      allowed: [adult]
+    - age:
+          min: 20
+          type: integer
+      maxlength: 6
+```
+
 ## Cerberus other rules
 
 ### readonly
