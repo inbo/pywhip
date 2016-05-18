@@ -12,8 +12,8 @@ from dwca.read import DwCAReader
 
 
 #%% Read the archive
-with DwCAReader('./broedvogel_corrupted_subset.zip') as dwca:
-    test = dwca.get_row_by_index(1)
+#with DwCAReader('./broedvogel_corrupted_subset.zip') as dwca:
+#    test = dwca.get_row_by_index(1)
 
 #%% Read the YAML file
 schema = yaml.load(open('./settings.yaml'))
