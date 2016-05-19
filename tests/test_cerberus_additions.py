@@ -133,6 +133,30 @@ class TestCoerceAddition(unittest.TestCase):
         """
         return None
 
+class TestAllowedExtension(unittest.TestCase):
+    """Test the usage of string as input for allowed values
+    """
+    def setUp(self):
+        self.yaml_string = """
+                           abundance:
+                               allowed: many
+                           sex:
+                               allowed: [male, female]
+                           """
+    def test_allow_string(self):
+        """usage of string in allowed statement
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': 'many'}
+        self.assertTrue(val.validate(document))
+
+    def test_allow_list(self):
+        """usage of list in allowed statement
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+
 class TestEmptyStringHandling(unittest.TestCase):
     """Test conversion from empty strings to None values before performing the
     evaluation and evaluate the default handling of empty strings and None

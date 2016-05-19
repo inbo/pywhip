@@ -5,6 +5,7 @@ Created on Mon Feb 22 13:07:01 2016
 @author: stijn_vanhoey
 """
 import re
+from copy import copy
 from datetime import datetime, date
 from dateutil.parser import parse
 from collections import Mapping, Sequence
@@ -62,6 +63,7 @@ class DwcaValidator(Validator):
         """adds document parsing to the validation process
         """
         # store a dwcareader string version of the document
+        #if not self.document_str_version:
         self.document_str_version = document.copy() # ok in terms of memory, since Dwca is working row-based
         document = self.empty_string_none(document)
 
@@ -134,21 +136,32 @@ class DwcaValidator(Validator):
     def _validate_nullable(self, nullable, field, value):
         """ {'type': 'boolean'} """
         # basically bypass the nullable test
-        if not self.document_str_version[field]:
-            return True
-        else:
-            return None
+        if field in self.document_str_version.keys():
+            if self.document_str_version[field] == None:
+                return True
+            else:
+                return None
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
         # port the nullable logic to the empty logic
-        value_str = self.document_str_version[field]
-        if isinstance(value_str, _str_type) and len(value_str) == 0:
-            if not empty:
-                self._error(field, errors.EMPTY_NOT_ALLOWED)
-                return True
-            else:
-                return True
+        if field in self.document_str_version.keys():
+            value_str = self.document_str_version[field]
+            if isinstance(value_str, _str_type) and len(value_str) == 0:
+                if not empty:
+                    self._error(field, errors.EMPTY_NOT_ALLOWED)
+                    return True
+                else:
+                    return True
+
+    def _validate_allowed(self, allowed_values, field, value):
+        """ {'type': ['list', 'string']} """
+
+        if isinstance(allowed_values, _str_type):
+            allowed_values = [allowed_values]
+
+        super(DwcaValidator, self)._validate_allowed(allowed_values,
+                                                     field, value)
 
     def _validate_min(self, min_value, field, value):
         """ {'nullable': False, 'dependencies': ['type']} """
@@ -313,11 +326,12 @@ class DwcaValidator(Validator):
             tempvalidator = DwcaValidator(conditions)
             tempvalidator.allow_unknown = True
 
-            if tempvalidator.validate(self.document_str_version, normalize=True):
+            if tempvalidator.validate(copy(self.document_str_version), normalize=True):
                 validator = self._get_child_validator(
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
-                validator.validate(self.document_str_version, normalize=True)
+                self._temp = copy(self.document_str_version) #to remove again
+                validator.validate(copy(self.document_str_version), normalize=False)
 
                 if validator._errors:
                     self._drop_nodes_from_errorpaths(validator._errors, [2], [2])
@@ -335,11 +349,11 @@ class DwcaValidator(Validator):
                 tempvalidator = DwcaValidator(conditions)
                 tempvalidator.allow_unknown = True
 
-                if tempvalidator.validate(self.document_str_version, normalize=True):
+                if tempvalidator.validate(copy(self.document_str_version), normalize=True):
                     validator = self._get_child_validator(
                         document_crumb=(field, ''.join(['if_', str(i)])), schema_crumb=(field, 'if'),
                         schema={field: rules}, allow_unknown=True)
-                    validator.validate(self.document_str_version, normalize=True)
+                    validator.validate(copy(self.document_str_version), normalize=False)
 
                     if validator._errors:
                         self._drop_nodes_from_errorpaths(validator._errors, [], [])
@@ -348,10 +362,11 @@ class DwcaValidator(Validator):
 #                    self._error(field, "condition not fulfilled in if statement")
 
 
-    def _validate_delimitedvalues(self, ruleset, field, value):
+    def _validate_delimitedvalues(self, ruleset_schema, field, value):
         """ {'type' : 'dict'} """
-        # loosely constructed dusch as the __validate_schema_sequence
+        # loosely constructed such as the __validate_schema_sequence
 
+        ruleset = copy(ruleset_schema)
         # convert field string to list of values
         if not 'delimiter' in ruleset.keys():
             raise ValueError('Define delimiter as rule in delimitedvalues')
