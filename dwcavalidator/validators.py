@@ -154,6 +154,15 @@ class DwcaValidator(Validator):
                 else:
                     return True
 
+    def _validate_allowed(self, allowed_values, field, value):
+        """ {'type': ['list', 'string']} """
+
+        if isinstance(allowed_values, _str_type):
+            allowed_values = [allowed_values]
+
+        super(DwcaValidator, self)._validate_allowed(allowed_values,
+                                                     field, value)
+
     def _validate_min(self, min_value, field, value):
         """ {'nullable': False, 'dependencies': ['type']} """
         # overwrite cerberus min to only consider int and float
