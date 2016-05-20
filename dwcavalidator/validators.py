@@ -64,7 +64,7 @@ class DwcaValidator(Validator):
         """
         # store a dwcareader string version of the document
         #if not self.document_str_version:
-        self.document_str_version = document.copy() # ok in terms of memory, since Dwca is working row-based
+        self.document_str_version = document.copy()
         document = self.empty_string_none(document)
 
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
@@ -252,7 +252,7 @@ class DwcaValidator(Validator):
                 tester = False
 
         if not tester:
-            self._error(field, "String format not compliant with" + \
+            self._error(field, "String format not compliant with " + \
                                                                     formatstr)
 
     def _validate_equals(self, ref_value, field, value):
@@ -330,7 +330,6 @@ class DwcaValidator(Validator):
                 validator = self._get_child_validator(
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
-                self._temp = copy(self.document_str_version) #to remove again
                 validator.validate(copy(self.document_str_version), normalize=False)
 
                 if validator._errors:

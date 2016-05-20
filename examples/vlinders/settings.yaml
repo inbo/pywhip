@@ -50,7 +50,7 @@ institutionCode:
   allowed: [INBO]
 
 datasetName:
-  allowed: [Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium]
+  allowed: 'Vlinderdatabank - Butterflies in Flanders and the Brussels Capital Region, Belgium'
 
 ownerInstitutionCode:
   allowed: [INBO, INBO/LB-BIM]
@@ -62,12 +62,14 @@ informationWithheld:
   allowed: [see metadata]
 
 dataGeneralizations:
+  empty: True
   if:
     - decimalLongitude:
         empty: False
       allowed: [coordinates are generalized to centroid a 5x5km UTM grid]
     - decimalLongitude:
         empty: True
+        allowed: ['']
       allowed: ['']
 
 dynamicProperties:
@@ -76,7 +78,7 @@ dynamicProperties:
 recordedBy:
   delimitedvalues:
     delimiter: " | "
-    regex: 'observerID:*'
+    regex: 'observerID:.+'
     maxlength: 20
 
 individualCount:
@@ -85,6 +87,7 @@ individualCount:
   max: 200
 
 sex:
+  empty: True
   delimitedvalues:
     delimiter: " | "
     allowed: [female, male]
@@ -94,7 +97,7 @@ lifeStage:
   allowed: [adult]
 
 associatedReferences:
-  type: url  #url?
+  type: url
 
 samplingProtocol:
   allowed: [casual observation, fixed sampling location, monitoring, recorded from collection, recorded from literature]
@@ -135,7 +138,7 @@ stateProvince:
 # verbatimLocality
 
 verbatimCoordinates:
-  regex: 31U*
+  regex: '31U*'
   maxlength: 8
   minlength: 8
 
@@ -148,21 +151,25 @@ verbatimCoordinates:
 #   max: ...
 
 verbatimCoordinateSystem:
+  empty: True
   if:
     - verbatimCoordinates:
         empty: False
       allowed: [UTM 5km] # [Belgian Lambert 72, UTM 5km]
     - verbatimCoordinates:
         empty: True
+        allowed: ['']
       allowed: ['']
 
 verbatimSRS:
+  empty: True
   if:
     - verbatimCoordinates:
         empty: False
       allowed: [WGS84] # [Belgian Datum 1972, ED50, WGS84]
     - verbatimCoordinates:
         empty: True
+        allowed: ['']
       allowed: ['']
 
 decimalLatitude:
@@ -172,48 +179,44 @@ decimalLatitude:
   max: 51.51
 
 decimalLongitude:
-  if:
-    decimalLatitude:
-      empty: False
-    empty: False
-  if:
-    decimalLatitude:
-      empty: True
-    allowed: ['']
+  empty: True
   type: float
   numberformat: '.5'
   min: 2.54
   max: 5.92
 
 geodeticDatum:
+  empty: True
   if:
-    decimalLongitude:
-      empty: False
-    allowed: [WGS84]
-  if:
-    decimalLatitude:
-      empty: True
-    allowed: ['']
+    - decimalLongitude:
+        empty: False
+      allowed: [WGS84]
+    - decimalLongitude:
+        empty: True
+        allowed: ['']
+      allowed: ['']
 
 coordinateUncertaintyInMeters:
+  empty: True
   if:
-    decimalLongitude:
-      empty: False
-    allowed: [3769] # Or use a range
-  if:
-    decimalLatitude:
-      empty: True
-    allowed: ['']
+    - decimalLongitude:
+        empty: False
+      equals: 3769   # Or use a range
+    - decimalLatitude:
+        empty: True
+        allowed: ['']
+      allowed: ['']
 
 georeferenceRemarks:
+  empty: True
   if:
-    decimalLongitude:
-      empty: False
-    allowed: [coordinates are centroid of used grid square]
-  if:
-    decimalLatitude:
-      empty: True
-    allowed: ['']
+    - decimalLongitude:
+        empty: False
+      allowed: [coordinates are centroid of used grid square]
+    - decimalLatitude:
+        empty: True
+        allowed: ['']
+      allowed: ['']
 
 identifiedBy:
   delimitedvalues:
@@ -242,10 +245,12 @@ scientificNameAuthorship:
   empty: false
 
 vernacularName:
+  empty: True
   if:
     taxonRank:
       allowed: [subspecies]
     empty: True
+    allowed: ['']
 
 nomenclaturalCode:
   allowed: [ICZN] # [ICZN, ICBN]
