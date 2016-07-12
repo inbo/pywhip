@@ -37,51 +37,51 @@ class TestDateValidator(unittest.TestCase):
 
     def test_daterange_iso(self):
         # isoformat
-        val =  DwcaValidator(yaml.load(self.yaml_string_date1))
+        val = DwcaValidator(yaml.load(self.yaml_string_date1))
         document1 = {'moment' : '20110101'}  #True
         self.assertTrue(val.validate(document1))
 
     def test_daterange_line(self):
         # format with - inside range
-        val =  DwcaValidator(yaml.load(self.yaml_string_date1))
-        document2 = {'moment' : '2009-08-31'} # True
+        val = DwcaValidator(yaml.load(self.yaml_string_date1))
+        document2 = {'moment': '2009-08-31'}  # True
         self.assertTrue(val.validate(document2))
 
     def test_daterange_out(self):
         # outside the range
-        val =  DwcaValidator(yaml.load(self.yaml_string_date1))
-        document = {'moment' : '17000101'} # False
+        val = DwcaValidator(yaml.load(self.yaml_string_date1))
+        document = {'moment': '17000101'}  # False
         self.assertFalse(val.validate(document))
 
-        val =  DwcaValidator(yaml.load(self.yaml_string_date1))
-        document = {'moment' : '20150831'} # False
+        val = DwcaValidator(yaml.load(self.yaml_string_date1))
+        document = {'moment': '20150831'}  # False
         self.assertFalse(val.validate(document))
 
     def test_daterange_nodate(self):
-        val =  DwcaValidator(yaml.load(self.yaml_string_date4))
-        document = {'moment' : '1700101'} # False
+        val = DwcaValidator(yaml.load(self.yaml_string_date4))
+        document = {'moment': '1700101'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'moment': 'could not be interpreted as date or datetime'})
+                {'moment': 'could not be interpreted as date or datetime'})
 
     def test_dateformat_line(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
-        document = {'moment' : '1997-01-05'} # True
+        document = {'moment': '1997-01-05'}  # True
         self.assertTrue(val.validate(document))
 
     def test_dateformat_day(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
-        document = {'moment' : '1997-01'} # True
+        document = {'moment': '1997-01'}  # True
         self.assertTrue(val.validate(document))
 
     def test_dateformat_multiple_wrong(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
-        document = {'moment' : '19970105'} # False
+        document = {'moment': '19970105'}  # False
         self.assertFalse(val.validate(document))
 
     def test_dateformat_single(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date3))
-        document = {'moment' : '1997-01'} # True
+        document = {'moment': '1997-01'}  # True
         self.assertTrue(val.validate(document))
 
 
@@ -314,8 +314,8 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'lifestage': {'if_0': {'lifestage': 'unallowed value juvenile'},
-                         'if_1': {'lifestage': 'max length is 6'}}})
+                         {'lifestage': {'if_0': 'unallowed value juvenile',
+                                        'if_1': 'max length is 6'}})
 
     def test_multiple_if_pass(self):
         """document satisfies both if clauses at the same time

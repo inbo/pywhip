@@ -120,6 +120,11 @@ eventDate:
 
 verbatimEventDate:
   dateformat: ['%Y-%m-%d/%Y-%m-%d', '%Y-%m/%Y-%m', '%Y/%Y'] # Only accept ranges
+  mindate: 2000-10-20  # added for testing only
+  if:
+    eventDate:
+        mindate: 1830-01-01
+    maxdate: 1830-01-01  # added for testing only
 
 # locationID
 

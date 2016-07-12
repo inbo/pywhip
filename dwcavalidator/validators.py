@@ -23,6 +23,7 @@ toy_error_handler = errors.ToyErrorHandler()
 DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x82, 'if')
 
+
 class DwcaValidator(Validator):
     """
     directly available by cerberus:
@@ -42,7 +43,7 @@ class DwcaValidator(Validator):
     priority_validations = ('empty', 'nullable', 'readonly', 'type')
 
     def __init__(self, *args, **kwargs):
-        """add preprocessing rules to alter the schema
+        """add pre processing rules to alter the schema
         """
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
@@ -54,7 +55,7 @@ class DwcaValidator(Validator):
         self._resolve_coerce(self.schema)
 
         # default rule to ignore None values on reader
-        #self.ignore_none_values = True
+        # self.ignore_none_values = True
 
         # prepare the string version of each document in the namespace
         self.document_str_version = None
@@ -63,7 +64,7 @@ class DwcaValidator(Validator):
         """adds document parsing to the validation process
         """
         # store a dwcareader string version of the document
-        #if not self.document_str_version:
+        # if not self.document_str_version:
         self.document_str_version = document.copy()
         document = self.empty_string_none(document)
 
@@ -113,12 +114,12 @@ class DwcaValidator(Validator):
                 for subschema in rules:
                     if isinstance(subschema, Mapping):
                         if 'type' in subschema.keys():
-                             self._add_coerce(subschema)
+                            self._add_coerce(subschema)
                         self._resolve_coerce(subschema)
             elif isinstance(rules, Mapping):
-               if 'type' in rules.keys():
-                   self._add_coerce(rules)
-               self._resolve_coerce(rules)
+                if 'type' in rules.keys():
+                    self._add_coerce(rules)
+                self._resolve_coerce(rules)
             else:
                 NotImplemented
 
@@ -129,7 +130,7 @@ class DwcaValidator(Validator):
         provides bug in cerberus that needs further check)
         """
         for term, rules in dict_schema.iteritems():
-            if not 'empty' in rules.keys():
+            if 'empty' not in rules.keys():
                 rules['empty'] = False
         return dict_schema
 
@@ -137,7 +138,7 @@ class DwcaValidator(Validator):
         """ {'type': 'boolean'} """
         # basically bypass the nullable test
         if field in self.document_str_version.keys():
-            if self.document_str_version[field] == None:
+            if self.document_str_version[field] is None:
                 return True
             else:
                 return None
@@ -167,7 +168,7 @@ class DwcaValidator(Validator):
         """ {'nullable': False, 'dependencies': ['type']} """
         # overwrite cerberus min to only consider int and float
         if (isinstance(value, int) or isinstance(value, float)) and \
-                                        float(min_value) > value:
+                float(min_value) > value:
             self._error(field, errors.MIN_VALUE)
         elif isinstance(value, str):
             self._error(field, 'min validation ignores string type, add type validation')
@@ -176,7 +177,7 @@ class DwcaValidator(Validator):
         """ {'nullable': False } """
         # overwrite cerberus max to only consider int and float
         if (isinstance(value, int) or isinstance(value, float)) and \
-                                        float(min_value) < value:
+                float(min_value) < value:
             self._error(field, errors.MAX_VALUE)
         elif isinstance(value, str):
             self._error(field, 'max validation ignores string type, add type validation')
@@ -187,7 +188,7 @@ class DwcaValidator(Validator):
         try:
             event_date = parse(date_string)
             return event_date
-        except:
+        except ValueError:
             self._error(field, "could not be interpreted as date or datetime")
             return None
 
@@ -196,9 +197,9 @@ class DwcaValidator(Validator):
 
         # Remarks
         # -------
-        #the yaml-reader prepares a datetime.date objects when possible,
-        #the dwca-reader is not doing this, so compatibility need to be better
-        #ensured
+        # the yaml-reader prepares a datetime.date objects when possible,
+        # the dwca-reader is not doing this, so compatibility need to be better
+        # ensured
 
         # convert schema info to datetime to enable comparison
         if isinstance(min_date, date):
@@ -208,17 +209,17 @@ class DwcaValidator(Validator):
         event_date = self._parse_date(field, value)
         if event_date:
             if event_date < min_date:
-                self._error(field, "date is before min limit " + \
-                                                    min_date.date().isoformat())
+                self._error(field, "date is before min limit " +
+                            min_date.date().isoformat())
 
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
         # Remarks
         # -------
-        #the yaml-reader prepares a datetime.date objects when possible,
-        #the dwca-reader is not doing this, so compatibility need to be better
-        #ensured
+        # the yaml-reader prepares a datetime.date objects when possible,
+        # the dwca-reader is not doing this, so compatibility need to be better
+        # ensured
 
         # convert schema info to datetime to enable comparison
         if isinstance(max_date, date):
@@ -228,32 +229,32 @@ class DwcaValidator(Validator):
         event_date = self._parse_date(field, value)
         if event_date:
             if event_date > max_date:
-                self._error(field, "date is after max limit " + \
-                                                    max_date.date().isoformat())
+                self._error(field, "date is after max limit " +
+                            max_date.date().isoformat())
 
     def _validate_dateformat(self, ref_value, field, value):
         """ {'type': ['string', 'list']} """
-        #dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
-        #dateformat : '%Y-%m'
+        # dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
+        # dateformat : '%Y-%m'
 
         if isinstance(ref_value, list):
             tester = False
-            for formatstr in ref_value: # check if at least one comply
+            for formatstr in ref_value:  # check if at least one comply
                 try:
                     datetime.strptime(value, formatstr)
                     tester = True
-                except:
+                except ValueError:
                     pass
         else:
             try:
                 datetime.strptime(value, ref_value)
                 tester = True
-            except:
+            except ValueError:
                 tester = False
 
         if not tester:
-            self._error(field, "String format not compliant with " + \
-                                                                    formatstr)
+            self._error(field, "String format not compliant with " +
+                        formatstr)
 
     def _validate_equals(self, ref_value, field, value):
         """ {'type': ['integer', 'float']} """
@@ -276,7 +277,7 @@ class DwcaValidator(Validator):
 
     def _validate_length(self, length, field, value):
         """ {'type': 'integer', 'excludes': 'type'} """
-        #check length of a given string
+        # check length of a given string
         if isinstance(value, str) and len(value) != length:
             self._error(field, "".join(["length mismatch: ", str(len(value)),
                                         " instead of ", str(length)]))
@@ -305,8 +306,8 @@ class DwcaValidator(Validator):
         elif re.match("[1-9].", formatter):
             value_parsed = [len(value_str.split(".")[0])]
 
-        formatter_parsed = [int(length) for length in formatter.split(".") \
-                                                        if not length == '']
+        formatter_parsed = [int(length) for length in formatter.split(".")
+                            if not length == '']
 
         if formatter_parsed != value_parsed:
             self._error(field, "".join(["numberformat of value ",
@@ -319,21 +320,26 @@ class DwcaValidator(Validator):
 
         if isinstance(ifset, Mapping):
             # extract dict values -> conditions
-            conditions = {k: v for k, v in ifset.iteritems() if isinstance(v, dict)}
+            conditions = {k: v for k, v in ifset.iteritems() if
+                          isinstance(v, dict)}
             # extract dict values -> rules
-            rules = {k: v for k, v in ifset.iteritems() if not isinstance(v, dict)}
+            rules = {k: v for k, v in ifset.iteritems() if not
+                     isinstance(v, dict)}
 
             tempvalidator = DwcaValidator(conditions)
             tempvalidator.allow_unknown = True
 
-            if tempvalidator.validate(copy(self.document_str_version), normalize=True):
+            if tempvalidator.validate(copy(self.document_str_version),
+                                      normalize=True):
                 validator = self._get_child_validator(
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
-                validator.validate(copy(self.document_str_version), normalize=False)
+                validator.validate(copy(self.document_str_version),
+                                   normalize=False)
 
                 if validator._errors:
-                    self._drop_nodes_from_errorpaths(validator._errors, [2], [2])
+                    self._drop_nodes_from_errorpaths(validator._errors,
+                                                     [2], [2])
                     self._error(field, IF_SCHEMA, validator._errors)
 #            else:
 #                self._error(field, "condition not fulfilled in if statement")
@@ -341,25 +347,31 @@ class DwcaValidator(Validator):
         elif isinstance(ifset, Sequence) and not isinstance(ifset, _str_type):
             for i, ifsubschema in enumerate(ifset):
                 # extract dict values -> conditions
-                conditions = {k: v for k, v in ifsubschema.iteritems() if isinstance(v, dict)}
+                conditions = {k: v for k, v in ifsubschema.iteritems() if
+                              isinstance(v, dict)}
                 # extract dict values -> rules
-                rules = {k: v for k, v in ifsubschema.iteritems() if not isinstance(v, dict)}
+                rules = {k: v for k, v in ifsubschema.iteritems() if not
+                         isinstance(v, dict)}
 
                 tempvalidator = DwcaValidator(conditions)
                 tempvalidator.allow_unknown = True
 
-                if tempvalidator.validate(copy(self.document_str_version), normalize=True):
+                if tempvalidator.validate(copy(self.document_str_version),
+                                          normalize=True):
                     validator = self._get_child_validator(
-                        document_crumb=(field, ''.join(['if_', str(i)])), schema_crumb=(field, 'if'),
+                        document_crumb=(field, ''.join(['if_', str(i)])),
+                        schema_crumb=(field, 'if'),
                         schema={field: rules}, allow_unknown=True)
-                    validator.validate(copy(self.document_str_version), normalize=False)
+                    validator.validate(copy(self.document_str_version),
+                                       normalize=False)
 
                     if validator._errors:
-                        self._drop_nodes_from_errorpaths(validator._errors, [], [])
+                        self._drop_nodes_from_errorpaths(validator._errors,
+                                                         [2], [2])
                         self._error(field, IF_SCHEMA, validator._errors)
 #                else:
-#                    self._error(field, "condition not fulfilled in if statement")
-
+#                    self._error(field, "condition not fulfilled in if
+#                    statement")
 
     def _validate_delimitedvalues(self, ruleset_schema, field, value):
         """ {'type' : 'dict'} """
@@ -371,11 +383,12 @@ class DwcaValidator(Validator):
             raise ValueError('Define delimiter as rule in delimitedvalues')
         value = [el for el in value.split(ruleset['delimiter'])]
 
-        #check for empty string (edge case where we do not want 'male | ')
+        # check for empty string (edge case where we do not want 'male | ')
         if '' in value:
-            self._error(field, "contains empty string combined with delimiters")
+            self._error(field,
+                        "contains empty string combined with delimiters")
 
-        #check for doubles ('male | female | male' needs error)
+        # check for doubles ('male | female | male' needs error)
         if len(value) != len(set(value)):
             self._error(field, "contains duplicate values in delimitedvalues")
 
@@ -397,15 +410,14 @@ class DwcaValidator(Validator):
         """ {'type': 'boolean'} """
         return None
 
-
-#%% dtypes
+    # dtypes -------------------------
     def _validate_type_json(self, value):
         """ Enables validation for json objects
         """
         try:
             json.loads(value)
             return True
-        except:
+        except ValueError:
             pass
 
     def _validate_type_url(self, value):

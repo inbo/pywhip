@@ -26,3 +26,5 @@ rightsHolder:
 
 nomenclaturalCode:
   allowed: [ICZN, ICBN, ICZN] #
+test:
+  allowed: jan met de pet
