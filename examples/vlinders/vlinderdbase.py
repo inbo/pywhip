@@ -18,12 +18,18 @@ v.allow_unknown = True
 
 #%% Read the archive
 errors = {}
+
 with DwCAReader('./dwca-dagvlinders-inbo-occurrences-v1.2.zip') as dwca:
-    for row in dwca:
+
+    for j, row in enumerate(dwca):
         document = {k.split('/')[-1]: v for k, v in row.data.iteritems()}
 
         # validate each row and log the errors for each row
         v.validate(document)
+
         if len(v.errors) > 0:
             errors[row.id] = v.errors
+        if j > 100:
+            break
+
 print errors
