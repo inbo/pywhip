@@ -133,6 +133,7 @@ class TestCoerceAddition(unittest.TestCase):
         """
         return None
 
+
 class TestAllowedExtension(unittest.TestCase):
     """Test the usage of string as input for allowed values
     """
@@ -156,6 +157,7 @@ class TestAllowedExtension(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'sex': 'male'}
         self.assertTrue(val.validate(document))
+
 
 class TestEmptyStringHandling(unittest.TestCase):
     """Test conversion from empty strings to None values before performing the
@@ -219,4 +221,3 @@ class TestEmptyStringHandling(unittest.TestCase):
         document = {'number': ''}
         val = DwcaValidator(yaml.load(self.empty2))
         self.assertTrue(val.validate(document))
-
