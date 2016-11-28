@@ -39,7 +39,7 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, urixw
     """
-    #mandatory_validations = ['empty', 'nullable']  # empty
+    # mandatory_validations = ['empty', 'nullable']  # empty
     priority_validations = ['empty', 'nullable', 'readonly', 'type']
 
     def __init__(self, *args, **kwargs):
@@ -145,7 +145,7 @@ class DwcaValidator(Validator):
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
-        # port the nullable logic to the empty logic
+        # port the nullable logic of cerberus to the empty logic
         if field in self.document_str_version.keys():
             value_str = self.document_str_version[field]
             if isinstance(value_str, _str_type) and len(value_str) == 0:

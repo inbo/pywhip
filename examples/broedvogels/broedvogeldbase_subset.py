@@ -25,13 +25,13 @@ v.allow_unknown = True
 errors = {}
 with DwCAReader('./broedvogel_corrupted_subset.zip') as dwca:
     for row in dwca:
-        document = {k.split('/')[-1]: v for k, v in row.data.iteritems()}
+        document = {k.split('/')[-1]: v for k, v in row.data.items()}
 
         # validate each row and log the errors for each row
         v.validate(document)
         if len(v.errors) > 0:
             errors[row.id] = v.errors
-print errors
+print(errors)
 
 
 

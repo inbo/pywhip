@@ -348,4 +348,4 @@ if:
 There is no use-case to apply this rule within the context of the DwcaValidator
 
 ### nullable
-Default True within DwcaValidator, for both '' and None values
+As the DwC is always providing None values as empty strings, the nullable test is bypassed (all logic should be in `empty` rule.
