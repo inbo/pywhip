@@ -40,7 +40,7 @@ class DwcaValidator(Validator):
         json, urixw
     """
     #mandatory_validations = ['empty', 'nullable']  # empty
-    #priority_validations = ['empty', 'nullable', 'readonly', 'type']
+    priority_validations = ['empty', 'nullable', 'readonly', 'type']
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
