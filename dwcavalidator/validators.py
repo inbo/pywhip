@@ -39,8 +39,8 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, urixw
     """
-    mandatory_validations = ('empty', 'nullable')
-    priority_validations = ('empty', 'nullable', 'readonly', 'type')
+    #mandatory_validations = ['empty', 'nullable']  # empty
+    #priority_validations = ['empty', 'nullable', 'readonly', 'type']
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
@@ -77,7 +77,7 @@ class DwcaValidator(Validator):
         """convert empty strings to None values - assuming that the document
         structure will always be key:value (coming from DwcaReader)
         """
-        for key, value in doc.iteritems():
+        for key, value in doc.items():
             if value == "":
                 doc[key] = None
         return doc
@@ -107,7 +107,7 @@ class DwcaValidator(Validator):
                        --> dict/Mapping => (if type: ADD) + RECALL
                       }}
         """
-        for term, rules in schema.iteritems():
+        for term, rules in schema.items():
             if isinstance(rules, _str_type):
                 continue
             elif isinstance(rules, Sequence):
@@ -129,7 +129,7 @@ class DwcaValidator(Validator):
         (should be possible to simplify using mandatory_validations, but this
         provides bug in cerberus that needs further check)
         """
-        for term, rules in dict_schema.iteritems():
+        for term, rules in dict_schema.items():
             if 'empty' not in rules.keys():
                 rules['empty'] = False
         return dict_schema
@@ -320,10 +320,10 @@ class DwcaValidator(Validator):
 
         if isinstance(ifset, Mapping):
             # extract dict values -> conditions
-            conditions = {k: v for k, v in ifset.iteritems() if
+            conditions = {k: v for k, v in ifset.items() if
                           isinstance(v, dict)}
             # extract dict values -> rules
-            rules = {k: v for k, v in ifset.iteritems() if not
+            rules = {k: v for k, v in ifset.items() if not
                      isinstance(v, dict)}
 
             tempvalidator = DwcaValidator(conditions)
@@ -347,10 +347,10 @@ class DwcaValidator(Validator):
         elif isinstance(ifset, Sequence) and not isinstance(ifset, _str_type):
             for i, ifsubschema in enumerate(ifset):
                 # extract dict values -> conditions
-                conditions = {k: v for k, v in ifsubschema.iteritems() if
+                conditions = {k: v for k, v in ifsubschema.items() if
                               isinstance(v, dict)}
                 # extract dict values -> rules
-                rules = {k: v for k, v in ifsubschema.iteritems() if not
+                rules = {k: v for k, v in ifsubschema.items() if not
                          isinstance(v, dict)}
 
                 tempvalidator = DwcaValidator(conditions)
