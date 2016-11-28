@@ -63,3 +63,9 @@ target/
 
 examples/vlinders/*.zip
 examples/dummy*
+
+# exclude pycharm from history
+.idea
+
+# exclude temp_ tests and drafts from history
+temp_*
