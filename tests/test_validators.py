@@ -62,7 +62,7 @@ class TestDateValidator(unittest.TestCase):
         document = {'moment': '1700101'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                {'moment': 'could not be interpreted as date or datetime'})
+                {'moment': ['could not be interpreted as date or datetime']})
 
     def test_dateformat_line(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
@@ -185,7 +185,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex' : 'male | female | male'} # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': 'contains duplicate values in delimitedvalues'})
+                         {'sex': ['contains duplicate values in delimitedvalues']})
 
     def test_delimiter_single_occurence(self):
         """should be passed and just checked as such
@@ -202,7 +202,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex' : 'male ; female'} # False, due to wrong endname
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': {0: 'unallowed value male ; female'}})
+                         {'sex': [{0: ['unallowed value male ; female']}]})
 
     def test_delimiter_enddelim_not_allowed(self):
         """pipe too much which can not be split anymore
@@ -223,7 +223,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'stage' : '0.123 | 4.235'} # True
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'stage': {0: 'min value is 1.0'}})
+                         {'stage': [{0: ['min value is 1.0']}]})
 
     def test_no_delimiter_error(self):
         """raise Error when no delimiter field added
@@ -314,8 +314,8 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'lifestage': {'if_0': 'unallowed value juvenile',
-                                        'if_1': 'max length is 6'}})
+                         {'lifestage': [{'if_0': ['unallowed value juvenile'],
+                                        'if_1': ['max length is 6']}]})
 
     def test_multiple_if_pass(self):
         """document satisfies both if clauses at the same time
@@ -341,7 +341,7 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'basisOfRecord': {'if': 'unallowed value HumanObservation'}})
+                         {'basisOfRecord': [{'if': ['unallowed value HumanObservation']}]})
 
 class TestDataTypeValidator(unittest.TestCase):
 
@@ -621,7 +621,7 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'individualCount' : 'vijf'} # provide error on type mismatch
         val.validate(document)
         self.assertEqual(val.errors,
-                    {'individualCount': 'min validation ignores string type, add type validation'},
+                    {'individualCount': ['min validation ignores string type, add type validation']},
                     msg="alert on datatype mismatch for min evaluation fails")
 
     def test_max_int_string(self):
@@ -631,7 +631,7 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'code' : 'vijf'} # provide error on type mismatch
         val.validate(document)
         self.assertEqual(val.errors,
-                    {'code': 'max validation ignores string type, add type validation'},
+                    {'code': ['max validation ignores string type, add type validation']},
                     msg="alert on datatype mismatch for min evaluation fails")
 
     def test_allowed_string(self):
