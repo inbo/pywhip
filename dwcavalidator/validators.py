@@ -192,6 +192,22 @@ class DwcaValidator(Validator):
             self._error(field, "could not be interpreted as date or datetime")
             return None
 
+    @staticmethod
+    def _dateisrange(value):
+        """"""
+        if len(re.findall('([0-9])/([0-9])', value)) > 1:
+            NotImplemented
+        elif len(re.findall('([0-9])/([0-9])', value)) == 1:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def _dateformatisrange(value):
+        """"""
+        datesymbols = re.sub('[^a-zA-Z]', '', value)
+        return len(set(datesymbols)) != len(datesymbols)
+
     def _validate_mindate(self, min_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
@@ -240,20 +256,61 @@ class DwcaValidator(Validator):
                 self._error(field, "date is after max limit " +
                             max_date.date().isoformat())
 
+    def _help_dateformat(self, formatstr, value):
+        """"""
+        if self._dateformatisrange(formatstr):
+            if self._dateisrange(value):  # both ranges-> test
+                [self._help_dateformat(dt_format, dt) for
+                 dt_format, dt in zip(formatstr.split('/'), value.split('/'))]
+            else:
+                return False
+        else:
+            try:
+                datetime.strptime(value, formatstr)
+                tester = True
+            except ValueError:
+                tester = False
+                pass
+            return tester
+
     def _validate_dateformat(self, ref_value, field, value):
         """ {'type': ['string', 'list']} """
         # dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
         # dateformat : '%Y-%m'
+        tester = False
 
         if isinstance(ref_value, list):
-            tester = False
             for formatstr in ref_value:  # check if at least one comply
-                current_tester = self._help_dateformat(value, formatstr)
-                if current_tester:
+                current_test = self._help_dateformat(formatstr, value)
+                if current_test:
                     tester = True
+
         else:
-            formatstr = ref_value
-            tester = self._help_dateformat(value, formatstr)
+            tester = self._help_dateformat(ref_value, value)
+
+        if not tester:
+            self._error(field, "String format not compliant with " +
+                        ', '.join(ref_value))
+
+    def _validate_dateformat_old(self, ref_value, field, value):
+        """ {'type': ['string', 'list']} """
+        # dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
+        # dateformat : '%Y-%m'
+        print(ref_value, value)
+        if isinstance(ref_value, list):
+            for formatstr in ref_value:  # check if at least one comply
+                self._validate_dateformat(formatstr, field, value)
+
+        else:
+            if self._dateisrange(value):
+                if self._dateformatisrange(ref_value):  # both ranges-> test
+                    [self._validate_dateformat(dt_format, field, dt) for
+                     dt_format, dt in
+                     zip(ref_value.split('/'), value.split('/'))]
+                else:
+                    tester = False
+            else:
+                tester = self._help_dateformat(value, ref_value)
 
         if not tester:
             self._error(field, "String format not compliant with " +
