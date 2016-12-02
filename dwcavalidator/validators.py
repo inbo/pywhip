@@ -39,7 +39,7 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, urixw
     """
-    # mandatory_validations = ['empty', 'nullable']  # empty
+    mandatory_validations = ['nullable']  # empty
     priority_validations = ['empty', 'nullable', 'readonly', 'type']
 
     def __init__(self, *args, **kwargs):
@@ -201,16 +201,20 @@ class DwcaValidator(Validator):
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
 
-        # convert schema info to datetime to enable comparison
-        if isinstance(min_date, date):
-            min_date = datetime.combine(min_date, datetime.min.time())
+        if self._dateisrange(value):
+            [self._validate_mindate(min_date, field, valdate) for valdate in
+             value.split("/")]
+        else:
+            # convert schema info to datetime to enable comparison
+            if isinstance(min_date, date):
+                min_date = datetime.combine(min_date, datetime.min.time())
 
-        # try to parse the datetime-format
-        event_date = self._parse_date(field, value)
-        if event_date:
-            if event_date < min_date:
-                self._error(field, "date is before min limit " +
-                            min_date.date().isoformat())
+            # try to parse the datetime-format
+            event_date = self._parse_date(field, value)
+            if event_date:
+                if event_date < min_date:
+                    self._error(field, "date is before min limit " +
+                                min_date.date().isoformat())
 
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
@@ -221,9 +225,13 @@ class DwcaValidator(Validator):
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
 
-        # convert schema info to datetime to enable comparison
-        if isinstance(max_date, date):
-            max_date = datetime.combine(max_date, datetime.min.time())
+        if self._dateisrange(value):
+            [self._validate_maxdate(max_date, field, valdate) for valdate in
+             value.split("/")]
+        else:
+            # convert schema info to datetime to enable comparison
+            if isinstance(max_date, date):
+                max_date = datetime.combine(max_date, datetime.min.time())
 
         # try to parse the datetime-format
         event_date = self._parse_date(field, value)
@@ -240,21 +248,16 @@ class DwcaValidator(Validator):
         if isinstance(ref_value, list):
             tester = False
             for formatstr in ref_value:  # check if at least one comply
-                try:
-                    datetime.strptime(value, formatstr)
+                current_tester = self._help_dateformat(value, formatstr)
+                if current_tester:
                     tester = True
-                except ValueError:
-                    pass
         else:
-            try:
-                datetime.strptime(value, ref_value)
-                tester = True
-            except ValueError:
-                tester = False
+            formatstr = ref_value
+            tester = self._help_dateformat(value, formatstr)
 
         if not tester:
             self._error(field, "String format not compliant with " +
-                        formatstr)
+                        ', '.join(ref_value))
 
     def _validate_equals(self, ref_value, field, value):
         """ {'type': ['integer', 'float']} """
