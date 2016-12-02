@@ -135,6 +135,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'size' : '1234'} # True
         self.assertTrue(val.validate(document))
 
+
 class TestDelimitedValuesValidator(unittest.TestCase):
 
     def setUp(self):
@@ -253,6 +254,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 ##        """
 ##        #to check how enlist well be handled... (let op unieke enkel behouden)
 
+
 class TestIfValidator(unittest.TestCase):
 
     def setUp(self):
@@ -343,6 +345,7 @@ class TestIfValidator(unittest.TestCase):
         self.assertEqual(val.errors,
                          {'basisOfRecord': [{'if': ['unallowed value HumanObservation']}]})
 
+
 class TestDataTypeValidator(unittest.TestCase):
 
     def test_json_type(self):
@@ -401,6 +404,7 @@ class TestLengthValidator(unittest.TestCase):
         document = {'verbatimCoordinateSystem' : '3'}
         self.assertFalse(val.validate(document))
 
+
 class TestEqualsValidator(unittest.TestCase):
     """
     equals is a new validator type created for the DwcaValidator that works on
@@ -434,6 +438,7 @@ class TestEqualsValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'precision' : 200.001}
         self.assertFalse(val.validate(document))
+
 
 class TestCerberusTypeValidator(unittest.TestCase):
     """
@@ -501,6 +506,7 @@ class TestCerberusTypeValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_dtypes))
         document = {'datum': datetime(2016, 11, 2)}
         self.assertTrue(val.validate(document))
+
 
 class TestCerberusValidator(unittest.TestCase):
     """Test validation methods that are native to Cerberus already
