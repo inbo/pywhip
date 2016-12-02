@@ -260,17 +260,23 @@ class DwcaValidator(Validator):
         """"""
         if self._dateformatisrange(formatstr):
             if self._dateisrange(value):  # both ranges-> test
-                [self._help_dateformat(dt_format, dt) for
-                 dt_format, dt in zip(formatstr.split('/'), value.split('/'))]
+                range_test = [self._help_dateformat(dt_format, dt) for
+                              dt_format, dt in zip(formatstr.split('/'),
+                                                   value.split('/'))]
+                # both must be valid interpretable dates
+                return sum(range_test) == 2
+
             else:
                 return False
         else:
+
             try:
                 datetime.strptime(value, formatstr)
                 tester = True
             except ValueError:
                 tester = False
                 pass
+            print(tester)
             return tester
 
     def _validate_dateformat(self, ref_value, field, value):
