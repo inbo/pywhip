@@ -304,10 +304,10 @@ delimitedvalues:
   required: true   # No empty delimited values
   type: url
   allowed: [male, female] # Delimited values equal male or female
-  minlength: 8       
-  maxlength: 8             
+  minlength: 8
+  maxlength: 8
   min: 1
-  max: 1  
+  max: 1 
   numberformat: .3f
   regex: ...
   listvalues: true  # List unique delimited values across all records - TODO
@@ -322,7 +322,7 @@ Subfunction to perform tests based on the tests on another term. All tests on th
 ```YAML
 if:
     basisOfRecord:              # Another term
-      populated: true           # basisOfRecord must be populated
+      empty: False           # basisOfRecord must be populated
       allowed: HumanObservation # AND basisOfRecord must be "HumanObservation"
     allowed: Event              # Then the main term must be "Event"
     empty: False              # Then the main term can not be empty
