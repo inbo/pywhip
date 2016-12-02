@@ -11,10 +11,6 @@ from dwcavalidator.validators import DwcaValidator
 from dwca.read import DwCAReader
 
 
-#%% Read the archive
-#with DwCAReader('./broedvogel_corrupted_subset.zip') as dwca:
-#    test = dwca.get_row_by_index(1)
-
 #%% Read the YAML file
 schema = yaml.load(open('./settings.yaml'))
 
@@ -31,7 +27,10 @@ with DwCAReader('./broedvogel_corrupted_subset.zip') as dwca:
         v.validate(document)
         if len(v.errors) > 0:
             errors[row.id] = v.errors
+            temp = v.errors
 print(errors)
+
+
 
 
 
