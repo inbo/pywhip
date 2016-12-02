@@ -195,7 +195,7 @@ class TestEmptyStringHandling(unittest.TestCase):
                     {'abundance': None},
                     msg="pre-conversion of empty strings to None not supported")
 
-    def test_default_ignore_empty_string(self):
+    def test_default_error_empty_string(self):
         """empty string (converted to None values) should provide an error
         by default
         """
