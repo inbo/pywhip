@@ -321,11 +321,10 @@ Subfunction to perform tests based on the tests on another term. All tests on th
 
 ```YAML
 if:
-    basisOfRecord:              # Another term
-      empty: False           # basisOfRecord must be populated
-      allowed: HumanObservation # AND basisOfRecord must be "HumanObservation"
-    allowed: Event              # Then the main term must be "Event"
-    empty: False              # Then the main term can not be empty
+	basisOfRecord:
+	    allowed: [HumanObservation]
+	allowed: [Event]
+	empty: False
 ```
 
 To combine multiple if-statements, these need to be grouped as follows:
