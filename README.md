@@ -20,25 +20,22 @@ Term 2:
   Test 3
 ```
 
-All validation information will be stored in a dictionary object, referring to the term, the type of test, and some logging information:
+All validation information will be stored in a dictionary object, referring to the term, the type of test, and some logging information, in order to provide the user with feedback on possible improvements. 
 
-* Number of tests that succeeded and failed or the record IDs of those.
-* Examples of unique values that failed (with a maximum of 10):
+* Number of tests that failed or the record IDs of those.
+* Unique values that failed
 
 ```python
 {
     Term: {
         TestType: {
             "ids": [id1, id2,...],
-            "sample": [value1,...value10]
         }
     }
 }
 ```
 
 The resulting object will be processed by a report creator, which provides an overview of the current problems for each of the performed tests.
-
-We could rely on the functionality of marshmallow, as provided in following example: https://gist.github.com/bartaelterman/737b92dd3c58d749717e
 
 ## Test types
 
@@ -235,8 +232,8 @@ Does the date/datetime objects fall after a given date?
 # Records without data: are ignored
 # Records of wrong data type: fail test
 
-mindate: 1830-01-01  # After 1 Jan 1830
-mindate: 2014-10-20 # After 20 October 2014
+maxdate: 1830-01-01  # After 1 Jan 1830
+maxdate: 2014-10-20 # After 20 October 2014
 ```
 
 ### numberformat
@@ -264,6 +261,7 @@ http://strftime.org/
 
 ```YAML
 dateformat:['%Y-%m-%d', '%Y-%m', '%Y'] # Will match specific date formats
+dateformat:['%Y-%m-%d/%Y-%m-%d'] # Will match a date range
 ```
 
 ### regex
@@ -279,7 +277,8 @@ Does the data match a specific regex expression?
 regex: # No example yet
 ```
 
-### listvalues
+### listvalues 
+**proposal, not implemented yet**
 
 Not a test, will just list all unique values in the output.
 
