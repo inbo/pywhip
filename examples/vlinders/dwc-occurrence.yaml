@@ -121,8 +121,8 @@ eventDate:
   maxdate: 2014-10-20
 
 verbatimEventDate:
-  dateformat: ['%Y-%m-%d', '%Y-%m', '%Y']
-  #dateformat: ['%Y-%m-%d/%Y-%m-%d', '%Y-%m/%Y-%m', '%Y/%Y'] # Only accept ranges
+  #dateformat: ['%Y-%m-%d', '%Y-%m', '%Y']
+  dateformat: ['%Y-%m-%d/%Y-%m-%d', '%Y-%m/%Y-%m', '%Y/%Y'] # Only accept ranges
 
 # locationID
 
@@ -182,7 +182,6 @@ decimalLatitude:
   max: 51.51
 
 decimalLongitude:
-  empty: True
   type: float
   numberformat: '.5'
   min: 2.54
