@@ -140,7 +140,7 @@ class TestAllowedExtension(unittest.TestCase):
     def setUp(self):
         self.yaml_string = """
                            abundance:
-                               allowed: many
+                               allowed: [many]
                            sex:
                                allowed: [male, female]
                            """
@@ -195,7 +195,7 @@ class TestEmptyStringHandling(unittest.TestCase):
                     {'abundance': None},
                     msg="pre-conversion of empty strings to None not supported")
 
-    def test_default_ignore_empty_string(self):
+    def test_default_error_empty_string(self):
         """empty string (converted to None values) should provide an error
         by default
         """
@@ -215,7 +215,7 @@ class TestEmptyStringHandling(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.empty1))
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'number': 'empty values not allowed'})
+                         {'number': ['empty values not allowed']})
 
     def test_empty_allow_explicit(self):
         document = {'number': ''}

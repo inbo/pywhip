@@ -39,8 +39,8 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, urixw
     """
-    mandatory_validations = ('empty', 'nullable')
-    priority_validations = ('empty', 'nullable', 'readonly', 'type')
+    mandatory_validations = ['nullable']  # empty
+    priority_validations = ['empty', 'nullable', 'readonly', 'type']
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
@@ -77,7 +77,7 @@ class DwcaValidator(Validator):
         """convert empty strings to None values - assuming that the document
         structure will always be key:value (coming from DwcaReader)
         """
-        for key, value in doc.iteritems():
+        for key, value in doc.items():
             if value == "":
                 doc[key] = None
         return doc
@@ -107,7 +107,7 @@ class DwcaValidator(Validator):
                        --> dict/Mapping => (if type: ADD) + RECALL
                       }}
         """
-        for term, rules in schema.iteritems():
+        for term, rules in schema.items():
             if isinstance(rules, _str_type):
                 continue
             elif isinstance(rules, Sequence):
@@ -129,7 +129,7 @@ class DwcaValidator(Validator):
         (should be possible to simplify using mandatory_validations, but this
         provides bug in cerberus that needs further check)
         """
-        for term, rules in dict_schema.iteritems():
+        for term, rules in dict_schema.items():
             if 'empty' not in rules.keys():
                 rules['empty'] = False
         return dict_schema
@@ -145,7 +145,7 @@ class DwcaValidator(Validator):
 
     def _validate_empty(self, empty, field, value):
         """ {'type': 'boolean'} """
-        # port the nullable logic to the empty logic
+        # port the nullable logic of cerberus to the empty logic
         if field in self.document_str_version.keys():
             value_str = self.document_str_version[field]
             if isinstance(value_str, _str_type) and len(value_str) == 0:
@@ -192,6 +192,22 @@ class DwcaValidator(Validator):
             self._error(field, "could not be interpreted as date or datetime")
             return None
 
+    @staticmethod
+    def _dateisrange(value):
+        """"""
+        if len(re.findall('([0-9])/([0-9])', value)) > 1:
+            NotImplemented
+        elif len(re.findall('([0-9])/([0-9])', value)) == 1:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def _dateformatisrange(value):
+        """"""
+        datesymbols = re.sub('[^a-zA-Z]', '', value)
+        return len(set(datesymbols)) != len(datesymbols)
+
     def _validate_mindate(self, min_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
@@ -201,16 +217,20 @@ class DwcaValidator(Validator):
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
 
-        # convert schema info to datetime to enable comparison
-        if isinstance(min_date, date):
-            min_date = datetime.combine(min_date, datetime.min.time())
+        if self._dateisrange(value):
+            [self._validate_mindate(min_date, field, valdate) for valdate in
+             value.split("/")]
+        else:
+            # convert schema info to datetime to enable comparison
+            if isinstance(min_date, date):
+                min_date = datetime.combine(min_date, datetime.min.time())
 
-        # try to parse the datetime-format
-        event_date = self._parse_date(field, value)
-        if event_date:
-            if event_date < min_date:
-                self._error(field, "date is before min limit " +
-                            min_date.date().isoformat())
+            # try to parse the datetime-format
+            event_date = self._parse_date(field, value)
+            if event_date:
+                if event_date < min_date:
+                    self._error(field, "date is before min limit " +
+                                min_date.date().isoformat())
 
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
@@ -221,9 +241,13 @@ class DwcaValidator(Validator):
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
 
-        # convert schema info to datetime to enable comparison
-        if isinstance(max_date, date):
-            max_date = datetime.combine(max_date, datetime.min.time())
+        if self._dateisrange(value):
+            [self._validate_maxdate(max_date, field, valdate) for valdate in
+             value.split("/")]
+        else:
+            # convert schema info to datetime to enable comparison
+            if isinstance(max_date, date):
+                max_date = datetime.combine(max_date, datetime.min.time())
 
         # try to parse the datetime-format
         event_date = self._parse_date(field, value)
@@ -232,29 +256,70 @@ class DwcaValidator(Validator):
                 self._error(field, "date is after max limit " +
                             max_date.date().isoformat())
 
+    def _help_dateformat(self, formatstr, value):
+        """"""
+        if self._dateformatisrange(formatstr):
+            if self._dateisrange(value):  # both ranges-> test
+                range_test = [self._help_dateformat(dt_format, dt) for
+                              dt_format, dt in zip(formatstr.split('/'),
+                                                   value.split('/'))]
+                # both must be valid interpretable dates
+                return sum(range_test) == 2
+
+            else:
+                return False
+        else:
+
+            try:
+                datetime.strptime(value, formatstr)
+                tester = True
+            except ValueError:
+                tester = False
+                pass
+            return tester
+
     def _validate_dateformat(self, ref_value, field, value):
         """ {'type': ['string', 'list']} """
         # dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
         # dateformat : '%Y-%m'
+        tester = False
 
         if isinstance(ref_value, list):
-            tester = False
             for formatstr in ref_value:  # check if at least one comply
-                try:
-                    datetime.strptime(value, formatstr)
+                current_test = self._help_dateformat(formatstr, value)
+                if current_test:
                     tester = True
-                except ValueError:
-                    pass
+
         else:
-            try:
-                datetime.strptime(value, ref_value)
-                tester = True
-            except ValueError:
-                tester = False
+            tester = self._help_dateformat(ref_value, value)
 
         if not tester:
             self._error(field, "String format not compliant with " +
-                        formatstr)
+                        ', '.join(ref_value))
+
+    def _validate_dateformat_old(self, ref_value, field, value):
+        """ {'type': ['string', 'list']} """
+        # dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
+        # dateformat : '%Y-%m'
+        print(ref_value, value)
+        if isinstance(ref_value, list):
+            for formatstr in ref_value:  # check if at least one comply
+                self._validate_dateformat(formatstr, field, value)
+
+        else:
+            if self._dateisrange(value):
+                if self._dateformatisrange(ref_value):  # both ranges-> test
+                    [self._validate_dateformat(dt_format, field, dt) for
+                     dt_format, dt in
+                     zip(ref_value.split('/'), value.split('/'))]
+                else:
+                    tester = False
+            else:
+                tester = self._help_dateformat(value, ref_value)
+
+        if not tester:
+            self._error(field, "String format not compliant with " +
+                        ', '.join(ref_value))
 
     def _validate_equals(self, ref_value, field, value):
         """ {'type': ['integer', 'float']} """
@@ -320,10 +385,10 @@ class DwcaValidator(Validator):
 
         if isinstance(ifset, Mapping):
             # extract dict values -> conditions
-            conditions = {k: v for k, v in ifset.iteritems() if
+            conditions = {k: v for k, v in ifset.items() if
                           isinstance(v, dict)}
             # extract dict values -> rules
-            rules = {k: v for k, v in ifset.iteritems() if not
+            rules = {k: v for k, v in ifset.items() if not
                      isinstance(v, dict)}
 
             tempvalidator = DwcaValidator(conditions)
@@ -347,10 +412,10 @@ class DwcaValidator(Validator):
         elif isinstance(ifset, Sequence) and not isinstance(ifset, _str_type):
             for i, ifsubschema in enumerate(ifset):
                 # extract dict values -> conditions
-                conditions = {k: v for k, v in ifsubschema.iteritems() if
+                conditions = {k: v for k, v in ifsubschema.items() if
                               isinstance(v, dict)}
                 # extract dict values -> rules
-                rules = {k: v for k, v in ifsubschema.iteritems() if not
+                rules = {k: v for k, v in ifsubschema.items() if not
                          isinstance(v, dict)}
 
                 tempvalidator = DwcaValidator(conditions)

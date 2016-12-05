@@ -34,6 +34,10 @@ class TestDateValidator(unittest.TestCase):
                                  moment:
                                      maxdate: 2014-10-20
                                  """
+        self.yaml_string_date5 = """
+                                 moment:
+                                     dateformat: '%Y-%m-%d/%Y-%m-%d'
+                                 """
 
     def test_daterange_iso(self):
         # isoformat
@@ -62,7 +66,7 @@ class TestDateValidator(unittest.TestCase):
         document = {'moment': '1700101'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                {'moment': 'could not be interpreted as date or datetime'})
+                {'moment': ['could not be interpreted as date or datetime']})
 
     def test_dateformat_line(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
@@ -83,6 +87,21 @@ class TestDateValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string_date3))
         document = {'moment': '1997-01'}  # True
         self.assertTrue(val.validate(document))
+
+    def test_dateformat_period_valid(self):
+        val = DwcaValidator(yaml.load(self.yaml_string_date5))
+        document = {'moment': '1997-02-01/2001-03-01'}  # True
+        self.assertTrue(val.validate(document))
+
+    def test_dateformat_period_invalid_first(self):
+        val = DwcaValidator(yaml.load(self.yaml_string_date5))
+        document = {'moment': '1997-02/2001-03-01'}  # True
+        self.assertFalse(val.validate(document))
+
+    def test_dateformat_period_invalid_last(self):
+        val = DwcaValidator(yaml.load(self.yaml_string_date5))
+        document = {'moment': '1997-02-01/03-01'}  # True
+        self.assertFalse(val.validate(document))
 
 
 class TestNumberFormatValidator(unittest.TestCase):
@@ -135,6 +154,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'size' : '1234'} # True
         self.assertTrue(val.validate(document))
 
+
 class TestDelimitedValuesValidator(unittest.TestCase):
 
     def setUp(self):
@@ -185,7 +205,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex' : 'male | female | male'} # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': 'contains duplicate values in delimitedvalues'})
+                         {'sex': ['contains duplicate values in delimitedvalues']})
 
     def test_delimiter_single_occurence(self):
         """should be passed and just checked as such
@@ -202,7 +222,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex' : 'male ; female'} # False, due to wrong endname
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': {0: 'unallowed value male ; female'}})
+                         {'sex': [{0: ['unallowed value male ; female']}]})
 
     def test_delimiter_enddelim_not_allowed(self):
         """pipe too much which can not be split anymore
@@ -223,7 +243,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'stage' : '0.123 | 4.235'} # True
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'stage': {0: 'min value is 1.0'}})
+                         {'stage': [{0: ['min value is 1.0']}]})
 
     def test_no_delimiter_error(self):
         """raise Error when no delimiter field added
@@ -252,6 +272,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 ##        """combine the listvalues within the delimitedvalues
 ##        """
 ##        #to check how enlist well be handled... (let op unieke enkel behouden)
+
 
 class TestIfValidator(unittest.TestCase):
 
@@ -314,8 +335,8 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'lifestage': {'if_0': 'unallowed value juvenile',
-                                        'if_1': 'max length is 6'}})
+                         {'lifestage': [{'if_0': ['unallowed value juvenile'],
+                                        'if_1': ['max length is 6']}]})
 
     def test_multiple_if_pass(self):
         """document satisfies both if clauses at the same time
@@ -341,7 +362,8 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'basisOfRecord': {'if': 'unallowed value HumanObservation'}})
+                         {'basisOfRecord': [{'if': ['unallowed value HumanObservation']}]})
+
 
 class TestDataTypeValidator(unittest.TestCase):
 
@@ -401,6 +423,7 @@ class TestLengthValidator(unittest.TestCase):
         document = {'verbatimCoordinateSystem' : '3'}
         self.assertFalse(val.validate(document))
 
+
 class TestEqualsValidator(unittest.TestCase):
     """
     equals is a new validator type created for the DwcaValidator that works on
@@ -434,6 +457,7 @@ class TestEqualsValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'precision' : 200.001}
         self.assertFalse(val.validate(document))
+
 
 class TestCerberusTypeValidator(unittest.TestCase):
     """
@@ -501,6 +525,7 @@ class TestCerberusTypeValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_dtypes))
         document = {'datum': datetime(2016, 11, 2)}
         self.assertTrue(val.validate(document))
+
 
 class TestCerberusValidator(unittest.TestCase):
     """Test validation methods that are native to Cerberus already
@@ -621,7 +646,7 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'individualCount' : 'vijf'} # provide error on type mismatch
         val.validate(document)
         self.assertEqual(val.errors,
-                    {'individualCount': 'min validation ignores string type, add type validation'},
+                    {'individualCount': ['min validation ignores string type, add type validation']},
                     msg="alert on datatype mismatch for min evaluation fails")
 
     def test_max_int_string(self):
@@ -631,7 +656,7 @@ class TestCerberusValidator(unittest.TestCase):
         document = {'code' : 'vijf'} # provide error on type mismatch
         val.validate(document)
         self.assertEqual(val.errors,
-                    {'code': 'max validation ignores string type, add type validation'},
+                    {'code': ['max validation ignores string type, add type validation']},
                     msg="alert on datatype mismatch for min evaluation fails")
 
     def test_allowed_string(self):
