@@ -276,7 +276,6 @@ class DwcaValidator(Validator):
             except ValueError:
                 tester = False
                 pass
-            print(tester)
             return tester
 
     def _validate_dateformat(self, ref_value, field, value):
