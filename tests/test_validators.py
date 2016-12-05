@@ -34,6 +34,10 @@ class TestDateValidator(unittest.TestCase):
                                  moment:
                                      maxdate: 2014-10-20
                                  """
+        self.yaml_string_date5 = """
+                                 moment:
+                                     dateformat: '%Y-%m-%d/%Y-%m-%d'
+                                 """
 
     def test_daterange_iso(self):
         # isoformat
@@ -83,6 +87,21 @@ class TestDateValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string_date3))
         document = {'moment': '1997-01'}  # True
         self.assertTrue(val.validate(document))
+
+    def test_dateformat_period_valid(self):
+        val = DwcaValidator(yaml.load(self.yaml_string_date5))
+        document = {'moment': '1997-02-01/2001-03-01'}  # True
+        self.assertTrue(val.validate(document))
+
+    def test_dateformat_period_invalid_first(self):
+        val = DwcaValidator(yaml.load(self.yaml_string_date5))
+        document = {'moment': '1997-02/2001-03-01'}  # True
+        self.assertFalse(val.validate(document))
+
+    def test_dateformat_period_invalid_last(self):
+        val = DwcaValidator(yaml.load(self.yaml_string_date5))
+        document = {'moment': '1997-02-01/03-01'}  # True
+        self.assertFalse(val.validate(document))
 
 
 class TestNumberFormatValidator(unittest.TestCase):
