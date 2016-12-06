@@ -61,8 +61,10 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-examples/vlinders/*.zip
+examples/*/*.zip
 examples/dummy*
+examples/*/dwca-*
+examples/*/*natuurpunt-occurrences*
 
 # exclude pycharm from history
 .idea
