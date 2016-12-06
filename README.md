@@ -1,4 +1,4 @@
-# Python Darwin Core Archive validator
+# Data-validator: Specify and validate your DWCA data requirements 
 
 *Note: this project is in under development. The documentation might not reflect the current functionality.*
 
