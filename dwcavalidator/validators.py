@@ -242,19 +242,19 @@ class DwcaValidator(Validator):
         # ensured
 
         if self._dateisrange(value):
-            [self._validate_maxdate(max_date, field, valdate) for valdate in
-             value.split("/")]
+            for valdate in value.split("/"):
+                self._validate_maxdate(max_date, field, valdate)
         else:
             # convert schema info to datetime to enable comparison
             if isinstance(max_date, date):
                 max_date = datetime.combine(max_date, datetime.min.time())
 
-        # try to parse the datetime-format
-        event_date = self._parse_date(field, value)
-        if event_date:
-            if event_date > max_date:
-                self._error(field, "date is after max limit " +
-                            max_date.date().isoformat())
+            # try to parse the datetime-format
+            event_date = self._parse_date(field, value)
+            if event_date:
+                if event_date > max_date:
+                    self._error(field, "date is after max limit " +
+                                max_date.date().isoformat())
 
     def _help_dateformat(self, formatstr, value):
         """"""
