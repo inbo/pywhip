@@ -1,0 +1,49 @@
+occurrenceID:
+ empty: False # Every record should have an occurrenceID.
+
+basisOfRecord:
+ allowed: [HumanObservation, PreservedSpecimen, Occurrence]
+
+eventDate:
+ dateformat: ['%Y-%m-%d', '%Y-%m', '%Y'] # The ISO8601 format, but no ranges
+ mindate: 1830-01-01
+ maxdate: 2014-12-31
+
+decimalLatitude:
+ type: float
+ numberformat: '.5'
+ # Coordinates are within Flanders, Belgium
+ min: 50.68
+ max: 51.51
+
+decimalLongitude:
+ type: float
+ numberformat: '.5'
+ # Coordinates are within Flanders, Belgium
+ min: 2.54
+ max: 5.92
+
+recordedBy:
+ delimitedvalues:
+   delimiter: " | " # Observers are delimited with space pipe space
+   regex: 'observerID:.+'
+   maxlength: 17 # ID contains 6 characters (11 for observerID: + 6 for ID itself)
+
+## Additional tests, not expressed in the Markdown documentation.
+
+individualCount:
+ type: integer
+ min: 1
+ max: 200
+ 
+type:
+ if:
+   - basisOfRecord:
+       allowed: [HumanObservation]
+     allowed: [Event]
+   - basisOfRecord:
+       allowed: [PreservedSpecimen]
+     allowed: [PhysicalObject]
+   - basisOfRecord:
+       allowed: [Occurrence]
+     allowed: [Text]
