@@ -59,6 +59,14 @@ class DwcaScreening(object):
             lowercase_schema[dwcterm.lower()] = specification
         return lowercase_schema
 
+    def _isitgreat(self):
+        """chekck if there are any errors recorded"""
+        if len(self.errors) == 0:
+            print("Hooray, your data set is according to the guidelines!")
+        else:
+            print('Dataset does not comply the specifications, check errors'
+                  ' for a more detailed information.')
+
     def screen_dwca(self, dwca_zip, maxentries=None):
         """"""
         with DwCAReader(dwca_zip) as dwca:
@@ -73,6 +81,7 @@ class DwcaScreening(object):
                     if j >= maxentries-1:
                         break
         self._error_list_ids()
+        self._isitgreat()
 
     def screen_dwc(self, dwc_csv, delimiter, maxentries=None):
         """"""
@@ -87,6 +96,7 @@ class DwcaScreening(object):
                         break
 
         self._error_list_ids()
+        self._isitgreat()
 
     def _error_list_ids(self):
         """"""
@@ -98,9 +108,26 @@ class DwcaScreening(object):
                     for error in errormessage:
                         self._errorlog[term][error].append(ids)
 
-    def export_table(self, filename):
+    @staticmethod
+    def _get_list_items(value):
         """"""
-        return pd.DataFrame(self.errors).transpose().to_csv(filename)
+        if isinstance(value, list):
+            return value[0]
+        else:
+            return value
+
+    def export_table(self, filename=None):
+        """"""
+        errors_table = pd.DataFrame(self.errors).transpose()\
+            .applymap(self._get_list_items)
+
+        if len(errors_table) == 0:
+            print("No report generated. No worries, your data set is "
+                  "according to the guidelines!")
+        if filename:
+            errors_table.to_csv(filename)
+        else:
+            return errors_table
 
     def list_error_types(self):
         """"""
