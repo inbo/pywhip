@@ -11,7 +11,7 @@ import yaml
 import unittest
 from datetime import datetime
 
-from dwcavalidator.validators import DwcaValidator
+from pywhip.validators import DwcaValidator
 
 
 class TestDateValidator(unittest.TestCase):

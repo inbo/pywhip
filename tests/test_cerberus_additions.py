@@ -6,10 +6,11 @@ Created on Thu Apr 28 11:07:56 2016
 """
 
 import unittest
+import pytest
 
 import yaml
 
-from dwcavalidator.validators import DwcaValidator
+from pywhip.validators import DwcaValidator
 
 
 class TestCoerceAddition(unittest.TestCase):
