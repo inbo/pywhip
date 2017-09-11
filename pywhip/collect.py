@@ -10,9 +10,9 @@ import yaml
 
 from collections import defaultdict
 
-import pandas as pd
+#import pandas as pd
 
-from dwcavalidator.validators import DwcaValidator
+from pywhip.validators import DwcaValidator
 from dwca.read import DwCAReader
 
 
@@ -118,6 +118,9 @@ class DwcaScreening(object):
 
     def export_table(self, filename=None):
         """"""
+        NotImplemented
+
+        """
         errors_table = pd.DataFrame(self.errors).transpose()\
             .applymap(self._get_list_items)
 
@@ -128,6 +131,7 @@ class DwcaScreening(object):
             errors_table.to_csv(filename)
         else:
             return errors_table
+        """
 
     def list_error_types(self):
         """"""
