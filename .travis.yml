@@ -32,7 +32,7 @@ python:
     - 2.7
 script:
     - tox
-    - travis-sphinx --source=docs build
+    - travis-sphinx --source=docs --nowarn build
 
 after_success:
     travis-sphinx deploy
