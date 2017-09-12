@@ -1,0 +1,6 @@
+Click>=6.0
+python-dwca-reader
+cerberus
+pyaml
+rfc3987
+python-dateutil

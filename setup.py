@@ -11,14 +11,8 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'Click>=6.0',
-    'python-dwca-reader', 
-    'cerberus', 
-    'pyaml', 
-    'rfc3987',
-    'python-dateutil'
-]
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
 
 setup_requirements = [
     'pytest-runner',
