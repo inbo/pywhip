@@ -16,7 +16,8 @@ requirements = [
     'python-dwca-reader', 
     'cerberus', 
     'pyaml', 
-    'rfc3987'
+    'rfc3987',
+    'python-dateutil'
 ]
 
 setup_requirements = [
