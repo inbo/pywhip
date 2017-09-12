@@ -58,16 +58,18 @@ docs/_build/
 # PyBuilder
 target/
 
+# pyenv python configuration file
+.python-version
+
 #Ipython Notebook
 .ipynb_checkpoints
-
-examples/*/*.zip
-examples/dummy*
-examples/*/dwca-*
-examples/*/*natuurpunt-occurrences*
 
 # exclude pycharm from history
 .idea
 
-# exclude temp_ tests and drafts from history
+# exclude temp_ tests, non-docs examples and drafts from history
 temp_*
+examples/*/*.zip
+examples/dummy*
+examples/*/dwca-*
+examples/*/*natuurpunt-occurrences*
