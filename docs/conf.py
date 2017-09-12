@@ -23,8 +23,7 @@ import sphinx.environment
 from docutils.utils import get_source_line
 
 def _warn_node(self, msg, node, **kwargs):
-    if not msg.startswith('nonlocal image URI found:') and not 
-        msg.startswith('toctree contains reference to nonexisting document'):
+    if not msg.startswith('nonlocal image URI found:') and not msg.startswith('toctree contains reference to nonexisting document'):
         self._warnfunc(msg, '%s:%s' % get_source_line(node), **kwargs)
 
 sphinx.environment.BuildEnvironment.warn_node = _warn_node
