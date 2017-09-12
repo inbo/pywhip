@@ -16,6 +16,18 @@
 import sys
 import os
 
+# Monkeypatch to overcome non-local URI values
+# should be an option in future sphinx versions
+# https://stackoverflow.com/questions/12772927/specifying-an-online-image-in-sphinx-restructuredtext-format
+import sphinx.environment
+from docutils.utils import get_source_line
+
+def _warn_node(self, msg, node, **kwargs):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node), **kwargs)
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
+
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
