@@ -3,6 +3,8 @@ Welcome to pywhip's documentation!
 
 Contents:
 
+The pywhip package is a Python package to validate data against whip specifications
+
 .. toctree::
    :maxdepth: 2
 
