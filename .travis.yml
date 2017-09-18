@@ -28,13 +28,14 @@ deploy:
         NW9ncEFXUzRsMUZzS3pERTNUNCs5dkFraW9jZHN6bUpuOXpDdTkwaERhM1FCWDhUTXVRU28rNWlk
         cmhQSE9XZXhQazZ5YzJyUDRodnJlSlc5bzJaV2o4MjRLZU9wbmdiQlMveW9JcU83NlRCdXY0WCtD
         V1Fnb3JaUUNqdUVFNHpOMkdVR2dHRkQrYjBuYm5XRkYyaFlyWWZkVWVwdTVBTTJFVlF4KzliS0U9
+    skip_cleanup: true
     on:
       python: 2.7
       repo: inbo/pywhip
       tags: true
   - provider: script
+    skip_cleanup: true
     script:
-      - skip_cleanup: true
       - travis-sphinx --source=docs --nowarn build
       - travis-sphinx deploy
     on:
