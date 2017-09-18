@@ -34,7 +34,6 @@ deploy:
       repo: inbo/pywhip
       tags: true
   - provider: script
-    skip_cleanup: true
     script:
       - travis-sphinx --source=docs --nowarn build
       - travis-sphinx deploy
