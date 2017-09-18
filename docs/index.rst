@@ -13,6 +13,7 @@ Contents:
    contributing
    authors
    history
+   markdown
 
 Indices and tables
 ==================
