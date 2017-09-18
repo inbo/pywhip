@@ -1,2 +1,0 @@
-
-# Pywhip documentation markdown showcase
