@@ -11,7 +11,6 @@ python:
 script:
     tox
 deploy:
-  - skip_cleanup: true
   - user: stvhoey
     provider: pypi
     distributions: sdist bdist_wheel
@@ -35,6 +34,7 @@ deploy:
       tags: true
   - provider: script
     script:
+      - skip_cleanup: true
       - travis-sphinx --source=docs --nowarn build
       - travis-sphinx deploy
     on:
