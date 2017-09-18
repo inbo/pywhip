@@ -10,29 +10,32 @@ python:
     - 2.7
 script:
     tox
-after_success:
-    - travis-sphinx --source=docs --nowarn build
-    - travis-sphinx deploy
 deploy:
-  user: stvhoey
-  provider: pypi
-  distributions: sdist bdist_wheel
-  password:
-    secure: !!binary |
-      a2tNejBNZjRLUlRCb0plR3VsN0hGa25BcjE3U09UVXFyNzZsQ1BsM2IxeFV4Z0dhN2drSjhjVFNk
-      U0tKMUZiK2tKZTVIdWN3TERZS2IwNlVOT0hsZEdOakZlWkpOOTJRckFpMjBpUFRpazNqUkdIbUxX
-      SnhmOHl1WWdwT1RVZW92cmRXRUxXQXMxTEpTVDRqbXJ2YmM3VWczZXVVNno1OUx6c3RTQmdML09x
-      ZDVIdytQTklKb25idlF2bmVXYnEvM2tocERMOGZ3dEFtMUZEZlg2NzVwYjU1TmFqVmprelVXR3dh
-      UUY3MlFWWlAvUkJyRFNEOThveWVRdXlFTVRzQlRUaGVqT296NFhjbUY1WHplMzhzc1Q5aS9UU0xX
-      T3VNWEdhMmhFQWR1VURXSmN0cUV0c0liN1ZPdC9JaVR6ZXRlUDA4M1ROSWdib2Y2U3J2WHV5M1ZQ
-      cGNqdkRaS0VJRFVqTy9Idi9zVVRERVI4M1NmM1pDdFhBWC9jclFJVjZJOEkyQjFkVVNoZ2h5L1hl
-      Sm5ZU1phaW04ZHpieE9lcHNtQlZJbGM5Tlk5aGoyR2Fxd0lvYzJiY2pxY3lLVE1aR09Wd0FWdHl3
-      K2JoWk5ESER5ZXVJRUE4L0dwZnZQMFBMWVZ2QnpBaVlPeWliREJ0Wmw5emhRbENtTDBuTmVuM3Z4
-      NW9ncEFXUzRsMUZzS3pERTNUNCs5dkFraW9jZHN6bUpuOXpDdTkwaERhM1FCWDhUTXVRU28rNWlk
-      cmhQSE9XZXhQazZ5YzJyUDRodnJlSlc5bzJaV2o4MjRLZU9wbmdiQlMveW9JcU83NlRCdXY0WCtD
-      V1Fnb3JaUUNqdUVFNHpOMkdVR2dHRkQrYjBuYm5XRkYyaFlyWWZkVWVwdTVBTTJFVlF4KzliS0U9
-  true:
-    python: 2.7
-    repo: inbo/pywhip
-    tags: true
+  - user: stvhoey
+    provider: pypi
+    distributions: sdist bdist_wheel
+    password:
+      secure: !!binary |
+        a2tNejBNZjRLUlRCb0plR3VsN0hGa25BcjE3U09UVXFyNzZsQ1BsM2IxeFV4Z0dhN2drSjhjVFNk
+        U0tKMUZiK2tKZTVIdWN3TERZS2IwNlVOT0hsZEdOakZlWkpOOTJRckFpMjBpUFRpazNqUkdIbUxX
+        SnhmOHl1WWdwT1RVZW92cmRXRUxXQXMxTEpTVDRqbXJ2YmM3VWczZXVVNno1OUx6c3RTQmdML09x
+        ZDVIdytQTklKb25idlF2bmVXYnEvM2tocERMOGZ3dEFtMUZEZlg2NzVwYjU1TmFqVmprelVXR3dh
+        UUY3MlFWWlAvUkJyRFNEOThveWVRdXlFTVRzQlRUaGVqT296NFhjbUY1WHplMzhzc1Q5aS9UU0xX
+        T3VNWEdhMmhFQWR1VURXSmN0cUV0c0liN1ZPdC9JaVR6ZXRlUDA4M1ROSWdib2Y2U3J2WHV5M1ZQ
+        cGNqdkRaS0VJRFVqTy9Idi9zVVRERVI4M1NmM1pDdFhBWC9jclFJVjZJOEkyQjFkVVNoZ2h5L1hl
+        Sm5ZU1phaW04ZHpieE9lcHNtQlZJbGM5Tlk5aGoyR2Fxd0lvYzJiY2pxY3lLVE1aR09Wd0FWdHl3
+        K2JoWk5ESER5ZXVJRUE4L0dwZnZQMFBMWVZ2QnpBaVlPeWliREJ0Wmw5emhRbENtTDBuTmVuM3Z4
+        NW9ncEFXUzRsMUZzS3pERTNUNCs5dkFraW9jZHN6bUpuOXpDdTkwaERhM1FCWDhUTXVRU28rNWlk
+        cmhQSE9XZXhQazZ5YzJyUDRodnJlSlc5bzJaV2o4MjRLZU9wbmdiQlMveW9JcU83NlRCdXY0WCtD
+        V1Fnb3JaUUNqdUVFNHpOMkdVR2dHRkQrYjBuYm5XRkYyaFlyWWZkVWVwdTVBTTJFVlF4KzliS0U9
+    on:
+      python: 2.7
+      repo: inbo/pywhip
+      tags: true
+  - provider: script
+    script:
+      - travis-sphinx --source=docs --nowarn build
+      - travis-sphinx deploy
+    on:
+      python: 3.5
 
