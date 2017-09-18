@@ -11,6 +11,7 @@ python:
 script:
     tox
 deploy:
+  - skip_cleanup: true
   - user: stvhoey
     provider: pypi
     distributions: sdist bdist_wheel
