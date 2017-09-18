@@ -21,6 +21,7 @@ import os
 # https://stackoverflow.com/questions/12772927/specifying-an-online-image-in-sphinx-restructuredtext-format
 import sphinx.environment
 from docutils.utils import get_source_line
+from recommonmark.parser import CommonMarkParser
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
@@ -52,7 +53,12 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+
+# add markdown support, see http://www.sphinx-doc.org/en/stable/markdown.html 
+source_parsers = {
+	'.md': CommonMarkParser,
+}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
