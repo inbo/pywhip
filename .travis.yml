@@ -36,7 +36,9 @@ deploy:
   - provider: script
     skip_cleanup: true
     script:
+      - echo "step 1"
       - travis-sphinx --source=docs --nowarn build
+      - echo "step 2"
       - travis-sphinx deploy
     on:
       python: 3.5
