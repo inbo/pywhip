@@ -41,5 +41,4 @@ deploy:
     on:
       python: 3.5
       branch: master
-      python: 3.5
 
