@@ -10,6 +10,8 @@ python:
     - 2.7
 script:
     tox
+before_deploy:
+    - travis-sphinx --source=docs --nowarn build
 deploy:
   - user: stvhoey
     provider: pypi
@@ -35,9 +37,9 @@ deploy:
       tags: true
   - provider: script
     skip_cleanup: true
-    script:
-      - travis-sphinx --source=docs --nowarn build
-      - travis-sphinx deploy
+    script: travis-sphinx deploy
     on:
+      python: 3.5
+      branch: master
       python: 3.5
 
