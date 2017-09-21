@@ -11,7 +11,7 @@ python:
 script:
     tox
 before_deploy:
-    - travis-sphinx --source=docs --nowarn build
+    - travis-sphinx --source=docs --outdir='docs/_build' --nowarn build
 deploy:
   - user: stvhoey
     provider: pypi
@@ -35,10 +35,10 @@ deploy:
       python: 2.7
       repo: inbo/pywhip
       tags: true
-  - provider: script
+  - provider: pages
     skip_cleanup: true
-    script: travis-sphinx deploy
+    github_token: $GH_TOKEN
+    local_dir: docs/_build
     on:
-      python: 3.5
       branch: master
-
+      python: 3.5
