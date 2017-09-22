@@ -650,7 +650,7 @@ class TestCerberusAllowedValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
 
     def test_allow_bracket_multiplemix(self):
-        """test if allowed accepts multiple values without quotes
+        """test if allowed accepts multiple values and terms with quotes
         """
         val = DwcaValidator(yaml.load(self.yaml_allow6))
         document = {'sex' : 'male'}
@@ -665,6 +665,70 @@ class TestCerberusAllowedValidator(unittest.TestCase):
         document = {'sex' : 'male,female'}
         self.assertFalse(val.validate(document))
 
+
+class TestCerberusLengthValidator(unittest.TestCase):
+
+    def setUp(self):
+        self.yaml_length = """
+                             postal_code : 
+                                 minlength : 4
+                             license_plate:
+                                 maxlength: 6
+                             code:
+                                 minlength : 2
+                                 maxlength : 2
+                             """
+
+    def test_minlength(self):
+        """test if the string has proper minimal length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'postal_code' : '9050'}
+        self.assertTrue(val.validate(document))
+
+        document = {'postal_code' : 'B-9050'}
+        self.assertTrue(val.validate(document))
+
+        document = {'postal_code' : '905'}
+        self.assertFalse(val.validate(document))
+
+    def test_maxlength(self):
+        """test if the string has proper maximal length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'license_plate' : 'AF8934'}
+        self.assertTrue(val.validate(document))
+
+        document = {'license_plate' : 'AF893'}
+        self.assertTrue(val.validate(document))
+
+        document = {'license_plate' : 'AF8-934'}
+        self.assertFalse(val.validate(document))
+
+        document = {'license_plate' : 'AF   934'}
+        self.assertFalse(val.validate(document))
+
+    def test_minmaxlength(self):
+        """test if the string has proper length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'code' : 'AA'}
+        self.assertTrue(val.validate(document))
+
+        document = {'code' : 'A'}
+        self.assertFalse(val.validate(document))
+
+        document = {'code' : 'ABC'}
+        self.assertFalse(val.validate(document))
+
+    def test_minlength_ignored_by_type(self):
+        """test if an integer is ignored by length-options
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'code' : 5}
+        self.assertTrue(val.validate(document))
+
+
 class TestCerberusValidator(unittest.TestCase):
     """Test validation methods that are native to Cerberus already
     """
@@ -675,15 +739,6 @@ class TestCerberusValidator(unittest.TestCase):
                                  required: False
                              moment:
                                  required: True
-                             """
-
-        self.yaml_length = """
-                             verbatimCoordinateSystem:
-                                 minlength : 5
-                             coordinateSystem:
-                                 maxlength : 5
-                             code:
-                                 minlength : 2
                              """
 
         self.yaml_value = """
@@ -724,31 +779,6 @@ class TestCerberusValidator(unittest.TestCase):
 
         document = {'sex' : '2016-12-11'}
         self.assertFalse(val.validate(document))
-
-    def test_minlength(self):
-        """test if the string has proper minimal length
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'verbatimCoordinateSystem' : '31UDS76C'}
-        self.assertTrue(val.validate(document))
-        document = {'verbatimCoordinateSystem' : '5'}
-        self.assertFalse(val.validate(document))
-
-    def test_maxlength(self):
-        """test if the string has proper maximal length
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'coordinateSystem' : '31U'}
-        self.assertTrue(val.validate(document))
-        document = {'coordinateSystem' : '31UDS76C'}
-        self.assertFalse(val.validate(document))
-
-    def test_minlength_ignored_by_type(self):
-        """test if an integer is ignored by length-options
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'code' : 5}
-        self.assertTrue(val.validate(document))
 
     def test_minmax_float(self):
         """test if the value has minimal value
