@@ -4,7 +4,6 @@ Created on Mon Feb 22 15:46:18 2016
 
 @author: stijn_vanhoey
 
-# using nosetests...
 """
 
 import yaml
@@ -400,6 +399,41 @@ class TestDataTypeValidator(unittest.TestCase):
         schema = {'location':{'type':'url'}}
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))
+class TestDataTypeValidator(unittest.TestCase):
+
+    def test_json_type(self):
+        yaml_string = """
+                        perimeter:
+                            type: json
+                        """
+        schema = yaml.load(yaml_string)
+        document = {'perimeter': """
+                                    {"top": 3, "centre": 5, "bottom": 6}
+                                    """}
+        val = DwcaValidator(schema)
+        self.assertTrue(val.validate(document))
+
+    def test_wrong_json_type(self):
+        document = {'size' : 'large',
+                    'perimeter': """
+                                    {"top": 3, "centre": 5, "bottom": 6
+                                    """}
+        schema = {'perimeter':{'type':'json'}}
+        val = DwcaValidator(schema)
+        val.allow_unknown = True
+        self.assertFalse(val.validate(document))
+
+    def test_url_type(self):
+        document = {'location': "https://github.com/LifeWatchINBO/dwca-validator"}
+        schema = {'location':{'type':'url'}}
+        val = DwcaValidator(schema)
+        self.assertTrue(val.validate(document))
+
+    def test_wrong_url_type(self):
+        document = {'location': "https/github.com/LifeWatchINBO/dwca-validator"}
+        schema = {'location':{'type':'url'}}
+        val = DwcaValidator(schema)
+        self.assertFalse(val.validate(document))
 
 class TestLengthValidator(unittest.TestCase):
     """
@@ -526,6 +560,110 @@ class TestCerberusTypeValidator(unittest.TestCase):
         document = {'datum': datetime(2016, 11, 2)}
         self.assertTrue(val.validate(document))
 
+
+class TestCerberusAllowedValidator(unittest.TestCase):
+    """Test validation method `allowed` (native cerberus)
+    according to https://github.com/inbo/whip specifications
+    """
+    def setUp(self):
+        self.yaml_allow1 = """
+                          sex:
+                              allowed : male
+                          """
+
+        self.yaml_allow2 = """
+                          sex:
+                              allowed : "male"
+                          """
+
+        self.yaml_allow3 = """
+                          sex:
+                              allowed : 'male'
+                          """
+
+        self.yaml_allow4 = """
+                          sex:
+                              allowed : [male]
+                          """
+
+        self.yaml_allow5 = """
+                          sex:
+                              allowed : [male, female]
+                          """
+
+        self.yaml_allow6 = """
+                          sex:
+                              allowed : [male, female, 'male, female']
+                          """
+
+    def test_allow_noquote(self):
+        """test if allowed accepts a single allowed value without quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow1))
+        document = {'sex' : 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_doublequote(self):
+        """test if allowed accepts a single allowed value with double quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow2))
+        document = {'sex' : 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_singlequote(self):
+        """test if allowed accepts a single allowed value with single quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow3))
+        document = {'sex' : 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_bracket(self):
+        """test if allowed accepts a single allowed value in list
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow4))
+        document = {'sex' : 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_bracket_multiple(self):
+        """test if allowed accepts multiple values in list  without quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow5))
+        document = {'sex' : 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'female'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'male, female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_bracket_multiplemix(self):
+        """test if allowed accepts multiple values without quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow6))
+        document = {'sex' : 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'female'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'male, female'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex' : 'male,female'}
+        self.assertFalse(val.validate(document))
 
 class TestCerberusValidator(unittest.TestCase):
     """Test validation methods that are native to Cerberus already
