@@ -152,6 +152,8 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'length' : 'a.abc'} # False
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'length': ['a.abc is not numerical']})
 
     def test_numberformat_both(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat2))
@@ -180,6 +182,8 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'height' : '.1'} # False
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'height': ['.1 should be integer type']})
         document = {'height' : '12.1'} # False
         self.assertFalse(val.validate(document))
 
