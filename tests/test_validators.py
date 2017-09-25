@@ -657,6 +657,8 @@ class TestCerberusAllowedValidator(unittest.TestCase):
 
 
 class TestCerberusRegexValidator(unittest.TestCase):
+    """Test validation method regex (native cerberus)
+    according to https://github.com/inbo/whip specifications"""
 
     def setUp(self):
         self.yaml_regex = """
@@ -667,7 +669,6 @@ class TestCerberusRegexValidator(unittest.TestCase):
                             utm1km:
                                 regex: '31U[D-G][S-T]\d\d\d\d'
                              """
-
         self.yaml_regexit = """
                             quotes:
                                 regex: [D - G]
@@ -728,7 +729,7 @@ class TestCerberusLengthValidator(unittest.TestCase):
 
     def setUp(self):
         self.yaml_length = """
-                             postal_code : 
+                             postal_code :
                                  minlength : 4
                              license_plate:
                                  maxlength: 6
