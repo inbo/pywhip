@@ -653,6 +653,46 @@ class TestCerberusAllowedValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
 
 
+class TestCerberusRegexValidator(unittest.TestCase):
+
+    def setUp(self):
+        self.yaml_regex = """
+                            observation_id:
+                                regex: 'INBO:VIS:\d+'
+                            issue_url:
+                                regex: 'https:\/\/github\.com\/inbo\/whip\/issues\/\d+'
+                            utm1km:
+                                regex: '31U[D-G][S-T]\d\d\d\d'
+                             """
+
+    def test_inbo_ids_regex(self):
+        """test if inbo ids structure works on the regex specs"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'observation_id' : "INBO:VIS:12"}
+        self.assertTrue(val.validate(document))
+        document = {'observation_id' : "INBO:VIS:456"}
+        self.assertTrue(val.validate(document))
+        document = {'observation_id' : "INBO:VIS:"}
+        self.assertFalse(val.validate(document))
+        document = {'observation_id' : "INBO:VIS:ABC"}
+        self.assertFalse(val.validate(document))
+
+    def test_advanced_url_regex(self):
+        """test if specific url structure can be checked for"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'issue_url' : "https://github.com/inbo/whip/issues/4"}
+        self.assertTrue(val.validate(document))
+        document = {'issue_url' : "https:\\github.com\inbo\whip\issues\4"}
+        self.assertFalse(val.validate(document))
+
+    def test_utm_code_regex(self):
+        """test if utm code can be tested on with regex"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'utm1km' : "31UDS8748"}
+        self.assertTrue(val.validate(document))
+        document = {'utm1km' : "31UDS874A"}
+        self.assertFalse(val.validate(document))
+
 class TestCerberusLengthValidator(unittest.TestCase):
     """Test validation methods `minlength` and `maxlength` (native cerberus)
     according to https://github.com/inbo/whip specifications
