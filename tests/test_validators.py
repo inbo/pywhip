@@ -673,6 +673,11 @@ class TestCerberusRegexValidator(unittest.TestCase):
                                 regex: [D - G]
                             """
 
+        self.yaml_regexitdouble = """
+                                    quotes:
+                                        regex: "31U[D-G][S-T]\d\d\d\d"
+                                    """
+
     def test_regex_inbo_ids(self):
         """test if inbo ids structure works on the regex specs"""
         val = DwcaValidator(yaml.load(self.yaml_regex))
@@ -701,7 +706,7 @@ class TestCerberusRegexValidator(unittest.TestCase):
         document = {'utm1km' : "31UDS874A"}
         self.assertFalse(val.validate(document))
 
-    def test_regex_quotehandling(self):
+    def test_regex_noquotehandling(self):
         """error handling without quotes on regex specifications"""
 
         with pytest.raises(cerberus.schema.SchemaError) as excinfo:
@@ -709,6 +714,12 @@ class TestCerberusRegexValidator(unittest.TestCase):
 
         assert "{'quotes': [{'regex': ['must be of string type']}]}" in \
                str(excinfo.value)
+
+    def test_regex_doublequotehandling(self):
+        """error handling with double quotes on regex specifications"""
+        with pytest.raises(yaml.scanner.ScannerError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_regexitdouble))
+        assert "found unknown escape character 'd'" in str(excinfo.value)
 
 class TestCerberusLengthValidator(unittest.TestCase):
     """Test validation methods `minlength` and `maxlength` (native cerberus)
