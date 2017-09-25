@@ -321,15 +321,6 @@ class DwcaValidator(Validator):
             self._error(field, "String format not compliant with " +
                         ', '.join(ref_value))
 
-    def _validate_equals(self, ref_value, field, value):
-        """ {'type': ['integer', 'float']} """
-        if (isinstance(value, int) or isinstance(value, float)) and \
-                                                float(ref_value) != value:
-            self._error(field, "".join(["value should be equal to ",
-                                        str(ref_value),
-                                        " instead of ",
-                                        str(value)]))
-
     def _validate_numberrange(self, ref_range, field, value):
         """ {'type': 'list'} """
         # check if min < max

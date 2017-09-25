@@ -385,41 +385,6 @@ class TestLengthValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
 
 
-class TestEqualsValidator(unittest.TestCase):
-    """
-    equals is a new validator type created for the DwcaValidator that works on
-    integer and float values
-    """
-
-    def setUp(self):
-        self.yaml_length = """
-                             individualCount:
-                                 equals : 1
-                             precision:
-                                 equals : 200.
-                             """
-
-    def test_euqals_int(self):
-        """test if the integer value equals the given value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        # here not type test needed in schema, value given as integer
-        document = {'individualCount' : 1.000}
-        self.assertTrue(val.validate(document))
-        document = {'individualCount' : 2}
-        self.assertFalse(val.validate(document))
-
-    def test_euqals_float(self):
-        """test if the float value equals the given value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        # here not type test needed in schema, value given as float
-        document = {'precision' : 200.00}
-        self.assertTrue(val.validate(document))
-        document = {'precision' : 200.001}
-        self.assertFalse(val.validate(document))
-
-
 class TestStringformatValidator(unittest.TestCase):
 
     def setUp(self):
@@ -721,6 +686,7 @@ class TestCerberusRegexValidator(unittest.TestCase):
         with pytest.raises(yaml.scanner.ScannerError) as excinfo:
             val = DwcaValidator(yaml.load(self.yaml_regexitdouble))
         assert "found unknown escape character 'd'" in str(excinfo.value)
+
 
 class TestCerberusLengthValidator(unittest.TestCase):
     """Test validation methods `minlength` and `maxlength` (native cerberus)
