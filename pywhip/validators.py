@@ -475,19 +475,16 @@ class DwcaValidator(Validator):
         """ {'type': 'boolean'} """
         return None
 
-    # dtypes -------------------------
-    def _validate_type_json(self, value):
-        """ Enables validation for json objects
-        """
-        try:
-            json.loads(value)
-            return True
-        except ValueError:
-            pass
-
-    def _validate_type_url(self, value):
-        """ Enables validation for json objects
-        """
-        if match(value, rule='URI'):
-            return True
-
+    def _validate_stringformat(self, stringtype, field, value):
+        """ {'allowed': ['url', 'json']} """
+        if stringtype == 'json':
+            try:
+                json.loads(value)
+                return True
+            except ValueError:
+                self._error(field, " no valid json format")
+        elif stringtype == 'url':
+            if match(value, rule='URI'):
+                return True
+            else:
+                self._error(field, " no valid url format")
