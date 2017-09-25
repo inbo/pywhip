@@ -10,6 +10,9 @@ import yaml
 import unittest
 from datetime import datetime
 
+import cerberus
+import pytest
+
 from pywhip.validators import DwcaValidator
 
 
@@ -665,7 +668,12 @@ class TestCerberusRegexValidator(unittest.TestCase):
                                 regex: '31U[D-G][S-T]\d\d\d\d'
                              """
 
-    def test_inbo_ids_regex(self):
+        self.yaml_regexit = """
+                            quotes:
+                                regex: [D - G]
+                            """
+
+    def test_regex_inbo_ids(self):
         """test if inbo ids structure works on the regex specs"""
         val = DwcaValidator(yaml.load(self.yaml_regex))
         document = {'observation_id' : "INBO:VIS:12"}
@@ -677,7 +685,7 @@ class TestCerberusRegexValidator(unittest.TestCase):
         document = {'observation_id' : "INBO:VIS:ABC"}
         self.assertFalse(val.validate(document))
 
-    def test_advanced_url_regex(self):
+    def test_regex_advanced_url_regex(self):
         """test if specific url structure can be checked for"""
         val = DwcaValidator(yaml.load(self.yaml_regex))
         document = {'issue_url' : "https://github.com/inbo/whip/issues/4"}
@@ -685,13 +693,22 @@ class TestCerberusRegexValidator(unittest.TestCase):
         document = {'issue_url' : "https:\\github.com\inbo\whip\issues\4"}
         self.assertFalse(val.validate(document))
 
-    def test_utm_code_regex(self):
+    def test_regex_utm_code(self):
         """test if utm code can be tested on with regex"""
         val = DwcaValidator(yaml.load(self.yaml_regex))
         document = {'utm1km' : "31UDS8748"}
         self.assertTrue(val.validate(document))
         document = {'utm1km' : "31UDS874A"}
         self.assertFalse(val.validate(document))
+
+    def test_regex_quotehandling(self):
+        """error handling without quotes on regex specifications"""
+
+        with pytest.raises(cerberus.schema.SchemaError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_regexit))
+
+        assert "{'quotes': [{'regex': ['must be of string type']}]}" in \
+               str(excinfo.value)
 
 class TestCerberusLengthValidator(unittest.TestCase):
     """Test validation methods `minlength` and `maxlength` (native cerberus)
