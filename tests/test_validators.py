@@ -112,16 +112,24 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.yaml_numberformat1 = """
                                     size:
                                         numberformat: '.5'
+                                    length:
+                                        numberformat: '.3'
                                     """
 
         self.yaml_numberformat2 = """
                                     size:
                                         numberformat: '3.5'
+                                    length:
+                                        numberformat: '2.3'
                                     """
 
         self.yaml_numberformat3 = """
                                     size:
                                         numberformat: '4.'
+                                    length:
+                                        numberformat: '2.'
+                                    height:
+                                        numberformat: '2'
                                     """
 
     def test_numberformat_right(self):
@@ -132,6 +140,18 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'size' : '0.1437'} # False
         self.assertFalse(val.validate(document))
+        document = {'length' : '.123'} # True
+        self.assertTrue(val.validate(document))
+        document = {'length' : '1.123'} # True
+        self.assertTrue(val.validate(document))
+        document = {'length' : '12.123'} # True
+        self.assertTrue(val.validate(document))
+        document = {'length' : '1.12'} # False
+        self.assertFalse(val.validate(document))
+        document = {'length' : '1.1234'} # False
+        self.assertFalse(val.validate(document))
+        document = {'length' : 'a.abc'} # False
+        self.assertFalse(val.validate(document))
 
     def test_numberformat_both(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat2))
@@ -139,12 +159,28 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'size' : '0.1437'} # False
         self.assertFalse(val.validate(document))
+        document = {'length' : '12.123'} # False
+        self.assertTrue(val.validate(document))
 
     def test_numberformat_left(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat3))
         document = {'size' : '1234.14372'} # True
         self.assertTrue(val.validate(document))
         document = {'size' : '123.12'} # False
+        self.assertFalse(val.validate(document))
+        document = {'length' : '12'} # True
+        self.assertTrue(val.validate(document))
+        document = {'length' : '12.'} # True
+        self.assertTrue(val.validate(document))
+        document = {'length' : '12.1'} # True
+        self.assertTrue(val.validate(document))
+        document = {'length' : '123'} # False
+        self.assertFalse(val.validate(document))
+        document = {'height' : '12'} # True
+        self.assertTrue(val.validate(document))
+        document = {'height' : '.1'} # False
+        self.assertFalse(val.validate(document))
+        document = {'height' : '12.1'} # False
         self.assertFalse(val.validate(document))
 
     def test_numberformat_integer(self):

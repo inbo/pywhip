@@ -349,18 +349,30 @@ class DwcaValidator(Validator):
         super(DwcaValidator, self)._validate_minlength(*args, **kwargs)
 
     def _validate_numberformat(self, formatter, field, value):
-        """ {'type': ['string'], 'regex': '[1-9].[1-9]|[1-9].$|^.[1-9]'} """
+        """ {'type': ['string'], 'regex': '[1-9]\.[1-9]|[1-9]\.$|^\.[1-9]|[1-9]'} """
 
         value_str = self.document_str_version[field]
-        if re.match("[1-9].[1-9]", formatter):
+        # check if value is number format
+        if not re.match('[0-9]*\.[0-9]*|[0-9]+', value_str):
+            self._error(field, "".join([value_str,
+                                        " is not numerical "]))
+
+        if re.match("[1-9]\.[1-9]", formatter):
             value_parsed = [len(side) for side in value_str.split(".")]
-        elif re.match(".[1-9]", formatter):
+        elif re.match("\.[1-9]", formatter):
             if "." in value_str:
                 value_parsed = [len(value_str.split(".")[1])]
             else:
                 value_parsed = [0]
-        elif re.match("[1-9].", formatter):
+        elif re.match("[1-9]\.", formatter):
             value_parsed = [len(value_str.split(".")[0])]
+        elif re.match("[1-9]", formatter):
+            if re.match("[0-9]+", value_str):
+                value_parsed = [len(value_str)]
+            else:
+                value_parsed = [None]
+                self._error(field, "".join([value_str,
+                                            " should be integer type "]))
 
         formatter_parsed = [int(length) for length in formatter.split(".")
                             if not length == '']
