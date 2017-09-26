@@ -30,6 +30,8 @@ class TestDateValidator(unittest.TestCase):
         self.yaml_string_date2 = """
                                     moment:
                                         dateformat: ['%Y-%m-%d', '%Y-%m', '%Y']
+                                    date:
+                                        dateformat: '%Y-%m-%d'
                                     """
         self.yaml_string_date3 = """
                                     moment:
@@ -42,6 +44,9 @@ class TestDateValidator(unittest.TestCase):
         self.yaml_string_date5 = """
                                  moment:
                                      dateformat: '%Y-%m-%d/%Y-%m-%d'
+                                 date:
+                                     dateformat: ['%Y-%m-%d/%Y-%m-%d']
+                                    
                                  """
 
     def test_daterange_iso(self):
@@ -77,7 +82,6 @@ class TestDateValidator(unittest.TestCase):
         document = {'date': '2016-12-07'}  # False
         self.assertFalse(val.validate(document))
 
-
     def test_daterange_nodate(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date4))
         document = {'moment': '1700101'}  # False
@@ -89,10 +93,26 @@ class TestDateValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
         document = {'moment': '1997-01-05'}  # True
         self.assertTrue(val.validate(document))
+        document = {'date': '2016-12-07'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'date': '2016/12/07'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '07-12-2016'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '2016-12'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '2016-12-32'}  # False
+        self.assertFalse(val.validate(document))
 
     def test_dateformat_day(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
         document = {'moment': '1997-01'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'moment': '2016-12'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'moment': '2016'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'moment': '2016-12-07'}  # True
         self.assertTrue(val.validate(document))
 
     def test_dateformat_multiple_wrong(self):
@@ -108,6 +128,8 @@ class TestDateValidator(unittest.TestCase):
     def test_dateformat_period_valid(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date5))
         document = {'moment': '1997-02-01/2001-03-01'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'date': '2016-01-01/2017-02-13'}  # True
         self.assertTrue(val.validate(document))
 
     def test_dateformat_period_invalid_first(self):
