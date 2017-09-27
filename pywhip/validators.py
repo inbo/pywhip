@@ -297,30 +297,6 @@ class DwcaValidator(Validator):
             self._error(field, "String format not compliant with " +
                         ', '.join(ref_value))
 
-    def _validate_dateformat_old(self, ref_value, field, value):
-        """ {'type': ['string', 'list']} """
-        # dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
-        # dateformat : '%Y-%m'
-        print(ref_value, value)
-        if isinstance(ref_value, list):
-            for formatstr in ref_value:  # check if at least one comply
-                self._validate_dateformat(formatstr, field, value)
-
-        else:
-            if self._dateisrange(value):
-                if self._dateformatisrange(ref_value):  # both ranges-> test
-                    [self._validate_dateformat(dt_format, field, dt) for
-                     dt_format, dt in
-                     zip(ref_value.split('/'), value.split('/'))]
-                else:
-                    tester = False
-            else:
-                tester = self._help_dateformat(value, ref_value)
-
-        if not tester:
-            self._error(field, "String format not compliant with " +
-                        ', '.join(ref_value))
-
     def _validate_numberrange(self, ref_range, field, value):
         """ {'type': 'list'} """
         # check if min < max
