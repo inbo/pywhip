@@ -297,16 +297,6 @@ class DwcaValidator(Validator):
             self._error(field, "String format not compliant with " +
                         ', '.join(ref_value))
 
-    def _validate_numberrange(self, ref_range, field, value):
-        """ {'type': 'list'} """
-        # check if min < max
-        if ref_range[0] >= ref_range[1]:
-            raise Exception('min > max in range value')
-
-        if value.isdigit():
-            self._validate_min(self, ref_range[0], field, float(value))
-            self._validate_max(self, ref_range[1], field, float(value))
-
     def _validate_length(self, length, field, value):
         """ {'type': 'integer', 'excludes': 'type'} """
         # check length of a given string
