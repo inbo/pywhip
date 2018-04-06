@@ -369,7 +369,7 @@ class DwcaValidator(Validator):
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
                 validator.validate(copy(self.document_str_version),
-                                   normalize=False)
+                                   normalize=False) 
 
                 if validator._errors:
                     self._drop_nodes_from_errorpaths(validator._errors,
