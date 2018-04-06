@@ -11,7 +11,7 @@ python:
 script:
     tox
 before_deploy:
-    - travis-sphinx --source=docs --outdir='docs/_build' --nowarn build
+    - travis-sphinx build --source=docs --outdir='docs/_build' --nowarn
 deploy:
   - user: stvhoey
     provider: pypi
