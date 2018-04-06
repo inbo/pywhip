@@ -266,17 +266,18 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                                             type: float
                                     """
 
-        self.yaml_delimited4 = """
-                                    sex:
-                                        delimitedvalues:
-                                            delimiter: " | "
-                                            listvalues
-                                    """
-
         self.yaml_delimited5 = """
                                     sex:
                                         delimitedvalues:
                                             allowed: [male, female]
+                                    """
+
+        self.yaml_delimited6 = """
+                                    sex:
+                                        delimitedvalues:
+                                            delimiter: " | "
+                                            allowed: [male, female]
+                                        empty: True
                                     """
 
     def test_delimiter_doubles(self):
@@ -316,6 +317,36 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
         document = {'sex' : 'male | female | '} # False (pipe too much)
         self.assertFalse(val.validate(document))
+        document = {'sex': ''}  # end delimiter without value
+        self.assertFalse(val.validate(document))
+
+    def test_delimiter_all_valid_options(self):
+        """test the valid options produced by delimited syntax
+        """
+        val = DwcaValidator(yaml.load(self.yaml_delimited6))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'male | female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'female | male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': ''}
+        self.assertTrue(val.validate(document))
+
+    def test_delimiter_non_valid_options(self):
+        """raise Error when no delimiter field added
+        """
+        val = DwcaValidator(yaml.load(self.yaml_delimited6))
+        document = {'sex': 'male, female'}  # wrong delimiter
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male|female'} # no spaces
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male | '}  # end delimiter without value
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male | | female'}
+        self.assertFalse(val.validate(document)) # in field empty
 
     def test_delimiter_nest(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited3))
@@ -389,6 +420,21 @@ class TestIfValidator(unittest.TestCase):
                                 empty: true
                             """
 
+        self.yaml_conditional_empty = """
+                                        sex:
+                                            empty: True
+                                        lifestage:
+                                            if:
+                                                - sex:
+                                                      allowed: [male, female]
+                                                  allowed: adult
+                                                - sex:
+                                                      allowed: ''
+                                                      empty: True
+                                                  allowed: ''
+                                                  empty: True
+                                        """
+
     def test_if(self):
         schema = yaml.load(self.yaml_if)
         document = {'basisOfRecord': 'HumanObservation', 'type': 'Event'}
@@ -437,6 +483,32 @@ class TestIfValidator(unittest.TestCase):
         val.validate(document)
         self.assertEqual(val.errors,
                          {'basisOfRecord': [{'if': ['unallowed value HumanObservation']}]})
+
+    def test_conditional_empty(self):
+        schema = yaml.load(self.yaml_conditional_empty)
+        val = DwcaValidator(schema)
+        document = {'lifestage': 'adult', 'sex' : 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'lifestage': 'adult', 'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'lifestage': 'adul', 'sex': 'male'}
+        self.assertFalse(val.validate(document))
+        document = {'lifestage': '', 'sex': 'male'}
+        self.assertFalse(val.validate(document))
+        document = {'lifestage': 'adult', 'sex': ''}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'lifestage': [{'if_1': ['unallowed value adult']}]})
+
+    def test_empty_empty(self):
+        schema = yaml.load(self.yaml_conditional_empty)
+        val = DwcaValidator(schema)
+        # TROUBLE------
+        document = {'lifestage': '', 'sex': ''}
+        self.assertEqual(val.errors, 'jan')
+        self.assertFalse(val.validate(document)) # should be True
+        #-----
+
 
 
 class TestLengthValidator(unittest.TestCase):
