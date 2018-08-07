@@ -13,6 +13,68 @@ import yaml
 from pywhip.validators import DwcaValidator
 
 
+class TestAllowedQuoteFlavors(unittest.TestCase):
+    """Test for different flavors of quoting values with and without lists
+    on the allowed validation
+    """
+
+    def setUp(self):
+        with open('tests/data/allowed_quote_flavors', 'r') as schema:
+            self.schema = yaml.load(schema)
+
+    def test_unquoted_value(self):
+        """
+        """
+        val = DwcaValidator(self.schema)
+        document = {'sex_1': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_1': 'Male'}
+        self.assertFalse(val.validate(document))
+
+    def test_double_quoted_value(self):
+        """
+        """
+        val = DwcaValidator(self.schema)
+        document = {'sex_2': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_2': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_single_quoted_value(self):
+        """
+        """
+        val = DwcaValidator(self.schema)
+        document = {'sex_3': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_3': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_unquoted_list(self):
+        """
+        """
+        val = DwcaValidator(self.schema)
+        document = {'sex_4': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_4': 'female'}
+        self.assertFalse(val.validate(document))
+        # both accepted in list
+        document = {'sex_5': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_5': 'female'}
+        self.assertTrue(val.validate(document))
+
+    def test_list_with_quotes(self):
+        val = DwcaValidator(self.schema)
+        document = {'sex_6': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_6': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_6': 'male, female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex_6': 'male,female'}
+        self.assertFalse(val.validate(document))
+
+
 class TestCoerceAddition(unittest.TestCase):
     """
     The validator adapts the provided schema with additional coerce statements
