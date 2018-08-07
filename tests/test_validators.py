@@ -413,36 +413,55 @@ class TestMinMaxValidator(unittest.TestCase):
                                  max: 99.0
                              """
 
-    def test_minmax_float(self):
+    def test_min(self):
         """test if the value has minimal value
         """
         val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'percentage': '9.'}
-        self.assertFalse(val.validate(document))
-        document = {'percentage': '2.1'}
-        self.assertFalse(val.validate(document))
+        min_true = ['9', '9.0', '9.1', '10']
+        for value in min_true:
+            document = {'age_1': value}
+            self.assertTrue(val.validate(document))
+            document = {'age_2': value}
+            self.assertTrue(val.validate(document))
+
+        min_false = ['8.99999', '-9']
+        for value in min_false:
+            document = {'age_1': value}
+            self.assertFalse(val.validate(document))
+            document = {'age_2': value}
+            self.assertFalse(val.validate(document))
+
+    def test_max(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        max_true = ['99', '99.0', '89.9', '88', '-99']
+        for value in max_true:
+            document = {'age_3': value}
+            self.assertTrue(val.validate(document))
+            document = {'age_4': value}
+            self.assertTrue(val.validate(document))
+
+        max_false = ['99.1', '100']
+        for value in max_false:
+            document = {'age_3': value}
+            self.assertFalse(val.validate(document))
+            document = {'age_4': value}
+            self.assertFalse(val.validate(document))
+
+    def test_minmax(self):
+        """test if the value is between given range
+        """
         val = DwcaValidator(yaml.load(self.yaml_value))
         document = {'percentage': 9.}
         self.assertFalse(val.validate(document))
         document = {'percentage': 2.1}
         self.assertFalse(val.validate(document))
 
-    def test_minmax_int(self):
-        """test if the value has minimal value
-        """
         val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'individualCount': '9'}
+        document = {'individualCount' : 9}
         self.assertFalse(val.validate(document))
-        document = {'individualCount': '2'}
-        self.assertFalse(val.validate(document))
-
-    def test_min_int_coerce(self):
-        """test if the value has minimal value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'code': '6'}
-        self.assertTrue(val.validate(document))
-        document = {'code': '2'}
+        document = {'individualCount' : 2}
         self.assertFalse(val.validate(document))
 
     def test_min_int_string(self):
