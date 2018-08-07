@@ -16,6 +16,59 @@ import pytest
 from pywhip.validators import DwcaValidator
 
 
+class TestAllowedValidator(unittest.TestCase):
+    """Test the usage of string as input for allowed values
+    (Cerberus native validation)
+    """
+    def setUp(self):
+
+        self.yaml_allowed_string = """
+                                   abundance:
+                                       allowed: many                                  
+                                   """
+
+        self.yaml_allowed_list = """
+                     rightsHolder:
+                         allowed : [INBO]   
+                     sex:
+                         allowed : [male, female]
+                     age:
+                         allowed : [adult, juvenile, 'adult | juvenile']                                     
+                     """
+
+    def test_allowed_string(self):
+        """test if the value is the allowed value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allowed_string))
+        document = {'abundance': 'many'}
+        self.assertTrue(val.validate(document))
+        document = {'abundance': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allowed_list(self):
+        """test if the value is one of the allowed values
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allowed_list))
+        document = {'rightsHolder': 'INBO'}
+        self.assertTrue(val.validate(document))
+        document = {'rightsHolder': 'ILVO'}
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'Female'}
+        self.assertFalse(val.validate(document))
+        document = {'age': 'adult'}
+        self.assertTrue(val.validate(document))
+        document = {'age': 'juvenile'}
+        self.assertTrue(val.validate(document))
+        document = {'age': 'adult | juvenile'}
+        self.assertTrue(val.validate(document))
+        document = {'age': 'adult|juvenile'}
+        self.assertFalse(val.validate(document))
+
+
 class TestDateValidator(unittest.TestCase):
 
     def setUp(self):
@@ -434,6 +487,28 @@ class TestIfValidator(unittest.TestCase):
                                                   allowed: ''
                                                   empty: True
                                         """
+        self.yaml_double_empty = """
+                                        sex:
+                                            empty: True
+                                        lifestage:
+                                            if:
+                                                sex:
+                                                    allowed: ''
+                                                    empty: True
+                                                allowed: ''
+                                                empty: True
+                                        """
+
+        self.yaml_pre_empty = """
+                                sex:
+                                    empty: True
+                                lifestage:
+                                    empty: True
+                                    if:
+                                        sex:
+                                            allowed: [male]
+                                        allowed: [adult]
+                                """
 
     def test_if(self):
         schema = yaml.load(self.yaml_if)
@@ -501,14 +576,31 @@ class TestIfValidator(unittest.TestCase):
                          {'lifestage': [{'if_1': ['unallowed value adult']}]})
 
     def test_empty_empty(self):
+        schema = yaml.load(self.yaml_double_empty)
+        val = DwcaValidator(schema)
+        document = {'lifestage': '', 'sex': ''}
+        self.assertTrue(val.validate(document))  # should be True
+
         schema = yaml.load(self.yaml_conditional_empty)
         val = DwcaValidator(schema)
         # TROUBLE------
-        document = {'lifestage': '', 'sex': ''}
-        self.assertEqual(val.errors, 'jan')
-        self.assertFalse(val.validate(document)) # should be True
+        document = {'lifestage': 'jan', 'sex': ''}
+        self.assertFalse(val.validate(document))  # should be False
+        #document = {'lifestage': '', 'sex': ''}
+        #self.assertTrue(val.validate(document)) # should be True
         #-----
 
+    def test_pre_empty(self):
+        schema = yaml.load(self.yaml_pre_empty)
+        val = DwcaValidator(schema)
+        document = {'lifestage': 'adult', 'sex': 'male'}
+        self.assertTrue(val.validate(document))  # should be True
+        document = {'lifestage': 'juvenile', 'sex': 'male'}
+        self.assertFalse(val.validate(document))  # should be False
+        document = {'lifestage': '', 'sex': ''}
+        self.assertTrue(val.validate(document))  # should be True
+        document = {'lifestage': '', 'sex': 'male'}
+        self.assertTrue(val.validate(document))  # should be True
 
 
 class TestLengthValidator(unittest.TestCase):
@@ -992,13 +1084,6 @@ class TestCerberusValidator(unittest.TestCase):
                                  required: True
                              """
 
-        self.yaml_allow = """
-                          sex:
-                              allowed : [male, female]
-                          rightsHolder:
-                              allowed : [INBO]
-                          """
-
         self.yaml_value = """
                              individualCount:
                                  min : 5
@@ -1029,26 +1114,6 @@ class TestCerberusValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
 
         document = {'sex' : '2016-12-11'}
-        self.assertFalse(val.validate(document))
-
-
-
-    def test_allowed_string(self):
-        """test if the value is the allowed value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_allow))
-        document = {'rightsHolder' : 'INBO'}
-        self.assertTrue(val.validate(document))
-        document = {'rightsHolder' : 'ILVO'}
-        self.assertFalse(val.validate(document))
-
-    def test_allowed_list(self):
-        """test if the value is one of the allowed values
-        """
-        val = DwcaValidator(yaml.load(self.yaml_allow))
-        document = {'rightsHolder' : 'INBO'}
-        self.assertTrue(val.validate(document))
-        document = {'rightsHolder' : 'ILVO'}
         self.assertFalse(val.validate(document))
 
 
