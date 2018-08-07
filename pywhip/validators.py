@@ -83,47 +83,6 @@ class DwcaValidator(Validator):
         return doc
 
     @staticmethod
-    def _add_coerce(rules):
-        """provide the appropriate coerce lambda functions
-        """
-        to_float = lambda v: float(v) if v else v
-        if rules['type'] == 'float':
-            rules['coerce'] = to_float
-        elif rules['type'] == 'int' or rules['type'] == 'integer':
-            to_int = lambda v: int(v) if v else v
-            rules['coerce'] = to_int
-        elif rules['type'] == 'number':
-            rules['coerce'] = to_float
-        elif rules['type'] == 'boolean':
-            to_bool = lambda v: bool(v) if v else v
-            rules['coerce'] = to_bool
-
-    def _resolve_coerce(self, schema):
-        """add coerce rules to convert datatypes of int and float,
-        recusively using the rules combinations of cerberus:
-        {TERM : {RULE: --> str (STOP)
-                       --> list/Sequence --> str (STOP)
-                                         --> dict => (if type: ADD) + RECALL
-                       --> dict/Mapping => (if type: ADD) + RECALL
-                      }}
-        """
-        for term, rules in schema.items():
-            if isinstance(rules, _str_type):
-                continue
-            elif isinstance(rules, Sequence):
-                for subschema in rules:
-                    if isinstance(subschema, Mapping):
-                        if 'type' in subschema.keys():
-                            self._add_coerce(subschema)
-                        self._resolve_coerce(subschema)
-            elif isinstance(rules, Mapping):
-                if 'type' in rules.keys():
-                    self._add_coerce(rules)
-                self._resolve_coerce(rules)
-            else:
-                NotImplemented
-
-    @staticmethod
     def _schema_add_empty(dict_schema):
         """the empty rule should be added for each of the fields
         (should be possible to simplify using mandatory_validations, but this
