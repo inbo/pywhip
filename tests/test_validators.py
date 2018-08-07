@@ -515,6 +515,14 @@ class TestNumberFormatValidator(unittest.TestCase):
                                     height:
                                         numberformat: '2'
                                     """
+        self.yaml_numberformat4 = """
+                                    size:
+                                        numberformat: '.'
+                                    """
+        self.yaml_numberformat5 = """
+                                    size:
+                                        numberformat: 'x'
+                                    """
 
     def test_numberformat_right(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat1))
@@ -534,10 +542,6 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'length': '1.1234'}  # False
         self.assertFalse(val.validate(document))
-        document = {'length': 'a.abc'}  # False
-        self.assertFalse(val.validate(document))
-        self.assertEqual(val.errors,
-                         {'length': ['a.abc is not numerical']})
 
     def test_numberformat_both(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat2))
@@ -547,6 +551,11 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'length': '12.123'}  # False
         self.assertTrue(val.validate(document))
+        document = {'length': '1223'}  # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'length': ['numberformat of value 1223 not '
+                                     'in agreement with 2.3']})
 
     def test_numberformat_left(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat3))
@@ -568,7 +577,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'height': ['.1 should be integer type']})
-        document = {'height' : '12.1'}  # False
+        document = {'height': '12.1'}  # False
         self.assertFalse(val.validate(document))
 
     def test_numberformat_integer(self):
@@ -579,6 +588,44 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'size': '1234'}  # True
         self.assertTrue(val.validate(document))
+
+    def test_numberformat_anyfloat(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat4))
+        document = {'size': '1234.2222'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '0.2222'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1234.'}  # True
+        self.assertTrue(val.validate(document))
+
+    def test_numberformat_anyinteger(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat5))
+        document = {'size': '1234'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1234.'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'size': '.'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'size': '0.1'}  # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'size': ['numberformat of value 0.1 is not an '
+                                   'integer value']})
+
+    def test_numberformat_isnumber(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
+        document = {'size': '1234f.'}  # Not a number
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'size': ['1234f. is not numerical']})
+        document = {'length': 'a.abc'}  # False
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'length': ['a.abc is not numerical']})
+        document = {'length': ';'}  # False
+        self.assertFalse(val.validate(document))
 
 class TestDateValidator(unittest.TestCase):
 
