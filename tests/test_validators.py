@@ -321,7 +321,7 @@ class TestStringformatValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
 
 
-class TestCerberusRegexValidator(unittest.TestCase):
+class TestRegexValidator(unittest.TestCase):
     """Test validation method regex
     (Cerberus native validation)
     according to https://github.com/inbo/whip specifications
@@ -488,6 +488,7 @@ class TestMinMaxValidator(unittest.TestCase):
                                    'value is not numeric']},
                          msg="alert on datatype mismatch for max "
                              "evaluation fails")
+
 
 class TestDateValidator(unittest.TestCase):
 
