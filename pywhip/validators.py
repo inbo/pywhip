@@ -165,22 +165,22 @@ class DwcaValidator(Validator):
                                                      field, value)
 
     def _validate_min(self, min_value, field, value):
-        """ {'nullable': False, 'dependencies': ['type']} """
-        # overwrite cerberus min to only consider int and float
-        if (isinstance(value, int) or isinstance(value, float)) and \
-                float(min_value) > value:
-            self._error(field, errors.MIN_VALUE)
-        elif isinstance(value, str):
-            self._error(field, 'min validation ignores string type, add type validation')
+        """ {'nullable': False} """
+        try:
+            if float(min_value) > float(value):
+                self._error(field, errors.MIN_VALUE)
+        except ValueError:
+            self._error(field,
+                        'min validation failed, value is not numeric')
 
-    def _validate_max(self, min_value, field, value):
-        """ {'nullable': False } """
-        # overwrite cerberus max to only consider int and float
-        if (isinstance(value, int) or isinstance(value, float)) and \
-                float(min_value) < value:
-            self._error(field, errors.MAX_VALUE)
-        elif isinstance(value, str):
-            self._error(field, 'max validation ignores string type, add type validation')
+    def _validate_max(self, max_value, field, value):
+        """ {'nullable': False} """
+        try:
+            if float(max_value) < float(value):
+                self._error(field, errors.MAX_VALUE)
+        except ValueError:
+            self._error(field,
+                        'max validation failed, value is not numeric')
 
     def _parse_date(self, field, date_string):
         """try to parse a string to date and log error when failing

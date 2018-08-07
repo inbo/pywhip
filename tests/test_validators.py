@@ -390,6 +390,84 @@ class TestCerberusRegexValidator(unittest.TestCase):
         assert "found unknown escape character 'd'" in str(excinfo.value)
 
 
+class TestMinMaxValidator(unittest.TestCase):
+
+    def setUp(self):
+
+        self.yaml_value = """
+                             individualCount:
+                                 min : 5
+                                 max : 8
+                             percentage:
+                                 min : 5.5
+                                 max : 8.1
+                             code:
+                                 min : '3'
+                             """
+        self.yaml_string = """
+                             individualCount:
+                                 min : 5
+                             code:
+                                 max : 3
+                             """
+
+    def test_minmax_float(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'percentage': '9.'}
+        self.assertFalse(val.validate(document))
+        document = {'percentage': '2.1'}
+        self.assertFalse(val.validate(document))
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'percentage': 9.}
+        self.assertFalse(val.validate(document))
+        document = {'percentage': 2.1}
+        self.assertFalse(val.validate(document))
+
+    def test_minmax_int(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'individualCount': '9'}
+        self.assertFalse(val.validate(document))
+        document = {'individualCount': '2'}
+        self.assertFalse(val.validate(document))
+
+    def test_min_int_coerce(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'code': '6'}
+        self.assertTrue(val.validate(document))
+        document = {'code': '2'}
+        self.assertFalse(val.validate(document))
+
+    def test_min_int_string(self):
+        """test if the value has minimal value with string input
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        # provide error on type mismatch
+        document = {'individualCount': 'vijf'}
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'individualCount': [
+                             'min validation failed, value is not numeric']},
+                         msg="alert on datatype mismatch for min "
+                             "evaluation fails")
+
+    def test_max_int_string(self):
+        """test if the value has maximal value with string input
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'code': 'vijf'}  # provide error on type mismatch
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'code': ['max validation failed, '
+                                   'value is not numeric']},
+                         msg="alert on datatype mismatch for max "
+                             "evaluation fails")
+
 class TestDateValidator(unittest.TestCase):
 
     def setUp(self):
@@ -991,80 +1069,6 @@ class TestCerberusTypeValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_dtypes))
         document = {'datum': datetime(2016, 11, 2)}
         self.assertTrue(val.validate(document))
-
-
-class TestCerberusMinMaxValidator(unittest.TestCase):
-
-    def setUp(self):
-
-        self.yaml_value = """
-                             individualCount:
-                                 min : 5
-                                 max : 8
-                                 type : integer
-                             percentage:
-                                 min : 5.5
-                                 max : 8.1
-                                 type : float
-                             code:
-                                 type : integer
-                                 min : 3
-                             """
-        self.yaml_string = """
-                             individualCount:
-                                 min : 5
-                                 type : string
-                             code:
-                                 max : 3
-                                 type : string
-                             """
-
-    def test_minmax_float(self):
-        """test if the value has minimal value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'percentage' : 9.}
-        self.assertFalse(val.validate(document))
-        document = {'percentage' : 2.1}
-        self.assertFalse(val.validate(document))
-
-    def test_minmax_int(self):
-        """test if the value has minimal value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'individualCount' : 9}
-        self.assertFalse(val.validate(document))
-        document = {'individualCount' : 2}
-        self.assertFalse(val.validate(document))
-
-    def test_min_int_coerce(self):
-        """test if the value has minimal value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'code' : '6'}
-        self.assertTrue(val.validate(document))
-        document = {'code' : '2'}
-        self.assertFalse(val.validate(document))
-
-    def test_min_int_string(self):
-        """test if the value has minimal value with string input
-        """
-        val = DwcaValidator(yaml.load(self.yaml_string))
-        document = {'individualCount' : 'vijf'} # provide error on type mismatch
-        val.validate(document)
-        self.assertEqual(val.errors,
-                    {'individualCount': ['min validation ignores string type, add type validation']},
-                    msg="alert on datatype mismatch for min evaluation fails")
-
-    def test_max_int_string(self):
-        """test if the value has maximal value with string input
-        """
-        val = DwcaValidator(yaml.load(self.yaml_string))
-        document = {'code' : 'vijf'} # provide error on type mismatch
-        val.validate(document)
-        self.assertEqual(val.errors,
-                    {'code': ['max validation ignores string type, add type validation']},
-                    msg="alert on datatype mismatch for min evaluation fails")
 
 
 class TestCerberusValidator(unittest.TestCase):
