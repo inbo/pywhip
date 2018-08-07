@@ -1083,55 +1083,6 @@ class TestIfValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))  # should be True
 
 
-class TestCerberusValidator(unittest.TestCase):
-    """Test validation methods that are native to Cerberus already
-    """
-
-    def setUp(self):
-        self.yaml_required = """
-                             sex:
-                                 required: False
-                             moment:
-                                 required: True
-                             """
-
-        self.yaml_value = """
-                             individualCount:
-                                 min : 5
-                                 max : 8
-                                 type : integer
-                             percentage:
-                                 min : 5.5
-                                 max : 8.1
-                                 type : float
-                             code:
-                                 type : integer
-                                 min : 3
-                             """
-        self.yaml_string = """
-                             individualCount:
-                                 min : 5
-                                 type : string
-                             code:
-                                 max : 3
-                                 type : string
-                             """
-
-    def test_required(self):
-        """test if a field (key) is present
-        """
-        val = DwcaValidator(yaml.load(self.yaml_required))
-        document = {'moment': '2016-12-11'}
-        self.assertTrue(val.validate(document))
-
-        document = {'sex': '2016-12-11'}
-        self.assertFalse(val.validate(document))
-
-
-
-
-
-
 
 
 
