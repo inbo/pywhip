@@ -170,23 +170,6 @@ class TestCoerceAddition(unittest.TestCase):
                             {'abundance': 'must be of boolean type'},
                             msg="addition of coerce to pre-interpret datatype boolean is failing")
 
-    def test_nested_coerce_of_rules(self):
-        """coerce statements can NOT be inside the *of rules
-        cfr. https://github.com/nicolaiarocci/cerberus/issues/230 and
-        http://docs.python-cerberus.org/en/stable/validation-rules.html#of-rules
-        """
-        schema = """
-                decimalLatitude:
-                    oneof :
-                        - allowed : [10]
-                        - min : 3.
-                          type : 'float'
-                 """
-        val = DwcaValidator(yaml.load(schema))
-        document = {'decimalLatitude': '4'}
-        self.assertTrue(val.validate(document))
-        #self.assertEqual(val.errors, "ERROR")
-
     def test_nested_coerce_if(self):
         """type statements can be in if structure
         TODO
