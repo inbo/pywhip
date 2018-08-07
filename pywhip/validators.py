@@ -37,7 +37,7 @@ class DwcaValidator(Validator):
         delimitedValues, if
 
     dtypes to add for the type comparison:
-        json, urixw
+        json, url
     """
     mandatory_validations = ['nullable']  # empty
     priority_validations = ['empty', 'nullable', 'readonly', 'type']
@@ -296,23 +296,6 @@ class DwcaValidator(Validator):
         if not tester:
             self._error(field, "String format not compliant with " +
                         ', '.join(ref_value))
-
-    def _validate_length(self, length, field, value):
-        """ {'type': 'integer', 'excludes': 'type'} """
-        # check length of a given string
-        if isinstance(value, str) and len(value) != length:
-            self._error(field, "".join(["length mismatch: ", str(len(value)),
-                                        " instead of ", str(length)]))
-        elif not isinstance(value, str):
-            self._error(field, 'length validation only active on strings')
-
-    def _validate_maxlength(self, *args, **kwargs):
-        """ {'type': 'integer', 'excludes': 'type'} """
-        super(DwcaValidator, self)._validate_maxlength(*args, **kwargs)
-
-    def _validate_minlength(self, *args, **kwargs):
-        """ {'type': 'integer', 'excludes': 'type'} """
-        super(DwcaValidator, self)._validate_minlength(*args, **kwargs)
 
     def _validate_numberformat(self, formatter, field, value):
         """ {'type': ['string'], 'regex': '[1-9]\.[1-9]|[1-9]\.$|^\.[1-9]|[1-9]'} """
