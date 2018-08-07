@@ -151,6 +151,9 @@ class TestLengthValidator(unittest.TestCase):
 
 
 class TestStringformatValidator(unittest.TestCase):
+    """Test validation method stringformat
+    according to https://github.com/inbo/whip specifications
+    """
 
     def setUp(self):
         self.yaml_json = """
@@ -211,6 +214,75 @@ class TestStringformatValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'website': "github.com/inbo/whip"}
         self.assertFalse(val.validate(document))
+
+
+class TestCerberusRegexValidator(unittest.TestCase):
+    """Test validation method regex
+    (Cerberus native validation)
+    according to https://github.com/inbo/whip specifications
+    """
+
+    def setUp(self):
+        self.yaml_regex = """
+            observation_id:
+                regex: 'INBO:VIS:\d+'
+            issue_url:
+                regex: 'https:\/\/github\.com\/inbo\/whip\/issues\/\d+'
+            utm1km:
+                regex: '31U[D-G][S-T]\d\d\d\d'
+             """
+        self.yaml_regexit = """
+            quotes:
+                regex: [D - G]
+            """
+
+        self.yaml_regexitdouble = """
+            quotes:
+                regex: "31U[D-G][S-T]\d\d\d\d"
+            """
+
+    def test_regex_inbo_ids(self):
+        """test if inbo ids structure works on the regex specs"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'observation_id': "INBO:VIS:12"}
+        self.assertTrue(val.validate(document))
+        document = {'observation_id': "INBO:VIS:456"}
+        self.assertTrue(val.validate(document))
+        document = {'observation_id': "INBO:VIS:"}
+        self.assertFalse(val.validate(document))
+        document = {'observation_id': "INBO:VIS:ABC"}
+        self.assertFalse(val.validate(document))
+
+    def test_regex_advanced_url_regex(self):
+        """test if specific url structure can be checked for"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'issue_url': "https://github.com/inbo/whip/issues/4"}
+        self.assertTrue(val.validate(document))
+        document = {'issue_url': "https:\\github.com\inbo\whip\issues\4"}
+        self.assertFalse(val.validate(document))
+
+    def test_regex_utm_code(self):
+        """test if utm code can be tested on with regex"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'utm1km': "31UDS8748"}
+        self.assertTrue(val.validate(document))
+        document = {'utm1km': "31UDS874A"}
+        self.assertFalse(val.validate(document))
+
+    def test_regex_noquotehandling(self):
+        """error handling without quotes on regex specifications"""
+
+        with pytest.raises(cerberus.schema.SchemaError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_regexit))
+
+        assert "{'quotes': [{'regex': ['must be of string type']}]}" in \
+               str(excinfo.value)
+
+    def test_regex_doublequotehandling(self):
+        """error handling with double quotes on regex specifications"""
+        with pytest.raises(yaml.scanner.ScannerError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_regexitdouble))
+        assert "found unknown escape character 'd'" in str(excinfo.value)
 
 
 class TestDateValidator(unittest.TestCase):
@@ -993,73 +1065,6 @@ class TestCerberusMinMaxValidator(unittest.TestCase):
         self.assertEqual(val.errors,
                     {'code': ['max validation ignores string type, add type validation']},
                     msg="alert on datatype mismatch for min evaluation fails")
-
-
-class TestCerberusRegexValidator(unittest.TestCase):
-    """Test validation method regex (native cerberus)
-    according to https://github.com/inbo/whip specifications"""
-
-    def setUp(self):
-        self.yaml_regex = """
-                            observation_id:
-                                regex: 'INBO:VIS:\d+'
-                            issue_url:
-                                regex: 'https:\/\/github\.com\/inbo\/whip\/issues\/\d+'
-                            utm1km:
-                                regex: '31U[D-G][S-T]\d\d\d\d'
-                             """
-        self.yaml_regexit = """
-                            quotes:
-                                regex: [D - G]
-                            """
-
-        self.yaml_regexitdouble = """
-                                    quotes:
-                                        regex: "31U[D-G][S-T]\d\d\d\d"
-                                    """
-
-    def test_regex_inbo_ids(self):
-        """test if inbo ids structure works on the regex specs"""
-        val = DwcaValidator(yaml.load(self.yaml_regex))
-        document = {'observation_id' : "INBO:VIS:12"}
-        self.assertTrue(val.validate(document))
-        document = {'observation_id' : "INBO:VIS:456"}
-        self.assertTrue(val.validate(document))
-        document = {'observation_id' : "INBO:VIS:"}
-        self.assertFalse(val.validate(document))
-        document = {'observation_id' : "INBO:VIS:ABC"}
-        self.assertFalse(val.validate(document))
-
-    def test_regex_advanced_url_regex(self):
-        """test if specific url structure can be checked for"""
-        val = DwcaValidator(yaml.load(self.yaml_regex))
-        document = {'issue_url' : "https://github.com/inbo/whip/issues/4"}
-        self.assertTrue(val.validate(document))
-        document = {'issue_url' : "https:\\github.com\inbo\whip\issues\4"}
-        self.assertFalse(val.validate(document))
-
-    def test_regex_utm_code(self):
-        """test if utm code can be tested on with regex"""
-        val = DwcaValidator(yaml.load(self.yaml_regex))
-        document = {'utm1km' : "31UDS8748"}
-        self.assertTrue(val.validate(document))
-        document = {'utm1km' : "31UDS874A"}
-        self.assertFalse(val.validate(document))
-
-    def test_regex_noquotehandling(self):
-        """error handling without quotes on regex specifications"""
-
-        with pytest.raises(cerberus.schema.SchemaError) as excinfo:
-            val = DwcaValidator(yaml.load(self.yaml_regexit))
-
-        assert "{'quotes': [{'regex': ['must be of string type']}]}" in \
-               str(excinfo.value)
-
-    def test_regex_doublequotehandling(self):
-        """error handling with double quotes on regex specifications"""
-        with pytest.raises(yaml.scanner.ScannerError) as excinfo:
-            val = DwcaValidator(yaml.load(self.yaml_regexitdouble))
-        assert "found unknown escape character 'd'" in str(excinfo.value)
 
 
 class TestCerberusValidator(unittest.TestCase):
