@@ -52,7 +52,6 @@ class DwcaValidator(Validator):
 
         # add coerce rules when type validations are required
         self.schema = self._schema_add_empty(self.schema)
-        self._resolve_coerce(self.schema)
 
         # default rule to ignore None values on reader
         # self.ignore_none_values = True
