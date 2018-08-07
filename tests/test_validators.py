@@ -149,6 +149,70 @@ class TestLengthValidator(unittest.TestCase):
         document = {'code': '5.2'}
         self.assertFalse(val.validate(document))
 
+
+class TestStringformatValidator(unittest.TestCase):
+
+    def setUp(self):
+        self.yaml_json = """
+                             measurements:
+                                stringformat: json
+                             """
+        self.yaml_url = """
+                             website:
+                                stringformat: url
+                             """
+
+    def test_json_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_json))
+        document = {'measurements': """
+                                    {"top": 3, "centre": 5, "bottom": 6}
+                                    """}
+        self.assertTrue(val.validate(document))
+        document = {'measurements': """
+                                    {"length": 2.0}
+                                    """}
+        self.assertTrue(val.validate(document))
+        document = {'measurements': """
+                                    {"length": 2.0, "length_unit": "cm"}
+                                    """}
+        self.assertTrue(val.validate(document))
+
+    def test_wrong_json_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_json))
+        val.allow_unknown = True
+        document = {'size': 'large',
+                    'measurements': """
+                                    {"top": 3, "centre": 5, "bottom": 6
+                                    """}
+        self.assertFalse(val.validate(document))
+        document = {'measurements': """
+                                    {'length': 2.0}
+                                    """}
+        self.assertFalse(val.validate(document))
+        document = {'measurements': """
+                                    {length: 2.0}
+                                    """}
+        self.assertFalse(val.validate(document))
+        document = {'measurements': """
+                                    length: 2.0
+                                    """}
+        self.assertFalse(val.validate(document))
+
+    def test_url_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_url))
+        document = {'website': "https://github.com/LifeWatchINBO/dwca-validator"}
+        self.assertTrue(val.validate(document))
+        document = {'website': "http://github.com/inbo/whip"}
+        self.assertTrue(val.validate(document))
+
+    def test_wrong_url_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_url))
+        document = {'website': "https/github.com/LifeWatchINBO/dwca-validator"}
+        self.assertFalse(val.validate(document))
+        document = {'website': "github.com/inbo/whip"}
+        self.assertFalse(val.validate(document))
+
+
 class TestDateValidator(unittest.TestCase):
 
     def setUp(self):
@@ -682,68 +746,6 @@ class TestIfValidator(unittest.TestCase):
         document = {'lifestage': '', 'sex': 'male'}
         self.assertTrue(val.validate(document))  # should be True
 
-
-class TestStringformatValidator(unittest.TestCase):
-
-    def setUp(self):
-        self.yaml_json = """
-                             measurements:
-                                stringformat: json
-                             """
-        self.yaml_url = """
-                             website:
-                                stringformat: url
-                             """
-
-    def test_json_stringformat(self):
-        val = DwcaValidator(yaml.load(self.yaml_json))
-        document = {'measurements': """
-                                    {"top": 3, "centre": 5, "bottom": 6}
-                                    """}
-        self.assertTrue(val.validate(document))
-        document = {'measurements': """
-                                    {"length": 2.0}
-                                    """}
-        self.assertTrue(val.validate(document))
-        document = {'measurements': """
-                                    {"length": 2.0, "length_unit": "cm"}
-                                    """}
-        self.assertTrue(val.validate(document))
-
-    def test_wrong_json_stringformat(self):
-        val = DwcaValidator(yaml.load(self.yaml_json))
-        val.allow_unknown = True
-        document = {'size' : 'large',
-                    'measurements': """
-                                    {"top": 3, "centre": 5, "bottom": 6
-                                    """}
-        schema = {'perimeter':{'type':'json'}}
-        self.assertFalse(val.validate(document))
-        document = {'measurements': """
-                                    {'length': 2.0}
-                                    """}
-        self.assertFalse(val.validate(document))
-        document = {'measurements': """
-                                    {length: 2.0}
-                                    """}
-        self.assertFalse(val.validate(document))
-        document = {'measurements': """
-                                    length: 2.0
-                                    """}
-        self.assertFalse(val.validate(document))
-
-    def test_url_stringformat(self):
-        val = DwcaValidator(yaml.load(self.yaml_url))
-        document = {'website': "https://github.com/LifeWatchINBO/dwca-validator"}
-        self.assertTrue(val.validate(document))
-        document = {'website': "http://github.com/inbo/whip"}
-        self.assertTrue(val.validate(document))
-
-    def test_wrong_url_stringformat(self):
-        val = DwcaValidator(yaml.load(self.yaml_url))
-        document = {'website': "https/github.com/LifeWatchINBO/dwca-validator"}
-        self.assertFalse(val.validate(document))
-        document = {'website': "github.com/inbo/whip"}
 
 
 class TestCerberusTypeValidator(unittest.TestCase):
