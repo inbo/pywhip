@@ -627,6 +627,19 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'length': ';'}  # False
         self.assertFalse(val.validate(document))
 
+    def test_numberformat_negative(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
+        document = {'size': '-123.14372'}  # negative  float
+        val.validate(document)
+        self.assertTrue(val.validate(document))
+        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
+        document = {'length': '-22'}  # negative int
+        self.assertTrue(val.validate(document))
+        document = {'length': '2-2'}  # negative int
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'length': ['2-2 is not numerical']})
+
 class TestDateValidator(unittest.TestCase):
 
     def setUp(self):

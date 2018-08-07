@@ -259,9 +259,12 @@ class DwcaValidator(Validator):
         """ {'type': ['string'],
             'regex': '^[1-9]\.[1-9]$|^[1-9]\.$|^\.[1-9]$|^[1-9]$|^\.$|^x$'}
         """
-        value_str = self.document_str_version[field]
 
-        
+        # value_str = self.document_str_version[field]
+
+        # ignore - sign to handle negative numbers
+        value_str = re.sub("^-", "", value)
+
         # check if value is number format
         if not re.match('^[0-9]*\.[0-9]*$|^[0-9]+$', value_str):
             self._error(field, "".join([value_str,
