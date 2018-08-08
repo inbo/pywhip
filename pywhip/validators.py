@@ -116,6 +116,7 @@ class DwcaValidator(Validator):
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': ['list', 'string']} """
 
+        # support single string values as well (cerberus only supports lists)
         if isinstance(allowed_values, _str_type):
             allowed_values = [allowed_values]
 
