@@ -45,6 +45,9 @@ class DwcaValidator(Validator):
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
         """
+        # prepare the string version of each document in the namespace
+        self.document_str_version = None
+
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
         if not self.schema:
@@ -55,9 +58,6 @@ class DwcaValidator(Validator):
 
         # default rule to ignore None values on reader
         # self.ignore_none_values = True
-
-        # prepare the string version of each document in the namespace
-        self.document_str_version = None
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
