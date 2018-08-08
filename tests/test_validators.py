@@ -777,7 +777,7 @@ class TestEmptyStringHandling(unittest.TestCase):
     def setUp(self):
         self.yaml_string = """
                            abundance:
-                                type : float
+                                minlength : 1
                            sex:
                                 allowed: [male, female]
                            """
@@ -786,7 +786,6 @@ class TestEmptyStringHandling(unittest.TestCase):
                         number:
                             min: 2
                             empty: False
-                            type: integer
                         sex:
                             allowed: [male, female]
                             empty: False
@@ -796,7 +795,6 @@ class TestEmptyStringHandling(unittest.TestCase):
                         number:
                             min: 2
                             empty: True
-                            type: integer
                         sex:
                             empty: True
                             allowed: [male, female]
