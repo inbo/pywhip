@@ -866,7 +866,6 @@ class TestEmptyStringHandling(unittest.TestCase):
 
     def test_empty_allow_explicit(self):
         """specifically define the possibility of empty values"""
-        document = {'number': ''}
         val = DwcaValidator(yaml.load(self.empty2))
         document = {'sex': 'male'}
         self.assertTrue(val.validate(document))
