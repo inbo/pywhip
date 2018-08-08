@@ -39,8 +39,7 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, url
     """
-    mandatory_validations = ['nullable']  # empty
-    priority_validations = ['empty', 'nullable', 'readonly', 'type']
+    priority_validations = ('nullable', 'empty')
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
@@ -55,9 +54,6 @@ class DwcaValidator(Validator):
 
         # add coerce rules when type validations are required
         self.schema = self._schema_add_empty(self.schema)
-
-        # default rule to ignore None values on reader
-        # self.ignore_none_values = True
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
