@@ -346,6 +346,11 @@ class TestRegexValidator(unittest.TestCase):
                 regex: "31U[D-G][S-T]\d\d\d\d"
             """
 
+        self.yaml_regexfullmatch = """
+            occurrenceid:
+                regex: '\d{3}:\d{8}'   
+            """
+
     def test_regex_inbo_ids(self):
         """test if inbo ids structure works on the regex specs"""
         val = DwcaValidator(yaml.load(self.yaml_regex))
@@ -388,6 +393,15 @@ class TestRegexValidator(unittest.TestCase):
         with pytest.raises(yaml.scanner.ScannerError) as excinfo:
             val = DwcaValidator(yaml.load(self.yaml_regexitdouble))
         assert "found unknown escape character 'd'" in str(excinfo.value)
+
+    def test_regex_onlyfullmatch(self):
+        """Make sure regex is full match to pass """
+        val = DwcaValidator(yaml.load(self.yaml_regexfullmatch))
+
+        document = {'occurrenceid': "123:12345678"}
+        self.assertTrue(val.validate(document))
+        document = {'occurrenceid': "123:123456789"}
+        self.assertFalse(val.validate(document))
 
 
 class TestMinMaxValidator(unittest.TestCase):
