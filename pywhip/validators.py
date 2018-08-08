@@ -394,10 +394,6 @@ class DwcaValidator(Validator):
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, DELIMITER_SCHEMA, validator._errors)
 
-    def _validate_listvalues(self):
-        """ {'type': 'boolean'} """
-        return None
-
     def _validate_stringformat(self, stringtype, field, value):
         """ {'allowed': ['url', 'json']} """
         if stringtype == 'json':
