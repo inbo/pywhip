@@ -358,6 +358,7 @@ class DwcaValidator(Validator):
         if '' in value:
             self._error(field,
                         "contains empty string combined with delimiters")
+            return True
 
         # check for doubles ('male | female | male' needs error)
         if len(value) != len(set(value)):

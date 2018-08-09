@@ -983,6 +983,13 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                                         empty: True
                                     """
 
+        self.yaml_delimited7 = """
+                                    sex:
+                                        empty: True
+                                        delimitedvalues:
+                                            delimiter: " | "
+                                    """
+
     def test_delimiter_doubles(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
         document = {'sex': 'male | female | male'} # False
@@ -1025,8 +1032,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'sex': ['contains empty string combined '
-                                  'with delimiters',
-                                  {2: ['empty values not allowed']}]})
+                                  'with delimiters']})
         # regular empty value is default False
         document = {'sex': ''}
         self.assertFalse(val.validate(document))
@@ -1098,6 +1104,15 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                          {'age': [{0: [{'if': ['max value is 20']}],
                                    1: [{'if': ['max value is 20']}]}]})
 
+    def test_delimiter_default_non_empty(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited7))
+        document = {'sex': ''}  # True
+        self.assertTrue(val.validate(document))
+        document = {'sex': ' | '}  # False
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'sex': ['contains empty string combined '
+                                  'with delimiters']})
 
 class TestIfValidator(unittest.TestCase):
 
