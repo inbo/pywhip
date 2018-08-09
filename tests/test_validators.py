@@ -4,14 +4,662 @@ Created on Mon Feb 22 15:46:18 2016
 
 @author: stijn_vanhoey
 
-# using nosetests...
 """
 
 import yaml
 import unittest
 from datetime import datetime
 
+import cerberus
+import pytest
+
 from pywhip.validators import DwcaValidator
+
+
+class TestAllowedValidator(unittest.TestCase):
+    """Test the usage of string as input for allowed values
+    (Cerberus native validation)
+    """
+    def setUp(self):
+
+        self.yaml_allowed_string = """
+                                   abundance:
+                                       allowed: many                                  
+                                   """
+
+        self.yaml_allowed_list = """
+                     rightsHolder:
+                         allowed : [INBO]   
+                     sex:
+                         allowed : [male, female]
+                     age:
+                         allowed : [adult, juvenile, 'adult | juvenile']                                     
+                     """
+
+    def test_allowed_string(self):
+        """test if the value is the allowed value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allowed_string))
+        document = {'abundance': 'many'}
+        self.assertTrue(val.validate(document))
+        document = {'abundance': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allowed_list(self):
+        """test if the value is one of the allowed values
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allowed_list))
+        document = {'rightsHolder': 'INBO'}
+        self.assertTrue(val.validate(document))
+        document = {'rightsHolder': 'ILVO'}
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'Female'}
+        self.assertFalse(val.validate(document))
+        document = {'age': 'adult'}
+        self.assertTrue(val.validate(document))
+        document = {'age': 'juvenile'}
+        self.assertTrue(val.validate(document))
+        document = {'age': 'adult | juvenile'}
+        self.assertTrue(val.validate(document))
+        document = {'age': 'adult|juvenile'}
+        self.assertFalse(val.validate(document))
+
+
+class TestAllowedQuoteFlavors(unittest.TestCase):
+    """Test validation method `allowed` (native cerberus)
+    according to https://github.com/inbo/whip specifications
+    """
+    def setUp(self):
+        self.yaml_allow1 = """
+                          sex:
+                              allowed : male
+                          """
+
+        self.yaml_allow2 = """
+                          sex:
+                              allowed : "male"
+                          """
+
+        self.yaml_allow3 = """
+                          sex:
+                              allowed : 'male'
+                          """
+
+        self.yaml_allow4 = """
+                          sex:
+                              allowed : [male]
+                          """
+
+        self.yaml_allow5 = """
+                          sex:
+                              allowed : [male, female]
+                          """
+
+        self.yaml_allow6 = """
+                          sex:
+                              allowed : [male, female, 'male, female']
+                          """
+
+    def test_allow_noquote(self):
+        """test if allowed accepts a single allowed value without quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow1))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_doublequote(self):
+        """test if allowed accepts a single allowed value with double quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow2))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_singlequote(self):
+        """test if allowed accepts a single allowed value with single quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow3))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_bracket(self):
+        """test if allowed accepts a single allowed value in list
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow4))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_bracket_multiple(self):
+        """test if allowed accepts multiple values in list  without quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow5))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'male, female'}
+        self.assertFalse(val.validate(document))
+
+    def test_allow_bracket_multiplemix(self):
+        """test if allowed accepts multiple values and terms with quotes
+        """
+        val = DwcaValidator(yaml.load(self.yaml_allow6))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'male, female'}
+        self.assertTrue(val.validate(document))
+
+        document = {'sex': 'male,female'}
+        self.assertFalse(val.validate(document))
+
+
+class TestLengthValidator(unittest.TestCase):
+    """Test validation methods `minlength` and `maxlength`,
+    (Cerberus native validation)
+    according to https://github.com/inbo/whip specifications
+    """
+
+    def setUp(self):
+        self.yaml_length = """
+                             postal_code :
+                                 minlength : 4
+                             license_plate:
+                                 maxlength: 6
+                             code:
+                                 minlength : 2
+                                 maxlength : 2
+                             """
+
+    def test_minlength(self):
+        """test if the string has proper minimal length
+
+        (remark, all values from DwC are coming in as string value)
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'postal_code': '9050'}
+        self.assertTrue(val.validate(document))
+
+        document = {'postal_code': 'B-9050'}
+        self.assertTrue(val.validate(document))
+
+        document = {'postal_code': '905'}
+        self.assertFalse(val.validate(document))
+
+    def test_maxlength(self):
+        """test if the string has proper maximal length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'license_plate': 'AF8934'}
+        self.assertTrue(val.validate(document))
+
+        document = {'license_plate': '123456'}
+        self.assertTrue(val.validate(document))
+
+        document = {'license_plate': 'AF893'}
+        self.assertTrue(val.validate(document))
+
+        document = {'license_plate': 'AF8-934'}
+        self.assertFalse(val.validate(document))
+
+        document = {'license_plate': 'AF   934'}
+        self.assertFalse(val.validate(document))
+
+    def test_minmaxlength(self):
+        """test if the string has proper length
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'code': 'AA'}
+        self.assertTrue(val.validate(document))
+
+        document = {'code': 'A'}
+        self.assertFalse(val.validate(document))
+
+        document = {'code': 'ABC'}
+        self.assertFalse(val.validate(document))
+
+    def test_minlength_ignored_formats(self):
+        """test if an integer or float is ignored by length-options
+
+        Remark, using DwcA, all values are coming in as a string, so testing
+        of length will occur for these as well.
+        """
+        val = DwcaValidator(yaml.load(self.yaml_length))
+        document = {'code': 5}
+        self.assertTrue(val.validate(document))
+        document = {'code': '5'}
+        self.assertFalse(val.validate(document))
+        document = {'code': 5.2}
+        self.assertTrue(val.validate(document))
+        document = {'code': '5.2'}
+        self.assertFalse(val.validate(document))
+
+
+class TestStringformatValidator(unittest.TestCase):
+    """Test validation method stringformat
+    according to https://github.com/inbo/whip specifications
+    """
+
+    def setUp(self):
+        self.yaml_json = """
+                             measurements:
+                                stringformat: json
+                             """
+        self.yaml_url = """
+                             website:
+                                stringformat: url
+                             """
+
+    def test_json_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_json))
+        document = {'measurements': """
+                                    {"top": 3, "centre": 5, "bottom": 6}
+                                    """}
+        self.assertTrue(val.validate(document))
+        document = {'measurements': """
+                                    {"length": 2.0}
+                                    """}
+        self.assertTrue(val.validate(document))
+        document = {'measurements': """
+                                    {"length": 2.0, "length_unit": "cm"}
+                                    """}
+        self.assertTrue(val.validate(document))
+
+    def test_wrong_json_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_json))
+        val.allow_unknown = True
+        document = {'size': 'large',
+                    'measurements': """
+                                    {"top": 3, "centre": 5, "bottom": 6
+                                    """}
+        self.assertFalse(val.validate(document))
+        document = {'measurements': """
+                                    {'length': 2.0}
+                                    """}
+        self.assertFalse(val.validate(document))
+        document = {'measurements': """
+                                    {length: 2.0}
+                                    """}
+        self.assertFalse(val.validate(document))
+        document = {'measurements': """
+                                    length: 2.0
+                                    """}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'measurements': ['no valid json format']})
+
+    def test_url_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_url))
+        document = {'website': "https://github.com/LifeWatchINBO/dwca-validator"}
+        self.assertTrue(val.validate(document))
+        document = {'website': "http://github.com/inbo/whip"}
+        self.assertTrue(val.validate(document))
+
+    def test_wrong_url_stringformat(self):
+        val = DwcaValidator(yaml.load(self.yaml_url))
+        document = {'website': "https/github.com/LifeWatchINBO/dwca-validator"}
+        self.assertFalse(val.validate(document))
+        document = {'website': "github.com/inbo/whip"}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'website': ['no valid url format']})
+
+
+class TestRegexValidator(unittest.TestCase):
+    """Test validation method regex
+    (Cerberus native validation)
+    according to https://github.com/inbo/whip specifications
+    """
+
+    def setUp(self):
+        self.yaml_regex = """
+            observation_id:
+                regex: 'INBO:VIS:\d+'
+            issue_url:
+                regex: 'https:\/\/github\.com\/inbo\/whip\/issues\/\d+'
+            utm1km:
+                regex: '31U[D-G][S-T]\d\d\d\d'
+             """
+        self.yaml_regexit = """
+            quotes:
+                regex: [D - G]
+            """
+
+        self.yaml_regexitdouble = """
+            quotes:
+                regex: "31U[D-G][S-T]\d\d\d\d"
+            """
+
+        self.yaml_regexfullmatch = """
+            occurrenceid:
+                regex: '\d{3}:\d{8}'   
+            """
+
+    def test_regex_inbo_ids(self):
+        """test if inbo ids structure works on the regex specs"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'observation_id': "INBO:VIS:12"}
+        self.assertTrue(val.validate(document))
+        document = {'observation_id': "INBO:VIS:456"}
+        self.assertTrue(val.validate(document))
+        document = {'observation_id': "INBO:VIS:"}
+        self.assertFalse(val.validate(document))
+        document = {'observation_id': "INBO:VIS:ABC"}
+        self.assertFalse(val.validate(document))
+
+    def test_regex_advanced_url_regex(self):
+        """test if specific url structure can be checked for"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'issue_url': "https://github.com/inbo/whip/issues/4"}
+        self.assertTrue(val.validate(document))
+        document = {'issue_url': "https:\\github.com\inbo\whip\issues\4"}
+        self.assertFalse(val.validate(document))
+
+    def test_regex_utm_code(self):
+        """test if utm code can be tested on with regex"""
+        val = DwcaValidator(yaml.load(self.yaml_regex))
+        document = {'utm1km': "31UDS8748"}
+        self.assertTrue(val.validate(document))
+        document = {'utm1km': "31UDS874A"}
+        self.assertFalse(val.validate(document))
+
+    def test_regex_noquotehandling(self):
+        """error handling without quotes on regex specifications"""
+
+        with pytest.raises(cerberus.schema.SchemaError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_regexit))
+
+        assert "{'quotes': [{'regex': ['must be of string type']}]}" in \
+               str(excinfo.value)
+
+    def test_regex_doublequotehandling(self):
+        """error handling with double quotes on regex specifications"""
+        with pytest.raises(yaml.scanner.ScannerError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_regexitdouble))
+        assert "found unknown escape character 'd'" in str(excinfo.value)
+
+    def test_regex_onlyfullmatch(self):
+        """Make sure regex is full match to pass """
+        val = DwcaValidator(yaml.load(self.yaml_regexfullmatch))
+
+        document = {'occurrenceid': "123:12345678"}
+        self.assertTrue(val.validate(document))
+        document = {'occurrenceid': "123:123456789"}
+        self.assertFalse(val.validate(document))
+
+
+class TestMinMaxValidator(unittest.TestCase):
+
+    def setUp(self):
+
+        self.yaml_value = """
+                             individualCount:
+                                 min : 5
+                                 max : 8
+                             percentage:
+                                 min : 5.5
+                                 max : 8.1
+                             code:
+                                 min : '3'
+                             age_1:
+                                 min: 9
+                             age_2:
+                                 min: 9.
+                             age_3:
+                                 max: 99
+                             age_4:
+                                 max: 99.0
+                             """
+
+    def test_min(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        min_true = ['9', '9.0', '9.1', '10']
+        for value in min_true:
+            document = {'age_1': value}
+            self.assertTrue(val.validate(document))
+            document = {'age_2': value}
+            self.assertTrue(val.validate(document))
+
+        min_false = ['8.99999', '-9']
+        for value in min_false:
+            document = {'age_1': value}
+            self.assertFalse(val.validate(document))
+            document = {'age_2': value}
+            self.assertFalse(val.validate(document))
+
+    def test_max(self):
+        """test if the value has minimal value
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        max_true = ['99', '99.0', '89.9', '88', '-99']
+        for value in max_true:
+            document = {'age_3': value}
+            self.assertTrue(val.validate(document))
+            document = {'age_4': value}
+            self.assertTrue(val.validate(document))
+
+        max_false = ['99.1', '100']
+        for value in max_false:
+            document = {'age_3': value}
+            self.assertFalse(val.validate(document))
+            document = {'age_4': value}
+            self.assertFalse(val.validate(document))
+
+    def test_minmax(self):
+        """test if the value is between given range
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'percentage': 9.}
+        self.assertFalse(val.validate(document))
+        document = {'percentage': 2.1}
+        self.assertFalse(val.validate(document))
+
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'individualCount' : 9}
+        self.assertFalse(val.validate(document))
+        document = {'individualCount' : 2}
+        self.assertFalse(val.validate(document))
+
+    def test_min_int_string(self):
+        """test if the value has minimal value with string input
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        # provide error on type mismatch
+        document = {'code': 'vijf'}
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'code': [
+                             'min validation failed, value is not numeric']},
+                         msg="alert on datatype mismatch for min "
+                             "evaluation fails")
+
+    def test_max_int_string(self):
+        """test if the value has maximal value with string input
+        """
+        val = DwcaValidator(yaml.load(self.yaml_value))
+        document = {'age_3': 'vijf'}  # provide error on type mismatch
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'age_3': ['max validation failed, '
+                                   'value is not numeric']},
+                         msg="alert on datatype mismatch for max "
+                             "evaluation fails")
+
+
+class TestNumberFormatValidator(unittest.TestCase):
+
+    def setUp(self):
+        self.yaml_numberformat1 = """
+                                    size:
+                                        numberformat: '.5'
+                                    length:
+                                        numberformat: '.3'
+                                    """
+
+        self.yaml_numberformat2 = """
+                                    size:
+                                        numberformat: '3.5'
+                                    length:
+                                        numberformat: '2.3'
+                                    """
+
+        self.yaml_numberformat3 = """
+                                    size:
+                                        numberformat: '4.'
+                                    length:
+                                        numberformat: '2.'
+                                    height:
+                                        numberformat: '2'
+                                    """
+        self.yaml_numberformat4 = """
+                                    size:
+                                        numberformat: '.'
+                                    """
+        self.yaml_numberformat5 = """
+                                    size:
+                                        numberformat: 'x'
+                                    """
+
+    def test_numberformat_right(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
+        document = {'size': '1110.14372'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '.14372'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '0.1437'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'length': '.123'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'length': '1.123'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'length': '12.123'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'length': '1.12'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'length': '1.1234'}  # False
+        self.assertFalse(val.validate(document))
+
+    def test_numberformat_both(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
+        document = {'size': '123.14372'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '0.1437'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'length': '12.123'}  # False
+        self.assertTrue(val.validate(document))
+        document = {'length': '1223'}  # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'length': ['numberformat of value 1223 not '
+                                     'in agreement with 2.3']})
+
+    def test_numberformat_left(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
+        document = {'size': '1234.14372'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '123.12'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'length': '12'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'length': '12.'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'length': '12.1'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'length': '123'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'height': '12'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'height': '.1'}  # False
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'height': ['value .1 is not an integer']})
+        document = {'height': '12.1'}  # False
+        self.assertFalse(val.validate(document))
+
+    def test_numberformat_integer(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
+        document = {'size': '1234.'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1234.55555'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1234'}  # True
+        self.assertTrue(val.validate(document))
+
+    def test_numberformat_anyfloat(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat4))
+        document = {'size': '1234.2222'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '0.2222'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1234.'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1'}  # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'size': ['value 1 is not a float']})
+
+    def test_numberformat_anyinteger(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat5))
+        document = {'size': '1234'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'size': '1234.'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'size': '.'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'size': '1.0'}  # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'size': ['value 1.0 is not an integer']})
+
+    def test_numberformat_isnumber(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
+        document = {'size': '1234f.'}  # Not a number
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'size': ['1234f. is not numerical']})
+        document = {'length': 'a.abc'}  # False
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'length': ['a.abc is not numerical']})
+        document = {'length': ';'}  # False
+        self.assertFalse(val.validate(document))
+
+    def test_numberformat_negative(self):
+        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
+        document = {'size': '-123.14372'}  # negative  float
+        val.validate(document)
+        self.assertTrue(val.validate(document))
+        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
+        document = {'length': '-22'}  # negative int
+        self.assertTrue(val.validate(document))
+        document = {'length': '2-2'}  # negative int
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'length': ['2-2 is not numerical']})
 
 
 class TestDateValidator(unittest.TestCase):
@@ -21,10 +669,15 @@ class TestDateValidator(unittest.TestCase):
                                  moment:
                                      mindate: 1830-01-01
                                      maxdate: 2014-10-20
+                                 date:
+                                    mindate: 1985-11-29
+                                    maxdate: 2012-09-12
                                  """
         self.yaml_string_date2 = """
                                     moment:
                                         dateformat: ['%Y-%m-%d', '%Y-%m', '%Y']
+                                    date:
+                                        dateformat: '%Y-%m-%d'
                                     """
         self.yaml_string_date3 = """
                                     moment:
@@ -37,6 +690,9 @@ class TestDateValidator(unittest.TestCase):
         self.yaml_string_date5 = """
                                  moment:
                                      dateformat: '%Y-%m-%d/%Y-%m-%d'
+                                 date:
+                                     dateformat: ['%Y-%m-%d/%Y-%m-%d']
+                                    
                                  """
 
     def test_daterange_iso(self):
@@ -50,15 +706,26 @@ class TestDateValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string_date1))
         document2 = {'moment': '2009-08-31'}  # True
         self.assertTrue(val.validate(document2))
+        document2 = {'date': '1985-11-29'}  # True
+        self.assertTrue(val.validate(document2))
+        document2 = {'date': '2012-09-12'}  # True
+        self.assertTrue(val.validate(document2))
+        document2 = {'date': '2012-09-12'}  # True
+        self.assertTrue(val.validate(document2))
+        document2 = {'date': '1985-11-29'}  # True
+        self.assertTrue(val.validate(document2))
 
     def test_daterange_out(self):
         # outside the range
         val = DwcaValidator(yaml.load(self.yaml_string_date1))
         document = {'moment': '17000101'}  # False
         self.assertFalse(val.validate(document))
-
         val = DwcaValidator(yaml.load(self.yaml_string_date1))
         document = {'moment': '20150831'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '1942-11-26'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '2016-12-07'}  # False
         self.assertFalse(val.validate(document))
 
     def test_daterange_nodate(self):
@@ -72,10 +739,26 @@ class TestDateValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
         document = {'moment': '1997-01-05'}  # True
         self.assertTrue(val.validate(document))
+        document = {'date': '2016-12-07'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'date': '2016/12/07'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '07-12-2016'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '2016-12'}  # False
+        self.assertFalse(val.validate(document))
+        document = {'date': '2016-12-32'}  # False
+        self.assertFalse(val.validate(document))
 
     def test_dateformat_day(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2))
         document = {'moment': '1997-01'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'moment': '2016-12'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'moment': '2016'}  # True
+        self.assertTrue(val.validate(document))
+        document = {'moment': '2016-12-07'}  # True
         self.assertTrue(val.validate(document))
 
     def test_dateformat_multiple_wrong(self):
@@ -92,6 +775,8 @@ class TestDateValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_string_date5))
         document = {'moment': '1997-02-01/2001-03-01'}  # True
         self.assertTrue(val.validate(document))
+        document = {'date': '2016-01-01/2017-02-13'}  # True
+        self.assertTrue(val.validate(document))
 
     def test_dateformat_period_invalid_first(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date5))
@@ -104,54 +789,156 @@ class TestDateValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
 
 
-class TestNumberFormatValidator(unittest.TestCase):
+class TestEmptyStringHandling(unittest.TestCase):
+    """Test conversion from empty strings to None values before performing the
+    evaluation and evaluate the default handling of empty strings and None
+    values
+    """
 
     def setUp(self):
-        self.yaml_numberformat1 = """
-                                    size:
-                                        numberformat: '.5'
-                                    """
+        self.yaml_string = """
+                           abundance:
+                                minlength : 1
+                           sex:
+                                allowed: [male, female]
+                           """
 
-        self.yaml_numberformat2 = """
-                                    size:
-                                        numberformat: '3.5'
-                                    """
+        self.empty1 = """
+                        number:
+                            empty: False
+                        sex:
+                            allowed: [male, female]
+                            empty: False
+                        """
 
-        self.yaml_numberformat3 = """
-                                    size:
-                                        numberformat: '4.'
-                                    """
+        self.empty2 = """
+                        number:
+                            min: 2
+                            empty: True
+                        sex:
+                            empty: True
+                            allowed: [male, female]
+                        """
+        self.empty3 = """
+                        field_1:
+                            maxlength: 2
+                        field_2:
+                            maxlength: 0
+                        field_3:
+                          minlength: 0
+                        field_4:
+                          allowed: ''
+                        field_5:
+                          allowed: [male, female, '']
+                        field_6:
+                          regex: '^\s*$'
+                        """
+        self.empty4 = """
+                        required_to_be_empty:
+                            allowed: ''
+                            empty: True
+                        """
 
-    def test_numberformat_right(self):
-        val = DwcaValidator(yaml.load(self.yaml_numberformat1))
-        document = {'size' : '1110.14372'} # True
+        self.empty5 = """
+                        field_1:
+                            min: 4
+                            max: 2
+                            numberformat: '.'
+                            empty: False
+                        field_2:
+                            min: 4
+                            max: 2
+                            numberformat: '.'
+                            empty: True                     
+                        """
+
+    def test_default_error_empty_string(self):
+        """empty string should provide an error by default
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': ''}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'abundance': ['empty values not allowed']})
+        document = {'sex': 'male'}
         self.assertTrue(val.validate(document))
-        document = {'size' : '.14372'} # True
+        document = {'sex': 'female'}
         self.assertTrue(val.validate(document))
-        document = {'size' : '0.1437'} # False
+        document = {'sex': ''}
         self.assertFalse(val.validate(document))
 
-    def test_numberformat_both(self):
-        val = DwcaValidator(yaml.load(self.yaml_numberformat2))
-        document = {'size' : '123.14372'} # True
+    def test_default_handling_none(self):
+        """None values are not allowed. Remark, in whip all inputs are
+        string, so an incoming None is - normally - not possible
+        """
+        val = DwcaValidator(yaml.load(self.yaml_string))
+        document = {'abundance': None}
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'abundance': ['null value not allowed']})
+
+    def test_empty_notallowed(self):
+        """empty string should provide an error when empty:False set"""
+        val = DwcaValidator(yaml.load(self.empty1))
+        document = {'number': ''}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'number': ['empty values not allowed']})
+        document = {'sex': 'male'}
         self.assertTrue(val.validate(document))
-        document = {'size' : '0.1437'} # False
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': ''}
         self.assertFalse(val.validate(document))
 
-    def test_numberformat_left(self):
-        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
-        document = {'size' : '1234.14372'} # True
+    def test_empty_allow_explicit(self):
+        """specifically define the possibility of empty values"""
+        val = DwcaValidator(yaml.load(self.empty2))
+        document = {'sex': 'male'}
         self.assertTrue(val.validate(document))
-        document = {'size' : '123.12'} # False
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': ''}
+        self.assertTrue(val.validate(document))
+
+    def test_empty_other_context(self):
+        """ following specifications will not accept empty values,
+        even though you might intuitively think so:"""
+        val = DwcaValidator(yaml.load(self.empty3))
+        document = {'field_1': ''}
+        self.assertFalse(val.validate(document))
+        document = {'field_2': ''}
+        self.assertFalse(val.validate(document))
+        document = {'field_3': ''}
+        self.assertFalse(val.validate(document))
+        document = {'field_4': ''}
+        self.assertFalse(val.validate(document))
+        document = {'field_5': ''}
+        self.assertFalse(val.validate(document))
+        document = {'field_6': ''}
         self.assertFalse(val.validate(document))
 
-    def test_numberformat_integer(self):
-        val = DwcaValidator(yaml.load(self.yaml_numberformat3))
-        document = {'size' : '1234.'} # True
+    def test_empty_required_only(self):
+        """only accept empty values (and nothing else) syntax"""
+        val = DwcaValidator(yaml.load(self.empty4))
+        document = {'required_to_be_empty': ''}
         self.assertTrue(val.validate(document))
-        document = {'size' : '1234.55555'} # True
-        self.assertTrue(val.validate(document))
-        document = {'size' : '1234'} # True
+        document = {'required_to_be_empty': 'tdwg'}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'required_to_be_empty': ['unallowed value tdwg']})
+
+    def test_empty_drop_remaining_rules(self):
+        """cerberus does not drop all remaining rules after empty validation,
+        pywhip does this. Testing with min/max (which is different)
+        """
+        val = DwcaValidator(yaml.load(self.empty5))
+        document = {'field_1': '3'}
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'field_1': ['value 3 is not a float',
+                                      'max value is 2', 'min value is 4']})
+        document = {'field_2': ''}
         self.assertTrue(val.validate(document))
 
 
@@ -184,14 +971,6 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                                             min: 1.
                                             max: 8
                                             numberformat: '.3'
-                                            type: float
-                                    """
-
-        self.yaml_delimited4 = """
-                                    sex:
-                                        delimitedvalues:
-                                            delimiter: " | "
-                                            listvalues
                                     """
 
         self.yaml_delimited5 = """
@@ -200,18 +979,34 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                                             allowed: [male, female]
                                     """
 
+        self.yaml_delimited6 = """
+                                    sex:
+                                        delimitedvalues:
+                                            delimiter: " | "
+                                            allowed: [male, female]
+                                        empty: True
+                                    """
+
+        self.yaml_delimited7 = """
+                                    sex:
+                                        empty: True
+                                        delimitedvalues:
+                                            delimiter: " | "
+                                    """
+
     def test_delimiter_doubles(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male | female | male'} # False
+        document = {'sex': 'male | female | male'} # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': ['contains duplicate values in delimitedvalues']})
+                         {'sex': ['contains duplicate values in '
+                                  'delimitedvalues']})
 
     def test_delimiter_single_occurence(self):
         """should be passed and just checked as such
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male'} # True
+        document = {'sex': 'male'}  # True
         self.assertTrue(val.validate(document))
 
     def test_delimiter_wrong_delimiter(self):
@@ -219,7 +1014,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         unallowed value
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male ; female'} # False, due to wrong endname
+        document = {'sex': 'male ; female'}  # False, due to wrong endname
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'sex': [{0: ['unallowed value male ; female']}]})
@@ -228,19 +1023,57 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         """pipe too much which can not be split anymore
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male | female |'} # False
+        document = {'sex': 'male | female |'}  # False
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'sex': [{1: ['unallowed value female |']}]})
 
     def test_delimiter_empty_not_allowed(self):
         """pipe too much which results in empty value
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male | female | '} # False (pipe too much)
+        document = {'sex': 'male | female | '}  # False (pipe too much)
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'sex': ['contains empty string combined '
+                                  'with delimiters']})
+        # regular empty value is default False
+        document = {'sex': ''}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'sex': ['empty values not allowed']})
+
+    def test_delimiter_all_valid_options(self):
+        """test the valid options produced by delimited syntax
+        """
+        val = DwcaValidator(yaml.load(self.yaml_delimited6))
+        document = {'sex': 'male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'male | female'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': 'female | male'}
+        self.assertTrue(val.validate(document))
+        document = {'sex': ''}
+        self.assertTrue(val.validate(document))
+
+    def test_delimiter_non_valid_options(self):
+        """raise Error when no delimiter field added
+        """
+        val = DwcaValidator(yaml.load(self.yaml_delimited6))
+        document = {'sex': 'male, female'}  # wrong delimiter
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male|female'}  # no spaces
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male | '}  # end delimiter without value
+        self.assertFalse(val.validate(document))
+        document = {'sex': 'male | | female'}
+        self.assertFalse(val.validate(document))  # in field empty
 
     def test_delimiter_nest(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited3))
-        document = {'stage' : '0.123 | 4.235'} # True
+        document = {'stage': '0.123 | 4.235'}  # True
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'stage': [{0: ['min value is 1.0']}]})
@@ -249,43 +1082,56 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         """raise Error when no delimiter field added
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited5))
-        document = {'sex' : 'male | female '}
+        document = {'sex': 'male | female'}
         with self.assertRaises(ValueError):
             val.validate(document)
 
-#    def test_delimiter_if_condition_pass(self):
-#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-#        document = {'age' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
-#        self.assertTrue(val.validate(document))
-#
-#    def test_delimiter_if_condition_nonpass(self):
-#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-#        document = {'age' : '5 | 18 | 99', 'lifestage':'adult'} # True
-#        self.assertFalse(val.validate(document))
+    def test_delimiter_if_condition_pass(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age': '5 | 18 | 19', 'lifestage': 'juvenile'}  # True
+        self.assertTrue(val.validate(document))
+
+    def test_delimiter_if_condition_nonpass(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age': '5 | 18 | 99', 'lifestage': 'adult'}  # True
+        self.assertFalse(val.validate(document))
 
     def test_delimiter_if_checkindication(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'age' : '5 | 32', 'lifestage':'juvenile'} # False
+        document = {'age': '5 | 32', 'lifestage': 'juvenile'}  # False
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'age': [{1: [{'if': ['max value is 20']}]}]})
+        document = {'age': '50 | 32', 'lifestage': 'juvenile'}  # False
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'age': [{0: [{'if': ['max value is 20']}],
+                                   1: [{'if': ['max value is 20']}]}]})
 
-##    def test_delimiter_enlist(self):
-##        """combine the listvalues within the delimitedvalues
-##        """
-##        #to check how enlist well be handled... (let op unieke enkel behouden)
+    def test_delimiter_default_non_empty(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited7))
+        document = {'sex': ''}  # True
+        self.assertTrue(val.validate(document))
+        document = {'sex': ' | '}  # False
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'sex': ['contains empty string combined '
+                                  'with delimiters']})
 
 
 class TestIfValidator(unittest.TestCase):
 
     def setUp(self):
+
         self.yaml_if = """
                         type:
                             if:
                                 basisOfRecord:
                                     allowed: [HumanObservation]
-                            allowed: [Event]
+                                allowed: [Event]
                             empty: False
                         basisOfRecord:
-                            allowed: [HumanObservation, Machine]
+                            allowed: [HumanObservation, Machine, Measurement]
                         """
 
         self.yaml_ifif = """
@@ -293,27 +1139,68 @@ class TestIfValidator(unittest.TestCase):
                                 if:
                                     - age:
                                           min: 20
-                                          type: integer
                                       allowed: [adult]
+                                      maxlength: 6
+                                    - age:
+                                          max: 20
+                                      minlength: 6
                                     - age:
                                           min: 20
-                                          type: integer
-                                      maxlength: 6
+                                      maxlength: 5
                             age:
-                                type: integer
+                                numberformat: 'x'
                             """
 
         self.yaml_ifcombi = """
                             basisOfRecord:
-                                empty: false
+                                empty: False
                                 allowed: [HumanObservation, PreservedSpecimen]
                                 if:
                                     collectionCode:
-                                        empty: true
+                                        empty: True
                                     allowed: [PreservedSpecimen]
                             collectionCode:
-                                empty: true
+                                empty: True
                             """
+
+        self.yaml_conditional_empty = """
+                                        sex:
+                                            empty: True
+                                        lifestage:
+                                            empty: True 
+                                            if:
+                                                - sex:
+                                                      allowed: [male, female]
+                                                  allowed: adult
+                                                - sex:
+                                                      allowed: ''
+                                                      empty: True
+                                                  allowed: ''
+                                                  empty: True
+                                        """
+
+        self.yaml_pre_empty = """
+                                sex:
+                                    empty: True
+                                lifestage:
+                                    empty: True
+                                    if:
+                                        sex:
+                                            allowed: [male]
+                                        allowed: [adult]
+                                """
+
+        self.yaml_prepost_empty = """
+                                sex:
+                                    empty: True
+                                lifestage:
+                                    empty: True
+                                    if:
+                                        sex:
+                                            allowed: [male]
+                                        allowed: [adult]
+                                        empty: True
+                                """
 
     def test_if(self):
         schema = yaml.load(self.yaml_if)
@@ -326,23 +1213,35 @@ class TestIfValidator(unittest.TestCase):
         document = {'basisOfRecord': 'HumanObservation', 'type': 'Measurement'}
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors, {'type': [{'if': ['unallowed value '
+                                                       'Measurement']}]})
+
+        # empty values by default not allowed
+        document = {'basisOfRecord': 'Machine', 'type': ''}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors, {'type': ['empty values not allowed']})
 
     def test_multiple_if_error(self):
         """term trespasses both if clauses at the same time
         """
         schema = yaml.load(self.yaml_ifif)
-        document = {'age' : '21', 'lifestage':'juvenile'} #True
+        document = {'age': '21', 'lifestage': 'juvenile'}
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'lifestage': [{'if_0': ['unallowed value juvenile'],
-                                        'if_1': ['max length is 6']}]})
+                         {'lifestage': [{'if_0': ['unallowed value juvenile',
+                                                  'max length is 6'],
+                                        'if_2': ['max length is 5']}]})
 
     def test_multiple_if_pass(self):
         """document satisfies both if clauses at the same time
         """
         schema = yaml.load(self.yaml_ifif)
-        document = {'age' : '21', 'lifestage':'adult'} #True
+        val = DwcaValidator(schema)
+        document = {'age': '21', 'lifestage': 'adult'}  # True
+        self.assertTrue(val.validate(document))
+
+        document = {'age': '2', 'lifestage': 'juvenile'}  # True
         val = DwcaValidator(schema)
         self.assertTrue(val.validate(document))
 
@@ -362,322 +1261,51 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'basisOfRecord': [{'if': ['unallowed value HumanObservation']}]})
+                         {'basisOfRecord': [{'if': ['unallowed value '
+                                                    'HumanObservation']}]})
 
-
-class TestDataTypeValidator(unittest.TestCase):
-
-    def test_json_type(self):
-        yaml_string = """
-                        perimeter:
-                            type: json
-                        """
-        schema = yaml.load(yaml_string)
-        document = {'perimeter': """
-                                    {"top": 3, "centre": 5, "bottom": 6}
-                                    """}
+    def test_conditional_empty(self):
+        schema = yaml.load(self.yaml_conditional_empty)
         val = DwcaValidator(schema)
+        document = {'lifestage': 'adult', 'sex': 'male'}
         self.assertTrue(val.validate(document))
-
-    def test_wrong_json_type(self):
-        document = {'size' : 'large',
-                    'perimeter': """
-                                    {"top": 3, "centre": 5, "bottom": 6
-                                    """}
-        schema = {'perimeter':{'type':'json'}}
-        val = DwcaValidator(schema)
-        val.allow_unknown = True
+        document = {'lifestage': 'adult', 'sex': 'female'}
+        self.assertTrue(val.validate(document))
+        document = {'lifestage': 'adul', 'sex': 'male'}
         self.assertFalse(val.validate(document))
-
-    def test_url_type(self):
-        document = {'location': "https://github.com/LifeWatchINBO/dwca-validator"}
-        schema = {'location':{'type':'url'}}
-        val = DwcaValidator(schema)
-        self.assertTrue(val.validate(document))
-
-    def test_wrong_url_type(self):
-        document = {'location': "https/github.com/LifeWatchINBO/dwca-validator"}
-        schema = {'location':{'type':'url'}}
-        val = DwcaValidator(schema)
+        document = {'lifestage': '', 'sex': 'male'}
         self.assertFalse(val.validate(document))
-
-class TestLengthValidator(unittest.TestCase):
-    """
-    lenght is a new validator type created for the DwcaValidator
-    """
-
-    def setUp(self):
-        self.yaml_length = """
-                             verbatimCoordinateSystem:
-                                 length : 5
-                             coordinateSystem:
-                                 length : 1
-                             """
-
-    def test_length(self):
-        """test if the string has proper minimal length
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'verbatimCoordinateSystem' : '31UDS'}
-        self.assertTrue(val.validate(document))
-        document = {'verbatimCoordinateSystem' : '3'}
-        self.assertFalse(val.validate(document))
-
-
-class TestEqualsValidator(unittest.TestCase):
-    """
-    equals is a new validator type created for the DwcaValidator that works on
-    integer and float values
-    """
-
-    def setUp(self):
-        self.yaml_length = """
-                             individualCount:
-                                 equals : 1
-                             precision:
-                                 equals : 200.
-                             """
-
-    def test_euqals_int(self):
-        """test if the integer value equals the given value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        # here not type test needed in schema, value given as integer
-        document = {'individualCount' : 1.000}
-        self.assertTrue(val.validate(document))
-        document = {'individualCount' : 2}
-        self.assertFalse(val.validate(document))
-
-    def test_euqals_float(self):
-        """test if the float value equals the given value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        # here not type test needed in schema, value given as float
-        document = {'precision' : 200.00}
-        self.assertTrue(val.validate(document))
-        document = {'precision' : 200.001}
-        self.assertFalse(val.validate(document))
-
-
-class TestCerberusTypeValidator(unittest.TestCase):
-    """
-    int, float and number are tested here as if they are already interpreted in
-    the document as such. The test for the string representations (with coerce)
-    are given in test_cerberus_additions
-    """
-
-    def setUp(self):
-        self.yaml_dtypes = """
-                           age:
-                               type: integer
-                           decimalLatitude:
-                               type: float
-                           percentage:
-                               type: number
-                           datum:
-                               type: datetime
-                           abondance:
-                               type: boolean
-                           code:
-                               type: string
-                           """
-
-    def test_str(self):
-        """test if a field is a string
-        """
-        val = DwcaValidator(yaml.load(self.yaml_dtypes))
-        document = {'code': 'ICZN'}
-        self.assertTrue(val.validate(document))
-
-    def test_int(self):
-        """test if a field is an integer
-        """
-        val = DwcaValidator(yaml.load(self.yaml_dtypes))
-        document = {'age': 5}
-        self.assertTrue(val.validate(document))
-
-    def test_float(self):
-        """test if a field is a float
-        """
-        val = DwcaValidator(yaml.load(self.yaml_dtypes))
-        document = {'decimalLatitude': 51.2}
-        self.assertTrue(val.validate(document))
-
-    def test_number(self):
-        """test if a field is a number
-        """
-        val = DwcaValidator(yaml.load(self.yaml_dtypes))
-        document = {'percentage': 2.2}
-        self.assertTrue(val.validate(document))
-        document = {'percentage': 2}
-        self.assertTrue(val.validate(document))
-
-    def test_boolean(self):
-        """test if a field is a boolean
-        """
-        val = DwcaValidator(yaml.load(self.yaml_dtypes))
-        document = {'abondance': True}
-        self.assertTrue(val.validate(document))
-
-    def test_datetime(self):
-        """test if a field is a datetime object
-        """
-        val = DwcaValidator(yaml.load(self.yaml_dtypes))
-        document = {'datum': datetime(2016, 11, 2)}
-        self.assertTrue(val.validate(document))
-
-
-class TestCerberusValidator(unittest.TestCase):
-    """Test validation methods that are native to Cerberus already
-    """
-
-    def setUp(self):
-        self.yaml_required = """
-                             sex:
-                                 required: False
-                             moment:
-                                 required: True
-                             """
-
-        self.yaml_length = """
-                             verbatimCoordinateSystem:
-                                 minlength : 5
-                             coordinateSystem:
-                                 maxlength : 5
-                             code:
-                                 minlength : 2
-                             """
-
-        self.yaml_value = """
-                             individualCount:
-                                 min : 5
-                                 max : 8
-                                 type : integer
-                             percentage:
-                                 min : 5.5
-                                 max : 8.1
-                                 type : float
-                             code:
-                                 type : integer
-                                 min : 3
-                             """
-        self.yaml_string = """
-                             individualCount:
-                                 min : 5
-                                 type : string
-                             code:
-                                 max : 3
-                                 type : string
-                             """
-
-        self.yaml_allow = """
-                          sex:
-                              allowed : [male, female]
-                          rightsHolder:
-                              allowed : [INBO]
-                          """
-
-    def test_required(self):
-        """test if a field (key) is present
-        """
-        val = DwcaValidator(yaml.load(self.yaml_required))
-        document = {'moment' : '2016-12-11'}
-        self.assertTrue(val.validate(document))
-
-        document = {'sex' : '2016-12-11'}
-        self.assertFalse(val.validate(document))
-
-    def test_minlength(self):
-        """test if the string has proper minimal length
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'verbatimCoordinateSystem' : '31UDS76C'}
-        self.assertTrue(val.validate(document))
-        document = {'verbatimCoordinateSystem' : '5'}
-        self.assertFalse(val.validate(document))
-
-    def test_maxlength(self):
-        """test if the string has proper maximal length
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'coordinateSystem' : '31U'}
-        self.assertTrue(val.validate(document))
-        document = {'coordinateSystem' : '31UDS76C'}
-        self.assertFalse(val.validate(document))
-
-    def test_minlength_ignored_by_type(self):
-        """test if an integer is ignored by length-options
-        """
-        val = DwcaValidator(yaml.load(self.yaml_length))
-        document = {'code' : 5}
-        self.assertTrue(val.validate(document))
-
-    def test_minmax_float(self):
-        """test if the value has minimal value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'percentage' : 9.}
-        self.assertFalse(val.validate(document))
-        document = {'percentage' : 2.1}
-        self.assertFalse(val.validate(document))
-
-    def test_minmax_int(self):
-        """test if the value has minimal value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'individualCount' : 9}
-        self.assertFalse(val.validate(document))
-        document = {'individualCount' : 2}
-        self.assertFalse(val.validate(document))
-
-    def test_min_int_coerce(self):
-        """test if the value has minimal value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'code' : '6'}
-        self.assertTrue(val.validate(document))
-        document = {'code' : '2'}
-        self.assertFalse(val.validate(document))
-
-    def test_min_int_string(self):
-        """test if the value has minimal value with string input
-        """
-        val = DwcaValidator(yaml.load(self.yaml_string))
-        document = {'individualCount' : 'vijf'} # provide error on type mismatch
-        val.validate(document)
         self.assertEqual(val.errors,
-                    {'individualCount': ['min validation ignores string type, add type validation']},
-                    msg="alert on datatype mismatch for min evaluation fails")
-
-    def test_max_int_string(self):
-        """test if the value has maximal value with string input
-        """
-        val = DwcaValidator(yaml.load(self.yaml_string))
-        document = {'code' : 'vijf'} # provide error on type mismatch
-        val.validate(document)
+                         {'lifestage': [{'if_0': ['empty values not allowed']}]})
+        document = {'lifestage': 'adult', 'sex': ''}
+        self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                    {'code': ['max validation ignores string type, add type validation']},
-                    msg="alert on datatype mismatch for min evaluation fails")
-
-    def test_allowed_string(self):
-        """test if the value is the allowed value
-        """
-        val = DwcaValidator(yaml.load(self.yaml_allow))
-        document = {'rightsHolder' : 'INBO'}
+                         {'lifestage': [{'if_1': ['unallowed value adult']}]})
+        document = {'lifestage': '', 'sex': ''}
         self.assertTrue(val.validate(document))
-        document = {'rightsHolder' : 'ILVO'}
-        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors, {})
 
-    def test_allowed_list(self):
-        """test if the value is one of the allowed values
-        """
-        val = DwcaValidator(yaml.load(self.yaml_allow))
-        document = {'rightsHolder' : 'INBO'}
-        self.assertTrue(val.validate(document))
-        document = {'rightsHolder' : 'ILVO'}
-        self.assertFalse(val.validate(document))
+    def test_pre_empty(self):
+        schema = yaml.load(self.yaml_pre_empty)
+        val = DwcaValidator(schema)
+        document = {'lifestage': 'adult', 'sex': 'male'}
+        self.assertTrue(val.validate(document))  # should be True
+        document = {'lifestage': 'juvenile', 'sex': 'male'}
+        self.assertFalse(val.validate(document))  # should be False
+        document = {'lifestage': '', 'sex': ''}
+        self.assertTrue(val.validate(document))  # should be True
 
+        # if statement overrules the empty
+        document = {'lifestage': '', 'sex': 'male'}
+        self.assertFalse(val.validate(document))  # should be False
+        self.assertEqual(val.errors,
+                         {'lifestage': [{'if': ['empty values not allowed']}]})
 
+        # additional empty: True inside the if statement enables empty there
+        schema = yaml.load(self.yaml_prepost_empty)
+        val = DwcaValidator(schema)
+        document = {'lifestage': '', 'sex': 'male'}
+        self.assertTrue(val.validate(document))  # should be True
 
 
 

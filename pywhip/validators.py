@@ -37,28 +37,22 @@ class DwcaValidator(Validator):
         delimitedValues, if
 
     dtypes to add for the type comparison:
-        json, urixw
+        json, url
     """
-    mandatory_validations = ['nullable']  # empty
-    priority_validations = ['empty', 'nullable', 'readonly', 'type']
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
         """
+        # prepare the string version of each document in the namespace
+        self.document_str_version = None
+
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
         if not self.schema:
             raise Exception('provide a schema to initiate Validator')
 
-        # add coerce rules when type validations are required
+        # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
-        self._resolve_coerce(self.schema)
-
-        # default rule to ignore None values on reader
-        # self.ignore_none_values = True
-
-        # prepare the string version of each document in the namespace
-        self.document_str_version = None
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -66,62 +60,10 @@ class DwcaValidator(Validator):
         # store a dwcareader string version of the document
         # if not self.document_str_version:
         self.document_str_version = document.copy()
-        document = self.empty_string_none(document)
 
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
 
     __call__ = validate
-
-    @staticmethod
-    def empty_string_none(doc):
-        """convert empty strings to None values - assuming that the document
-        structure will always be key:value (coming from DwcaReader)
-        """
-        for key, value in doc.items():
-            if value == "":
-                doc[key] = None
-        return doc
-
-    @staticmethod
-    def _add_coerce(rules):
-        """provide the appropriate coerce lambda functions
-        """
-        to_float = lambda v: float(v) if v else v
-        if rules['type'] == 'float':
-            rules['coerce'] = to_float
-        elif rules['type'] == 'int' or rules['type'] == 'integer':
-            to_int = lambda v: int(v) if v else v
-            rules['coerce'] = to_int
-        elif rules['type'] == 'number':
-            rules['coerce'] = to_float
-        elif rules['type'] == 'boolean':
-            to_bool = lambda v: bool(v) if v else v
-            rules['coerce'] = to_bool
-
-    def _resolve_coerce(self, schema):
-        """add coerce rules to convert datatypes of int and float,
-        recusively using the rules combinations of cerberus:
-        {TERM : {RULE: --> str (STOP)
-                       --> list/Sequence --> str (STOP)
-                                         --> dict => (if type: ADD) + RECALL
-                       --> dict/Mapping => (if type: ADD) + RECALL
-                      }}
-        """
-        for term, rules in schema.items():
-            if isinstance(rules, _str_type):
-                continue
-            elif isinstance(rules, Sequence):
-                for subschema in rules:
-                    if isinstance(subschema, Mapping):
-                        if 'type' in subschema.keys():
-                            self._add_coerce(subschema)
-                        self._resolve_coerce(subschema)
-            elif isinstance(rules, Mapping):
-                if 'type' in rules.keys():
-                    self._add_coerce(rules)
-                self._resolve_coerce(rules)
-            else:
-                NotImplemented
 
     @staticmethod
     def _schema_add_empty(dict_schema):
@@ -134,30 +76,37 @@ class DwcaValidator(Validator):
                 rules['empty'] = False
         return dict_schema
 
-    def _validate_nullable(self, nullable, field, value):
-        """ {'type': 'boolean'} """
-        # basically bypass the nullable test
-        if field in self.document_str_version.keys():
-            if self.document_str_version[field] is None:
-                return True
-            else:
-                return None
-
     def _validate_empty(self, empty, field, value):
-        """ {'type': 'boolean'} """
-        # port the nullable logic of cerberus to the empty logic
-        if field in self.document_str_version.keys():
-            value_str = self.document_str_version[field]
-            if isinstance(value_str, _str_type) and len(value_str) == 0:
-                if not empty:
-                    self._error(field, errors.EMPTY_NOT_ALLOWED)
-                    return True
-                else:
-                    return True
+        """ {'type': 'boolean'}
+
+        Dropping all remaining rules (instead of subselection)
+        when empty = True
+        """
+        from collections import Sized
+        if isinstance(value, Sized) and len(value) == 0:
+            # ALL rules, except of if
+            self._drop_remaining_rules(
+                'allowed',
+                'forbidden',
+                'items',
+                'minlength',
+                'maxlength',
+                'regex',
+                'check_with',
+                'stringformat',
+                'min', 'max',
+                'numberformat',
+                'mindate', 'maxdate',
+                'dateformat',
+                'delimitedvalues'
+            )
+            if not empty:
+                self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': ['list', 'string']} """
 
+        # support single string values as well (cerberus only supports lists)
         if isinstance(allowed_values, _str_type):
             allowed_values = [allowed_values]
 
@@ -165,22 +114,22 @@ class DwcaValidator(Validator):
                                                      field, value)
 
     def _validate_min(self, min_value, field, value):
-        """ {'nullable': False, 'dependencies': ['type']} """
-        # overwrite cerberus min to only consider int and float
-        if (isinstance(value, int) or isinstance(value, float)) and \
-                float(min_value) > value:
-            self._error(field, errors.MIN_VALUE)
-        elif isinstance(value, str):
-            self._error(field, 'min validation ignores string type, add type validation')
+        """ {'nullable': False} """
+        try:
+            if float(min_value) > float(value):
+                self._error(field, errors.MIN_VALUE)
+        except ValueError:
+            self._error(field,
+                        'min validation failed, value is not numeric')
 
-    def _validate_max(self, min_value, field, value):
-        """ {'nullable': False } """
-        # overwrite cerberus max to only consider int and float
-        if (isinstance(value, int) or isinstance(value, float)) and \
-                float(min_value) < value:
-            self._error(field, errors.MAX_VALUE)
-        elif isinstance(value, str):
-            self._error(field, 'max validation ignores string type, add type validation')
+    def _validate_max(self, max_value, field, value):
+        """ {'nullable': False} """
+        try:
+            if float(max_value) < float(value):
+                self._error(field, errors.MAX_VALUE)
+        except ValueError:
+            self._error(field,
+                        'max validation failed, value is not numeric')
 
     def _parse_date(self, field, date_string):
         """try to parse a string to date and log error when failing
@@ -297,88 +246,60 @@ class DwcaValidator(Validator):
             self._error(field, "String format not compliant with " +
                         ', '.join(ref_value))
 
-    def _validate_dateformat_old(self, ref_value, field, value):
-        """ {'type': ['string', 'list']} """
-        # dateformat : ['%Y-%m-%d', '%Y-%m', '%Y']
-        # dateformat : '%Y-%m'
-        print(ref_value, value)
-        if isinstance(ref_value, list):
-            for formatstr in ref_value:  # check if at least one comply
-                self._validate_dateformat(formatstr, field, value)
-
-        else:
-            if self._dateisrange(value):
-                if self._dateformatisrange(ref_value):  # both ranges-> test
-                    [self._validate_dateformat(dt_format, field, dt) for
-                     dt_format, dt in
-                     zip(ref_value.split('/'), value.split('/'))]
-                else:
-                    tester = False
-            else:
-                tester = self._help_dateformat(value, ref_value)
-
-        if not tester:
-            self._error(field, "String format not compliant with " +
-                        ', '.join(ref_value))
-
-    def _validate_equals(self, ref_value, field, value):
-        """ {'type': ['integer', 'float']} """
-        if (isinstance(value, int) or isinstance(value, float)) and \
-                                                float(ref_value) != value:
-            self._error(field, "".join(["value should be equal to ",
-                                        str(ref_value),
-                                        " instead of ",
-                                        str(value)]))
-
-    def _validate_numberrange(self, ref_range, field, value):
-        """ {'type': 'list'} """
-        # check if min < max
-        if ref_range[0] >= ref_range[1]:
-            raise Exception('min > max in range value')
-
-        if value.isdigit():
-            self._validate_min(self, ref_range[0], field, float(value))
-            self._validate_max(self, ref_range[1], field, float(value))
-
-    def _validate_length(self, length, field, value):
-        """ {'type': 'integer', 'excludes': 'type'} """
-        # check length of a given string
-        if isinstance(value, str) and len(value) != length:
-            self._error(field, "".join(["length mismatch: ", str(len(value)),
-                                        " instead of ", str(length)]))
-        elif not isinstance(value, str):
-            self._error(field, 'length validation only active on strings')
-
-    def _validate_maxlength(self, *args, **kwargs):
-        """ {'type': 'integer', 'excludes': 'type'} """
-        super(DwcaValidator, self)._validate_maxlength(*args, **kwargs)
-
-    def _validate_minlength(self, *args, **kwargs):
-        """ {'type': 'integer', 'excludes': 'type'} """
-        super(DwcaValidator, self)._validate_minlength(*args, **kwargs)
-
     def _validate_numberformat(self, formatter, field, value):
-        """ {'type': ['string'], 'regex': '[1-9].[1-9]|[1-9].$|^.[1-9]'} """
+        """ {'type': ['string'],
+            'regex': '^[1-9]\.[1-9]$|^[1-9]\.$|^\.[1-9]$|^[1-9]$|^\.$|^x$'}
+        """
 
-        value_str = self.document_str_version[field]
-        if re.match("[1-9].[1-9]", formatter):
-            value_parsed = [len(side) for side in value_str.split(".")]
-        elif re.match(".[1-9]", formatter):
-            if "." in value_str:
-                value_parsed = [len(value_str.split(".")[1])]
-            else:
-                value_parsed = [0]
-        elif re.match("[1-9].", formatter):
-            value_parsed = [len(value_str.split(".")[0])]
+        # value_str = self.document_str_version[field]
 
-        formatter_parsed = [int(length) for length in formatter.split(".")
-                            if not length == '']
+        # ignore - sign to handle negative numbers
+        value_str = re.sub("^-", "", value)
 
-        if formatter_parsed != value_parsed:
-            self._error(field, "".join(["numberformat of value ",
-                                        value_str,
-                                        " not in agreement with ",
-                                        formatter]))
+        # check if value is number format
+        if not re.match('^[0-9]*\.[0-9]*$|^[0-9]+$', value_str):
+            self._error(field, "".join([value_str,
+                                        " is not numerical"]))
+        elif re.match('^x$', formatter):
+            if not re.match('^[-+]?\d+$', value_str):
+                self._error(field, "".join(["value ",
+                                            value_str,
+                                            " is not an integer"]))
+        else:
+            if re.match("[1-9]\.[1-9]", formatter):
+                value_parsed = [len(side) for side in value_str.split(".")]
+            elif re.match("\.[1-9]", formatter):
+                if "." in value_str:
+                    value_parsed = [len(value_str.split(".")[1])]
+                else:
+                    value_parsed = [0]
+            elif re.match("[1-9]\.", formatter):
+                value_parsed = [len(value_str.split(".")[0])]
+            elif re.match("[1-9]", formatter):
+                if re.match("[0-9]+", value_str):
+                    value_parsed = [len(value_str)]
+                else:
+                    value_parsed = [None]
+                    self._error(field, "".join(["value ",
+                                                value_str,
+                                                " is not an integer"]))
+            elif re.match("^\.$", formatter):
+                if "." in value_str:
+                    value_parsed = []
+                else:
+                    value_parsed = [None]
+                    self._error(field, "".join(["value ",
+                                                value_str,
+                                                " is not a float"]))
+
+            formatter_parsed = [int(length) for length in formatter.split(".")
+                                if not length == '']
+
+            if formatter_parsed != value_parsed and value_parsed != [None]:
+                self._error(field, "".join(["numberformat of value ",
+                                            value_str,
+                                            " not in agreement with ",
+                                            formatter]))
 
     def _validate_if(self, ifset, field, value):
         """ {'type': ['dict', 'list']} """
@@ -400,7 +321,7 @@ class DwcaValidator(Validator):
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
                 validator.validate(copy(self.document_str_version),
-                                   normalize=False)
+                                   normalize=False) 
 
                 if validator._errors:
                     self._drop_nodes_from_errorpaths(validator._errors,
@@ -444,7 +365,7 @@ class DwcaValidator(Validator):
 
         ruleset = copy(ruleset_schema)
         # convert field string to list of values
-        if not 'delimiter' in ruleset.keys():
+        if 'delimiter' not in ruleset.keys():
             raise ValueError('Define delimiter as rule in delimitedvalues')
         value = [el for el in value.split(ruleset['delimiter'])]
 
@@ -452,6 +373,7 @@ class DwcaValidator(Validator):
         if '' in value:
             self._error(field,
                         "contains empty string combined with delimiters")
+            return True
 
         # check for doubles ('male | female | male' needs error)
         if len(value) != len(set(value)):
@@ -471,23 +393,16 @@ class DwcaValidator(Validator):
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, DELIMITER_SCHEMA, validator._errors)
 
-    def _validate_listvalues(self):
-        """ {'type': 'boolean'} """
-        return None
-
-    # dtypes -------------------------
-    def _validate_type_json(self, value):
-        """ Enables validation for json objects
-        """
-        try:
-            json.loads(value)
-            return True
-        except ValueError:
-            pass
-
-    def _validate_type_url(self, value):
-        """ Enables validation for json objects
-        """
-        if match(value, rule='URI'):
-            return True
-
+    def _validate_stringformat(self, stringtype, field, value):
+        """ {'allowed': ['url', 'json']} """
+        if stringtype == 'json':
+            try:
+                json.loads(value)
+                return True
+            except ValueError:
+                self._error(field, "no valid json format")
+        elif stringtype == 'url':
+            if match(value, rule='URI'):
+                return True
+            else:
+                self._error(field, "no valid url format")
