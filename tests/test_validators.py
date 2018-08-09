@@ -985,16 +985,17 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
     def test_delimiter_doubles(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male | female | male'} # False
+        document = {'sex': 'male | female | male'} # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': ['contains duplicate values in delimitedvalues']})
+                         {'sex': ['contains duplicate values in '
+                                  'delimitedvalues']})
 
     def test_delimiter_single_occurence(self):
         """should be passed and just checked as such
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male'} # True
+        document = {'sex': 'male'}  # True
         self.assertTrue(val.validate(document))
 
     def test_delimiter_wrong_delimiter(self):
@@ -1002,7 +1003,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         unallowed value
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male ; female'} # False, due to wrong endname
+        document = {'sex': 'male ; female'}  # False, due to wrong endname
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'sex': [{0: ['unallowed value male ; female']}]})
@@ -1011,17 +1012,26 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         """pipe too much which can not be split anymore
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male | female |'} # False
+        document = {'sex': 'male | female |'}  # False
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'sex': [{1: ['unallowed value female |']}]})
 
     def test_delimiter_empty_not_allowed(self):
         """pipe too much which results in empty value
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited1))
-        document = {'sex' : 'male | female | '} # False (pipe too much)
+        document = {'sex': 'male | female | '}  # False (pipe too much)
         self.assertFalse(val.validate(document))
-        document = {'sex': ''}  # end delimiter without value
+        self.assertEqual(val.errors,
+                         {'sex': ['contains empty string combined '
+                                  'with delimiters',
+                                  {2: ['empty values not allowed']}]})
+        # regular empty value is default False
+        document = {'sex': ''}
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'sex': ['empty values not allowed']})
 
     def test_delimiter_all_valid_options(self):
         """test the valid options produced by delimited syntax
@@ -1044,16 +1054,16 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         val = DwcaValidator(yaml.load(self.yaml_delimited6))
         document = {'sex': 'male, female'}  # wrong delimiter
         self.assertFalse(val.validate(document))
-        document = {'sex': 'male|female'} # no spaces
+        document = {'sex': 'male|female'}  # no spaces
         self.assertFalse(val.validate(document))
         document = {'sex': 'male | '}  # end delimiter without value
         self.assertFalse(val.validate(document))
         document = {'sex': 'male | | female'}
-        self.assertFalse(val.validate(document)) # in field empty
+        self.assertFalse(val.validate(document))  # in field empty
 
     def test_delimiter_nest(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited3))
-        document = {'stage' : '0.123 | 4.235'} # True
+        document = {'stage': '0.123 | 4.235'}  # True
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'stage': [{0: ['min value is 1.0']}]})
@@ -1062,24 +1072,31 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         """raise Error when no delimiter field added
         """
         val = DwcaValidator(yaml.load(self.yaml_delimited5))
-        document = {'sex' : 'male | female '}
+        document = {'sex': 'male | female'}
         with self.assertRaises(ValueError):
             val.validate(document)
 
-#    def test_delimiter_if_condition_pass(self):
-#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-#        document = {'age' : '5 | 18 | 19', 'lifestage':'juvenile'} # True
-#        self.assertTrue(val.validate(document))
-#
-#    def test_delimiter_if_condition_nonpass(self):
-#        val = DwcaValidator(yaml.load(self.yaml_delimited2))
-#        document = {'age' : '5 | 18 | 99', 'lifestage':'adult'} # True
-#        self.assertFalse(val.validate(document))
+    def test_delimiter_if_condition_pass(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age': '5 | 18 | 19', 'lifestage': 'juvenile'}  # True
+        self.assertTrue(val.validate(document))
+
+    def test_delimiter_if_condition_nonpass(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age': '5 | 18 | 99', 'lifestage': 'adult'}  # True
+        self.assertFalse(val.validate(document))
 
     def test_delimiter_if_checkindication(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'age' : '5 | 32', 'lifestage':'juvenile'} # False
+        document = {'age': '5 | 32', 'lifestage': 'juvenile'}  # False
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'age': [{1: [{'if': ['max value is 20']}]}]})
+        document = {'age': '50 | 32', 'lifestage': 'juvenile'}  # False
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'age': [{0: [{'if': ['max value is 20']}],
+                                   1: [{'if': ['max value is 20']}]}]})
 
 
 class TestIfValidator(unittest.TestCase):

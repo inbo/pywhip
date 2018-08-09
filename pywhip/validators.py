@@ -350,7 +350,7 @@ class DwcaValidator(Validator):
 
         ruleset = copy(ruleset_schema)
         # convert field string to list of values
-        if not 'delimiter' in ruleset.keys():
+        if 'delimiter' not in ruleset.keys():
             raise ValueError('Define delimiter as rule in delimitedvalues')
         value = [el for el in value.split(ruleset['delimiter'])]
 
