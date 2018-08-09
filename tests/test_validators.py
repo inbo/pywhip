@@ -1118,6 +1118,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
                          {'sex': ['contains empty string combined '
                                   'with delimiters']})
 
+
 class TestIfValidator(unittest.TestCase):
 
     def setUp(self):
@@ -1126,10 +1127,10 @@ class TestIfValidator(unittest.TestCase):
                             if:
                                 basisOfRecord:
                                     allowed: [HumanObservation]
-                            allowed: [Event]
+                                allowed: [Event]
                             empty: False
                         basisOfRecord:
-                            allowed: [HumanObservation, Machine]
+                            allowed: [HumanObservation, Machine, Measurement]
                         """
 
         self.yaml_ifif = """
@@ -1138,23 +1139,27 @@ class TestIfValidator(unittest.TestCase):
                                     - age:
                                           min: 20
                                       allowed: [adult]
+                                      maxlength: 6
+                                    - age:
+                                          max: 20
+                                      minlength: 6
                                     - age:
                                           min: 20
-                                      maxlength: 6
+                                      maxlength: 5
                             age:
-                                type: integer
+                                numberformat: 'x'
                             """
 
         self.yaml_ifcombi = """
                             basisOfRecord:
-                                empty: false
+                                empty: False
                                 allowed: [HumanObservation, PreservedSpecimen]
                                 if:
                                     collectionCode:
-                                        empty: true
+                                        empty: True
                                     allowed: [PreservedSpecimen]
                             collectionCode:
-                                empty: true
+                                empty: True
                             """
 
         self.yaml_conditional_empty = """
@@ -1205,27 +1210,37 @@ class TestIfValidator(unittest.TestCase):
         document = {'basisOfRecord': 'HumanObservation', 'type': 'Measurement'}
         val = DwcaValidator(schema)
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors, {'type': [{'if': ['unallowed value '
+                                                       'Measurement']}]})
+
+        # empty values by default not allowed
+        document = {'basisOfRecord': 'Machine', 'type': ''}
+        self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors, {'type': ['empty values not allowed']})
 
     def test_multiple_if_error(self):
         """term trespasses both if clauses at the same time
         """
         schema = yaml.load(self.yaml_ifif)
-        document = {'age' : '21', 'lifestage': 'juvenile'} #True
+        document = {'age': '21', 'lifestage': 'juvenile'}
         val = DwcaValidator(schema)
         val.validate(document)
-        # to update, see https://github.com/inbo/whip/issues/14
-        #self.assertEqual(val.errors,
-        #                 {'lifestage': [{'if_0': ['unallowed value juvenile'],
-        #                                'if_1': ['max length is 6']}]})
+        self.assertEqual(val.errors,
+                         {'lifestage': [{'if_0': ['unallowed value juvenile',
+                                                  'max length is 6'],
+                                        'if_2': ['max length is 5']}]})
 
     def test_multiple_if_pass(self):
         """document satisfies both if clauses at the same time
         """
         schema = yaml.load(self.yaml_ifif)
-        document = {'age' : '21', 'lifestage':'adult'} #True
         val = DwcaValidator(schema)
-        # to update, see https://github.com/inbo/whip/issues/14
-        #self.assertTrue(val.validate(document))
+        document = {'age': '21', 'lifestage': 'adult'}  # True
+        self.assertTrue(val.validate(document))
+
+        document = {'age': '2', 'lifestage': 'juvenile'}  # True
+        val = DwcaValidator(schema)
+        self.assertTrue(val.validate(document))
 
     def test_multiple_if_combi(self):
         """document satisfies if and non-if clauses
@@ -1243,7 +1258,8 @@ class TestIfValidator(unittest.TestCase):
         val = DwcaValidator(schema)
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'basisOfRecord': [{'if': ['unallowed value HumanObservation']}]})
+                         {'basisOfRecord': [{'if': ['unallowed value '
+                                                    'HumanObservation']}]})
 
     def test_conditional_empty(self):
         schema = yaml.load(self.yaml_conditional_empty)
@@ -1265,14 +1281,16 @@ class TestIfValidator(unittest.TestCase):
         schema = yaml.load(self.yaml_double_empty)
         val = DwcaValidator(schema)
         document = {'lifestage': '', 'sex': ''}
-        #self.assertTrue(val.validate(document))  # should be True
+        val.validate(document)  # should be True
+        self.assertEqual(val.errors,
+                         {})
 
         schema = yaml.load(self.yaml_conditional_empty)
         val = DwcaValidator(schema)
         # TROUBLE------
         document = {'lifestage': 'jan', 'sex': ''}
-        #self.assertFalse(val.validate(document))  # should be False
-        #document = {'lifestage': '', 'sex': ''}
+        self.assertFalse(val.validate(document))  # should be False
+        document = {'lifestage': '', 'sex': ''}
         #self.assertTrue(val.validate(document)) # should be True
         #-----
 

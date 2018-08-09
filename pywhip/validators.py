@@ -84,7 +84,22 @@ class DwcaValidator(Validator):
         """
         from collections import Sized
         if isinstance(value, Sized) and len(value) == 0:
-            self._drop_remaining_rules()
+            # ALL rules, except of if
+            self._drop_remaining_rules(
+                'allowed',
+                'forbidden',
+                'items',
+                'minlength',
+                'maxlength',
+                'regex',
+                'check_with',
+                'stringformat',
+                'min', 'max',
+                'numberformat',
+                'mindate', 'maxdate',
+                'dateformat',
+                'delimitedvalues'
+            )
             if not empty:
                 self._error(field, errors.EMPTY_NOT_ALLOWED)
 
