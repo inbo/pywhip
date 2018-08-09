@@ -52,7 +52,7 @@ class DwcaValidator(Validator):
         if not self.schema:
             raise Exception('provide a schema to initiate Validator')
 
-        # add coerce rules when type validations are required
+        # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
 
     def validate(self, document, *args, **kwargs):
