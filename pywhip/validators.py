@@ -268,9 +268,9 @@ class DwcaValidator(Validator):
                                         " is not numerical"]))
         elif re.match('^x$', formatter):
             if not re.match('^[-+]?\d+$', value_str):
-                self._error(field, "".join(["numberformat of value ",
+                self._error(field, "".join(["value ",
                                             value_str,
-                                            " is not an integer value"]))
+                                            " is not an integer"]))
         else:
             if re.match("[1-9]\.[1-9]", formatter):
                 value_parsed = [len(side) for side in value_str.split(".")]
@@ -286,10 +286,17 @@ class DwcaValidator(Validator):
                     value_parsed = [len(value_str)]
                 else:
                     value_parsed = [None]
-                    self._error(field, "".join([value_str,
-                                                " should be integer type"]))
+                    self._error(field, "".join(["value ",
+                                                value_str,
+                                                " is not an integer"]))
             elif re.match("^\.$", formatter):
-                value_parsed = []
+                if "." in value_str:
+                    value_parsed = []
+                else:
+                    value_parsed = [None]
+                    self._error(field, "".join(["value ",
+                                                value_str,
+                                                " is not a float"]))
 
             formatter_parsed = [int(length) for length in formatter.split(".")
                                 if not length == '']

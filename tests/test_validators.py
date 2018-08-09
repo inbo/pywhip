@@ -590,7 +590,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'height': '.1'}  # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'height': ['.1 should be integer type']})
+                         {'height': ['value .1 is not an integer']})
         document = {'height': '12.1'}  # False
         self.assertFalse(val.validate(document))
 
@@ -611,6 +611,10 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'size': '1234.'}  # True
         self.assertTrue(val.validate(document))
+        document = {'size': '1'}  # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'size': ['value 1 is not a float']})
 
     def test_numberformat_anyinteger(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat5))
@@ -622,11 +626,10 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'size': '.'}  # False
         self.assertFalse(val.validate(document))
-        document = {'size': '0.1'}  # False
+        document = {'size': '1.0'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'size': ['numberformat of value 0.1 is not an '
-                                   'integer value']})
+                         {'size': ['value 1.0 is not an integer']})
 
     def test_numberformat_isnumber(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat1))
