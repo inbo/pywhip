@@ -39,7 +39,6 @@ class DwcaValidator(Validator):
     dtypes to add for the type comparison:
         json, url
     """
-    priority_validations = ('nullable', 'empty')
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
@@ -61,21 +60,10 @@ class DwcaValidator(Validator):
         # store a dwcareader string version of the document
         # if not self.document_str_version:
         self.document_str_version = document.copy()
-        document = self.empty_string_none(document)
 
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
 
     __call__ = validate
-
-    @staticmethod
-    def empty_string_none(doc):
-        """convert empty strings to None values - assuming that the document
-        structure will always be key:value (coming from DwcaReader)
-        """
-        for key, value in doc.items():
-            if value == "":
-                doc[key] = None
-        return doc
 
     @staticmethod
     def _schema_add_empty(dict_schema):
@@ -88,26 +76,17 @@ class DwcaValidator(Validator):
                 rules['empty'] = False
         return dict_schema
 
-    def _validate_nullable(self, nullable, field, value):
-        """ {'type': 'boolean'} """
-        # basically bypass the nullable test
-        if field in self.document_str_version.keys():
-            if self.document_str_version[field] is None:
-                return True
-            else:
-                return None
-
     def _validate_empty(self, empty, field, value):
-        """ {'type': 'boolean'} """
-        # port the nullable logic of cerberus to the empty logic
-        if field in self.document_str_version.keys():
-            value_str = self.document_str_version[field]
-            if isinstance(value_str, _str_type) and len(value_str) == 0:
-                if not empty:
-                    self._error(field, errors.EMPTY_NOT_ALLOWED)
-                    return True
-                else:
-                    return True
+        """ {'type': 'boolean'}
+
+        Dropping all remaining rules (instead of subselection)
+        when empty = True
+        """
+        from collections import Sized
+        if isinstance(value, Sized) and len(value) == 0:
+            self._drop_remaining_rules()
+            if not empty:
+                self._error(field, errors.EMPTY_NOT_ALLOWED)
 
     def _validate_allowed(self, allowed_values, field, value):
         """ {'type': ['list', 'string']} """

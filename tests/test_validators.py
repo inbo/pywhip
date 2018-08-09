@@ -801,7 +801,6 @@ class TestEmptyStringHandling(unittest.TestCase):
 
         self.empty1 = """
                         number:
-                            min: 2
                             empty: False
                         sex:
                             allowed: [male, female]
@@ -836,23 +835,27 @@ class TestEmptyStringHandling(unittest.TestCase):
                             empty: True
                         """
 
-    def test_empty_string(self):
-        """conversion empty string to None in document
-        """
-        val = DwcaValidator(yaml.load(self.yaml_string))
-        document = {'abundance': ''}
-        val.validate(document)
-        self.assertEqual(val.document,
-                    {'abundance': None},
-                    msg="pre-conversion of empty strings to None not supported")
+        self.empty5 = """
+                        field_1:
+                            min: 4
+                            max: 2
+                            numberformat: '.'
+                            empty: False
+                        field_2:
+                            min: 4
+                            max: 2
+                            numberformat: '.'
+                            empty: True                     
+                        """
 
     def test_default_error_empty_string(self):
-        """empty string (converted to None values) should provide an error
-        by default
+        """empty string should provide an error by default
         """
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'abundance': ''}
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'abundance': ['empty values not allowed']})
         document = {'sex': 'male'}
         self.assertTrue(val.validate(document))
         document = {'sex': 'female'}
@@ -860,17 +863,20 @@ class TestEmptyStringHandling(unittest.TestCase):
         document = {'sex': ''}
         self.assertFalse(val.validate(document))
 
-    def test_default_ignore_none(self):
-        """None values are just ignored by default
+    def test_default_handling_none(self):
+        """None values are not allowed. Remark, in whip all inputs are
+        string, so an incoming None is - normally - not possible
         """
         val = DwcaValidator(yaml.load(self.yaml_string))
         document = {'abundance': None}
-        self.assertTrue(val.validate(document))
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'abundance': ['null value not allowed']})
 
     def test_empty_notallowed(self):
         """empty string should provide an error when empty:False set"""
-        document = {'number': ''}
         val = DwcaValidator(yaml.load(self.empty1))
+        document = {'number': ''}
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'number': ['empty values not allowed']})
@@ -915,6 +921,21 @@ class TestEmptyStringHandling(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'required_to_be_empty': 'tdwg'}
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'required_to_be_empty': ['unallowed value tdwg']})
+
+    def test_empty_drop_remaining_rules(self):
+        """cerberus does not drop all remaining rules after empty validation,
+        pywhip does this. Testing with min/max (which is different)
+        """
+        val = DwcaValidator(yaml.load(self.empty5))
+        document = {'field_1': '3'}
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'field_1': ['value 3 is not a float',
+                                      'max value is 2', 'min value is 4']})
+        document = {'field_2': ''}
+        self.assertTrue(val.validate(document))
 
 
 class TestDelimitedValuesValidator(unittest.TestCase):
