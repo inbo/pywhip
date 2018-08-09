@@ -1122,6 +1122,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 class TestIfValidator(unittest.TestCase):
 
     def setUp(self):
+
         self.yaml_if = """
                         type:
                             if:
@@ -1166,6 +1167,7 @@ class TestIfValidator(unittest.TestCase):
                                         sex:
                                             empty: True
                                         lifestage:
+                                            empty: True 
                                             if:
                                                 - sex:
                                                       allowed: [male, female]
@@ -1175,17 +1177,6 @@ class TestIfValidator(unittest.TestCase):
                                                       empty: True
                                                   allowed: ''
                                                   empty: True
-                                        """
-        self.yaml_double_empty = """
-                                        sex:
-                                            empty: True
-                                        lifestage:
-                                            if:
-                                                sex:
-                                                    allowed: ''
-                                                    empty: True
-                                                allowed: ''
-                                                empty: True
                                         """
 
         self.yaml_pre_empty = """
@@ -1197,6 +1188,18 @@ class TestIfValidator(unittest.TestCase):
                                         sex:
                                             allowed: [male]
                                         allowed: [adult]
+                                """
+
+        self.yaml_prepost_empty = """
+                                sex:
+                                    empty: True
+                                lifestage:
+                                    empty: True
+                                    if:
+                                        sex:
+                                            allowed: [male]
+                                        allowed: [adult]
+                                        empty: True
                                 """
 
     def test_if(self):
@@ -1264,7 +1267,7 @@ class TestIfValidator(unittest.TestCase):
     def test_conditional_empty(self):
         schema = yaml.load(self.yaml_conditional_empty)
         val = DwcaValidator(schema)
-        document = {'lifestage': 'adult', 'sex' : 'male'}
+        document = {'lifestage': 'adult', 'sex': 'male'}
         self.assertTrue(val.validate(document))
         document = {'lifestage': 'adult', 'sex': 'female'}
         self.assertTrue(val.validate(document))
@@ -1272,27 +1275,15 @@ class TestIfValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'lifestage': '', 'sex': 'male'}
         self.assertFalse(val.validate(document))
+        self.assertEqual(val.errors,
+                         {'lifestage': [{'if_0': ['empty values not allowed']}]})
         document = {'lifestage': 'adult', 'sex': ''}
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'lifestage': [{'if_1': ['unallowed value adult']}]})
-
-    def test_empty_empty(self):
-        schema = yaml.load(self.yaml_double_empty)
-        val = DwcaValidator(schema)
         document = {'lifestage': '', 'sex': ''}
-        val.validate(document)  # should be True
-        self.assertEqual(val.errors,
-                         {})
-
-        schema = yaml.load(self.yaml_conditional_empty)
-        val = DwcaValidator(schema)
-        # TROUBLE------
-        document = {'lifestage': 'jan', 'sex': ''}
-        self.assertFalse(val.validate(document))  # should be False
-        document = {'lifestage': '', 'sex': ''}
-        #self.assertTrue(val.validate(document)) # should be True
-        #-----
+        self.assertTrue(val.validate(document))
+        self.assertEqual(val.errors, {})
 
     def test_pre_empty(self):
         schema = yaml.load(self.yaml_pre_empty)
@@ -1303,8 +1294,20 @@ class TestIfValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))  # should be False
         document = {'lifestage': '', 'sex': ''}
         self.assertTrue(val.validate(document))  # should be True
+
+        # if statement overrules the empty
+        document = {'lifestage': '', 'sex': 'male'}
+        self.assertFalse(val.validate(document))  # should be False
+        self.assertEqual(val.errors,
+                         {'lifestage': [{'if': ['empty values not allowed']}]})
+
+        # additional empty: True inside the if statement enables empty there
+        schema = yaml.load(self.yaml_prepost_empty)
+        val = DwcaValidator(schema)
         document = {'lifestage': '', 'sex': 'male'}
         self.assertTrue(val.validate(document))  # should be True
+
+
 
 
 
