@@ -385,9 +385,9 @@ class DwcaValidator(Validator):
                 json.loads(value)
                 return True
             except ValueError:
-                self._error(field, " no valid json format")
+                self._error(field, "no valid json format")
         elif stringtype == 'url':
             if match(value, rule='URI'):
                 return True
             else:
-                self._error(field, " no valid url format")
+                self._error(field, "no valid url format")
