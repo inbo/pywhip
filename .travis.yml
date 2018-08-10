@@ -12,6 +12,7 @@ script:
     tox
 before_deploy:
     - travis-sphinx --outdir='docs/_build' build --source=docs --nowarn
+    - touch docs/_build/.nojekyll
 deploy:
   - provider: pages
     skip_cleanup: true
