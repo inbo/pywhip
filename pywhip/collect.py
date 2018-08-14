@@ -10,8 +10,6 @@ import yaml
 
 from collections import defaultdict
 
-#import pandas as pd
-
 from pywhip.validators import DwcaValidator
 from dwca.read import DwCAReader
 
@@ -30,14 +28,14 @@ def normalize_list(messages):
     return normalized
 
 
-class DwcaScreening(object):
+class Whip(object):
 
     def __init__(self, schema,
                  lowercase_terms=False,
                  unknown_fields=True):
 
         if isinstance(schema, str):
-            schema = yaml.load(open(schema))
+            schema = yaml.load(schema)
 
         if lowercase_terms:
             self.schema = self._decapitalize_schema(schema)
@@ -60,14 +58,14 @@ class DwcaScreening(object):
         return lowercase_schema
 
     def _isitgreat(self):
-        """chekck if there are any errors recorded"""
+        """check if there are any errors recorded"""
         if len(self.errors) == 0:
             print("Hooray, your data set is according to the guidelines!")
         else:
             print('Dataset does not comply the specifications, check errors'
                   ' for a more detailed information.')
 
-    def screen_dwca(self, dwca_zip, maxentries=None):
+    def whip_dwca(self, dwca_zip, maxentries=None):
         """"""
         with DwCAReader(dwca_zip) as dwca:
             for j, row in enumerate(dwca):
@@ -83,9 +81,9 @@ class DwcaScreening(object):
         self._error_list_ids()
         self._isitgreat()
 
-    def screen_dwc(self, dwc_csv, delimiter, maxentries=None):
+    def whip_csv(self, csv, delimiter, maxentries=None):
         """"""
-        with open(dwc_csv, "r") as dwc:
+        with open(csv, "r") as dwc:
             reader = csv.DictReader(dwc, delimiter=delimiter)
             for j, document in enumerate(reader):
                 self.validation.validate(document)
@@ -100,7 +98,6 @@ class DwcaScreening(object):
 
     def _error_list_ids(self):
         """"""
-
         for ids, errordict in self.errors.items():
             for term, errormessage in errordict.items():
                 if isinstance(errormessage, list):

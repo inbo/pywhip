@@ -17,7 +17,7 @@ from rfc3987 import match
 from cerberus import Validator
 from cerberus import errors
 from cerberus.errors import ErrorDefinition
-from cerberus.platform import _str_type
+from cerberus.platform import _str_type, _int_types
 
 toy_error_handler = errors.ToyErrorHandler()
 DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
@@ -27,7 +27,7 @@ IF_SCHEMA = ErrorDefinition(0x82, 'if')
 class DwcaValidator(Validator):
     """
     directly available by cerberus:
-        required, allowed, minlength, maxlength, minimum, maximum, regex,
+        allowed, minlength, maxlength, minimum, maximum, regex
 
     custom validation functions:
         daterange, numberformat, dateformat
@@ -35,24 +35,32 @@ class DwcaValidator(Validator):
 
     environments:
         delimitedValues, if
-
-    dtypes to add for the type comparison:
-        json, url
     """
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
+
+        Parameters
+        ----------
+        allow_unknown : boolean
+            if False only terms with specifications are allowed as input
         """
         # prepare the string version of each document in the namespace
         self.document_str_version = None
 
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
+        if 'allow_unknown' in kwargs:
+            self.allow_unknown = kwargs['allow_unknown']
+        else:
+            self.allow_unknown = True
+
         if not self.schema:
             raise Exception('provide a schema to initiate Validator')
 
         # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
+        self.schema = self._schema_add_required(self.schema)
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -76,12 +84,21 @@ class DwcaValidator(Validator):
                 rules['empty'] = False
         return dict_schema
 
-    def _validate_empty(self, empty, field, value):
-        """ {'type': 'boolean'}
-
-        Dropping all remaining rules (instead of subselection)
-        when empty = True
+    @staticmethod
+    def _schema_add_required(dict_schema):
+        """the required rule should be added for each of the fields, as whip
+        defines enlisted as default required
         """
+        for term, rules in dict_schema.items():
+            if 'required' not in rules.keys():
+                rules['required'] = True
+        return dict_schema
+
+    def _validate_empty(self, empty, field, value):
+        """{'type': 'boolean'}
+        """
+        # Dropping all remaining rules except of if (instead of subselection)
+        # when empty = True
         from collections import Sized
         if isinstance(value, Sized) and len(value) == 0:
             # ALL rules, except of if
@@ -385,10 +402,22 @@ class DwcaValidator(Validator):
 
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'delimitedvalues'),
-            schema=schema, allow_unknown=self.allow_unknown)
+            schema=schema, allow_unknown=True)
 
-        validator.validate(dict(((i, v) for i, v in enumerate(value))),
-                           normalize=True)
+        document = dict(((i, v) for i, v in enumerate(value)))
+
+        # provide support for if-statements -> add field from root document
+        if 'if' in ruleset.keys():
+            term = [key for key in ruleset['if'].keys() if
+                     isinstance(ruleset['if'][key], dict)]
+            if len(term) > 1:  # multiple if statements  not supported
+                NotImplementedError
+            else:
+                term = term[0]
+            document[term] = validator.root_document[term]
+
+        validator.validate(document, normalize=True)
+
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, DELIMITER_SCHEMA, validator._errors)

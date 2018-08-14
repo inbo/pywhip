@@ -36,6 +36,13 @@ class TestAllowedValidator(unittest.TestCase):
                          allowed : [adult, juvenile, 'adult | juvenile']                                     
                      """
 
+        self.yaml_allowed_inputs = """
+                     age:
+                         allowed : 30
+                     abundance:
+                         allowed : '30'                                                                
+                     """
+
     def test_allowed_string(self):
         """test if the value is the allowed value
         """
@@ -67,6 +74,18 @@ class TestAllowedValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'age': 'adult|juvenile'}
         self.assertFalse(val.validate(document))
+
+    def test_allowed_list(self):
+        """see https://github.com/inbo/whip/issues/22
+        """
+        with pytest.raises(cerberus.schema.SchemaError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_allowed_inputs))
+
+        #val = DwcaValidator(yaml.load(self.yaml_allowed_inputs))
+        #document = {'age': '30'}
+        #val.validate(document)
+        #document = {'abundance': '30'}
+        #self.assertTrue(val.validate(document))
 
 
 class TestAllowedQuoteFlavors(unittest.TestCase):
@@ -184,11 +203,14 @@ class TestLengthValidator(unittest.TestCase):
         self.yaml_length = """
                              postal_code :
                                  minlength : 4
+                                 required: False
                              license_plate:
                                  maxlength: 6
+                                 required: False
                              code:
                                  minlength : 2
                                  maxlength : 2
+                                 required: False
                              """
 
     def test_minlength(self):
@@ -335,10 +357,13 @@ class TestRegexValidator(unittest.TestCase):
         self.yaml_regex = """
             observation_id:
                 regex: 'INBO:VIS:\d+'
+                required: False
             issue_url:
                 regex: 'https:\/\/github\.com\/inbo\/whip\/issues\/\d+'
+                required: False
             utm1km:
                 regex: '31U[D-G][S-T]\d\d\d\d'
+                required: False
              """
         self.yaml_regexit = """
             quotes:
@@ -416,19 +441,26 @@ class TestMinMaxValidator(unittest.TestCase):
                              individualCount:
                                  min : 5
                                  max : 8
+                                 required: False
                              percentage:
                                  min : 5.5
                                  max : 8.1
+                                 required: False
                              code:
                                  min : '3'
+                                 required: False
                              age_1:
                                  min: 9
+                                 required: False
                              age_2:
                                  min: 9.
+                                 required: False
                              age_3:
                                  max: 99
+                                 required: False
                              age_4:
                                  max: 99.0
+                                 required: False
                              """
 
     def test_min(self):
@@ -514,24 +546,31 @@ class TestNumberFormatValidator(unittest.TestCase):
         self.yaml_numberformat1 = """
                                     size:
                                         numberformat: '.5'
+                                        required: False
                                     length:
                                         numberformat: '.3'
+                                        required: False
                                     """
 
         self.yaml_numberformat2 = """
                                     size:
                                         numberformat: '3.5'
+                                        required: False
                                     length:
                                         numberformat: '2.3'
+                                        required: False
                                     """
 
         self.yaml_numberformat3 = """
                                     size:
                                         numberformat: '4.'
+                                        required: False
                                     length:
                                         numberformat: '2.'
+                                        required: False
                                     height:
                                         numberformat: '2'
+                                        required: False
                                     """
         self.yaml_numberformat4 = """
                                     size:
@@ -669,15 +708,19 @@ class TestDateValidator(unittest.TestCase):
                                  moment:
                                      mindate: 1830-01-01
                                      maxdate: 2014-10-20
+                                     required: False
                                  date:
                                     mindate: 1985-11-29
                                     maxdate: 2012-09-12
+                                    required: False
                                  """
         self.yaml_string_date2 = """
                                     moment:
                                         dateformat: ['%Y-%m-%d', '%Y-%m', '%Y']
+                                        required: False
                                     date:
                                         dateformat: '%Y-%m-%d'
+                                        required: False
                                     """
         self.yaml_string_date3 = """
                                     moment:
@@ -690,15 +733,17 @@ class TestDateValidator(unittest.TestCase):
         self.yaml_string_date5 = """
                                  moment:
                                      dateformat: '%Y-%m-%d/%Y-%m-%d'
+                                     required: False
                                  date:
                                      dateformat: ['%Y-%m-%d/%Y-%m-%d']
+                                     required: False
                                     
                                  """
 
     def test_daterange_iso(self):
         # isoformat
         val = DwcaValidator(yaml.load(self.yaml_string_date1))
-        document1 = {'moment' : '20110101'}  #True
+        document1 = {'moment': '20110101'}  # True
         self.assertTrue(val.validate(document1))
 
     def test_daterange_line(self):
@@ -799,39 +844,51 @@ class TestEmptyStringHandling(unittest.TestCase):
         self.yaml_string = """
                            abundance:
                                 minlength : 1
+                                required: False
                            sex:
                                 allowed: [male, female]
+                                required: False
                            """
 
         self.empty1 = """
                         number:
                             empty: False
+                            required: False
                         sex:
                             allowed: [male, female]
                             empty: False
+                            required: False
                         """
 
         self.empty2 = """
                         number:
                             min: 2
                             empty: True
+                            required: False
                         sex:
                             empty: True
                             allowed: [male, female]
+                            required: False
                         """
         self.empty3 = """
                         field_1:
                             maxlength: 2
+                            required: False
                         field_2:
                             maxlength: 0
+                            required: False
                         field_3:
                           minlength: 0
+                          required: False
                         field_4:
                           allowed: ''
+                          required: False
                         field_5:
                           allowed: [male, female, '']
+                          required: False
                         field_6:
                           regex: '^\s*$'
+                          required: False
                         """
         self.empty4 = """
                         required_to_be_empty:
@@ -845,11 +902,13 @@ class TestEmptyStringHandling(unittest.TestCase):
                             max: 2
                             numberformat: '.'
                             empty: False
+                            required: False
                         field_2:
                             min: 4
                             max: 2
                             numberformat: '.'
-                            empty: True                     
+                            empty: True    
+                            required: False                 
                         """
 
     def test_default_error_empty_string(self):
@@ -1093,8 +1152,13 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
     def test_delimiter_if_condition_nonpass(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'age': '5 | 18 | 99', 'lifestage': 'adult'}  # True
+        document = {'age': '50 | 30 | 99', 'lifestage': 'juvenile'}  # True
         self.assertFalse(val.validate(document))
+
+    def test_delimiter_if_condition_false_condition(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age': '50 | 30 | 99', 'lifestage': 'adult'}  # True
+        self.assertTrue(val.validate(document))
 
     def test_delimiter_if_checkindication(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
@@ -1308,6 +1372,79 @@ class TestIfValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))  # should be True
 
 
+class TestRequiredValidator(unittest.TestCase):
+
+    def setUp(self):
+
+        self.yaml_single_term = """
+                                abundance:
+                                    allowed: many                          
+                                """
+
+        self.yaml_multiple_term = """
+                                  abundance:
+                                    allowed: many
+                                  eventDate:
+                                    dateformat: '%Y-%m-%d'  
+                                    required: True                    
+                                  """
+
+        self.yaml_presence_check = """
+                                   abundance:
+                                     empty: True                   
+                                   """
+
+    def test_allow_unknown_argument(self):
+        """by providing the allow_unkown argument, not-mentioned fields are
+         allowed or not in the document"""
+        schema = yaml.load(self.yaml_single_term)
+
+        val = DwcaValidator(schema, allow_unknown=True)
+        document = {'abundance': 'many', 'eventDate': '2018-01-01'}
+        self.assertTrue(val.validate(document))
+
+        val = DwcaValidator(schema, allow_unknown=False)
+        document = {'abundance': 'many', 'eventDate': '2018-01-01'}
+        val.validate(document)
+        self.assertEqual(val.errors, {'eventDate': ['unknown field']})
+
+    def test_required_term(self):
+        """ by default, all listed terms are required"""
+        schema = yaml.load(self.yaml_multiple_term)
+
+        val = DwcaValidator(schema)
+        document = {'abundance': 'many'}
+        val.validate(document)
+        self.assertEqual(val.errors, {'eventDate': ['required field']})
+
+    def test_default_required(self):
+        """ by default, all listed terms are required - a virtual 'required'
+        is added to the schema for each listed term"""
+        """ by default, all listed terms are required"""
+        schema = yaml.load(self.yaml_multiple_term)
+        val = DwcaValidator(schema)
+
+        document = {'abundance': 'many'}
+        val.validate(document)
+        self.assertEqual(val.errors, {'eventDate': ['required field']})
+
+        document = {'eventDate': '2018-01-01'}
+        val.validate(document)
+        self.assertEqual(val.errors, {'abundance': ['required field']})
+
+    def test_check_presence_only(self):
+        """A minimal check on the presence of a specific column can be
+        achieved by adding the term and the specification of empty: True"""
+        schema = yaml.load(self.yaml_presence_check)
+        val = DwcaValidator(schema, allow_unknown=True)
+
+        document = {'abundance': 'many'}
+        self.assertTrue(val.validate(document))
+        document = {'abundance': ''}
+        self.assertTrue(val.validate(document))
+        document = {'eventDate': ''}
+        val.validate(document)
+        self.assertEqual(val.errors, {'abundance': ['required field']})
 
 
 
