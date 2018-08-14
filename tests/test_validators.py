@@ -36,6 +36,13 @@ class TestAllowedValidator(unittest.TestCase):
                          allowed : [adult, juvenile, 'adult | juvenile']                                     
                      """
 
+        self.yaml_allowed_inputs = """
+                     age:
+                         allowed : 30
+                     abundance:
+                         allowed : '30'                                                                
+                     """
+
     def test_allowed_string(self):
         """test if the value is the allowed value
         """
@@ -68,6 +75,17 @@ class TestAllowedValidator(unittest.TestCase):
         document = {'age': 'adult|juvenile'}
         self.assertFalse(val.validate(document))
 
+    def test_allowed_list(self):
+        """see https://github.com/inbo/whip/issues/22
+        """
+        with pytest.raises(cerberus.schema.SchemaError) as excinfo:
+            val = DwcaValidator(yaml.load(self.yaml_allowed_inputs))
+
+        #val = DwcaValidator(yaml.load(self.yaml_allowed_inputs))
+        #document = {'age': '30'}
+        #val.validate(document)
+        #document = {'abundance': '30'}
+        #self.assertTrue(val.validate(document))
 
 class TestAllowedQuoteFlavors(unittest.TestCase):
     """Test validation method `allowed` (native cerberus)
