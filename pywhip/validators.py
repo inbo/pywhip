@@ -17,7 +17,7 @@ from rfc3987 import match
 from cerberus import Validator
 from cerberus import errors
 from cerberus.errors import ErrorDefinition
-from cerberus.platform import _str_type
+from cerberus.platform import _str_type, _int_types
 
 toy_error_handler = errors.ToyErrorHandler()
 DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
@@ -77,11 +77,10 @@ class DwcaValidator(Validator):
         return dict_schema
 
     def _validate_empty(self, empty, field, value):
-        """ {'type': 'boolean'}
-
-        Dropping all remaining rules (instead of subselection)
-        when empty = True
+        """{'type': 'boolean'}
         """
+        # Dropping all remaining rules except of if (instead of subselection)
+        # when empty = True
         from collections import Sized
         if isinstance(value, Sized) and len(value) == 0:
             # ALL rules, except of if
