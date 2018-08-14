@@ -402,10 +402,22 @@ class DwcaValidator(Validator):
 
         validator = self._get_child_validator(
             document_crumb=field, schema_crumb=(field, 'delimitedvalues'),
-            schema=schema, allow_unknown=self.allow_unknown)
+            schema=schema, allow_unknown=True)
 
-        validator.validate(dict(((i, v) for i, v in enumerate(value))),
-                           normalize=True)
+        document = dict(((i, v) for i, v in enumerate(value)))
+
+        # provide support for if-statements -> add field from root document
+        if 'if' in ruleset.keys():
+            term = [key for key in ruleset['if'].keys() if
+                     isinstance(ruleset['if'][key], dict)]
+            if len(term) > 1:  # multiple if statements  not supported
+                NotImplementedError
+            else:
+                term = term[0]
+            document[term] = validator.root_document[term]
+
+        validator.validate(document, normalize=True)
+
         if validator._errors:
             self._drop_nodes_from_errorpaths(validator._errors, [], [2])
             self._error(field, DELIMITER_SCHEMA, validator._errors)

@@ -87,6 +87,7 @@ class TestAllowedValidator(unittest.TestCase):
         #document = {'abundance': '30'}
         #self.assertTrue(val.validate(document))
 
+
 class TestAllowedQuoteFlavors(unittest.TestCase):
     """Test validation method `allowed` (native cerberus)
     according to https://github.com/inbo/whip specifications
@@ -1151,8 +1152,13 @@ class TestDelimitedValuesValidator(unittest.TestCase):
 
     def test_delimiter_if_condition_nonpass(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
-        document = {'age': '5 | 18 | 99', 'lifestage': 'adult'}  # True
+        document = {'age': '50 | 30 | 99', 'lifestage': 'juvenile'}  # True
         self.assertFalse(val.validate(document))
+
+    def test_delimiter_if_condition_false_condition(self):
+        val = DwcaValidator(yaml.load(self.yaml_delimited2))
+        document = {'age': '50 | 30 | 99', 'lifestage': 'adult'}  # True
+        self.assertTrue(val.validate(document))
 
     def test_delimiter_if_checkindication(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited2))
