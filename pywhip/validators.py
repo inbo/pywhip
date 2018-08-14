@@ -27,7 +27,7 @@ IF_SCHEMA = ErrorDefinition(0x82, 'if')
 class DwcaValidator(Validator):
     """
     directly available by cerberus:
-        required, allowed, minlength, maxlength, minimum, maximum, regex,
+        allowed, minlength, maxlength, minimum, maximum, regex
 
     custom validation functions:
         daterange, numberformat, dateformat
@@ -35,24 +35,32 @@ class DwcaValidator(Validator):
 
     environments:
         delimitedValues, if
-
-    dtypes to add for the type comparison:
-        json, url
     """
 
     def __init__(self, *args, **kwargs):
         """add pre processing rules to alter the schema
+
+        Parameters
+        ----------
+        allow_unknown : boolean
+            if False only terms with specifications are allowed as input
         """
         # prepare the string version of each document in the namespace
         self.document_str_version = None
 
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
+        if 'allow_unknown' in kwargs:
+            self.allow_unknown = kwargs['allow_unknown']
+        else:
+            self.allow_unknown = True
+
         if not self.schema:
             raise Exception('provide a schema to initiate Validator')
 
         # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
+        self.schema = self._schema_add_required(self.schema)
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -74,6 +82,16 @@ class DwcaValidator(Validator):
         for term, rules in dict_schema.items():
             if 'empty' not in rules.keys():
                 rules['empty'] = False
+        return dict_schema
+
+    @staticmethod
+    def _schema_add_required(dict_schema):
+        """the required rule should be added for each of the fields, as whip
+        defines enlisted as default required
+        """
+        for term, rules in dict_schema.items():
+            if 'required' not in rules.keys():
+                rules['required'] = True
         return dict_schema
 
     def _validate_empty(self, empty, field, value):
