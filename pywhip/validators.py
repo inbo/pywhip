@@ -60,7 +60,6 @@ class DwcaValidator(Validator):
 
         # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
-        self.schema = self._schema_add_required(self.schema)
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -82,16 +81,6 @@ class DwcaValidator(Validator):
         for term, rules in dict_schema.items():
             if 'empty' not in rules.keys():
                 rules['empty'] = False
-        return dict_schema
-
-    @staticmethod
-    def _schema_add_required(dict_schema):
-        """the required rule should be added for each of the fields, as whip
-        defines enlisted as default required
-        """
-        for term, rules in dict_schema.items():
-            if 'required' not in rules.keys():
-                rules['required'] = True
         return dict_schema
 
     def _validate_empty(self, empty, field, value):

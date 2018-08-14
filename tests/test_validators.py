@@ -1386,7 +1386,7 @@ class TestRequiredValidator(unittest.TestCase):
                                     allowed: many
                                   eventDate:
                                     dateformat: '%Y-%m-%d'  
-                                    required: True                    
+                                    required: True                  
                                   """
 
         self.yaml_presence_check = """
@@ -1418,9 +1418,13 @@ class TestRequiredValidator(unittest.TestCase):
         self.assertEqual(val.errors, {'eventDate': ['required field']})
 
     def test_default_required(self):
-        """ by default, all listed terms are required - a virtual 'required'
-        is added to the schema for each listed term"""
-        """ by default, all listed terms are required"""
+        """ the handling of required specification is handled on data set
+        level, so the individual specification is not using required as a
+        rule
+
+        Still, requried can be added to have the errors explicitly taken into
+        row-evaluation.
+        """
         schema = yaml.load(self.yaml_multiple_term)
         val = DwcaValidator(schema)
 
@@ -1430,7 +1434,7 @@ class TestRequiredValidator(unittest.TestCase):
 
         document = {'eventDate': '2018-01-01'}
         val.validate(document)
-        self.assertEqual(val.errors, {'abundance': ['required field']})
+        self.assertEqual(val.errors, {})
 
     def test_check_presence_only(self):
         """A minimal check on the presence of a specific column can be
@@ -1444,7 +1448,7 @@ class TestRequiredValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'eventDate': ''}
         val.validate(document)
-        self.assertEqual(val.errors, {'abundance': ['required field']})
+        self.assertEqual(val.errors, {})
 
 
 
