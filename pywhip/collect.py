@@ -31,8 +31,7 @@ def normalize_list(messages):
 class Whip(object):
 
     def __init__(self, schema,
-                 lowercase_terms=False,
-                 unknown_fields=True):
+                 lowercase_terms=False):
 
         if isinstance(schema, str):
             schema = yaml.load(schema)
@@ -44,7 +43,6 @@ class Whip(object):
 
         # setup a DwcaValidator instance
         self.validation = DwcaValidator(self.schema)
-        self.validation.allow_unknown = unknown_fields
 
         self.errors = {}
         self._errorlog = defaultdict(lambda: defaultdict(list))
