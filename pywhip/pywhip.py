@@ -28,17 +28,17 @@ def whip_dwca(dwca_zip, specifications, maxentries=None):
     return whip_it
 
 
-def whip_csv(csv_file, specifications, maxentries=None):
+def whip_csv(csv_file, specifications, delimiter, maxentries=None):
     """"""
 
     # Extract data header
     with open(csv_file, "r") as dwc:
-        reader = csv.DictReader(dwc, delimiter="\t")
+        reader = csv.DictReader(dwc, delimiter=delimiter)
         field_names = reader.fieldnames
 
     # Apply whip
     whip_it = Whip(specifications)
-    whip_it._whip(whip_it.generate_csv(csv_file),
+    whip_it._whip(whip_it.generate_csv(csv_file, delimiter),
                   field_names, maxentries)
     return whip_it
 
@@ -48,9 +48,9 @@ class Whip(object):
     def __init__(self, schema,
                  lowercase_terms=False):
 
-        # TODO: change:
-        if isinstance(schema, str):
-            schema = yaml.load(schema)
+        if not isinstance(schema, dict):
+            raise SchemaError("Input schema need to be dictionary from "
+                              "interpreted yaml file")
 
         if lowercase_terms:
             self.schema = self._decapitalize_schema(schema)
