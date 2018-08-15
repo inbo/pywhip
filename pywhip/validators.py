@@ -19,9 +19,8 @@ from cerberus import errors
 from cerberus.errors import ErrorDefinition
 from cerberus.platform import _str_type, _int_types
 
-toy_error_handler = errors.ToyErrorHandler()
-DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
-IF_SCHEMA = ErrorDefinition(0x82, 'if')
+DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
+IF_SCHEMA = ErrorDefinition(0x86, 'if')
 
 
 class DwcaValidator(Validator):
@@ -60,7 +59,6 @@ class DwcaValidator(Validator):
 
         # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
-        self.schema = self._schema_add_required(self.schema)
 
     def validate(self, document, *args, **kwargs):
         """adds document parsing to the validation process
@@ -82,16 +80,6 @@ class DwcaValidator(Validator):
         for term, rules in dict_schema.items():
             if 'empty' not in rules.keys():
                 rules['empty'] = False
-        return dict_schema
-
-    @staticmethod
-    def _schema_add_required(dict_schema):
-        """the required rule should be added for each of the fields, as whip
-        defines enlisted as default required
-        """
-        for term, rules in dict_schema.items():
-            if 'required' not in rules.keys():
-                rules['required'] = True
         return dict_schema
 
     def _validate_empty(self, empty, field, value):
@@ -359,6 +347,12 @@ class DwcaValidator(Validator):
                 tempvalidator = DwcaValidator(conditions)
                 tempvalidator.allow_unknown = True
 
+                # when the conditional field is not existing in the document,
+                # ignore the if-statement
+                if not set(conditions.keys()).issubset(
+                        set(self.document_str_version.keys())):
+                    return True
+
                 if tempvalidator.validate(copy(self.document_str_version),
                                           normalize=True):
                     validator = self._get_child_validator(
@@ -409,7 +403,7 @@ class DwcaValidator(Validator):
         # provide support for if-statements -> add field from root document
         if 'if' in ruleset.keys():
             term = [key for key in ruleset['if'].keys() if
-                     isinstance(ruleset['if'][key], dict)]
+                    isinstance(ruleset['if'][key], dict)]
             if len(term) > 1:  # multiple if statements  not supported
                 NotImplementedError
             else:

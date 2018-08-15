@@ -1386,13 +1386,27 @@ class TestRequiredValidator(unittest.TestCase):
                                     allowed: many
                                   eventDate:
                                     dateformat: '%Y-%m-%d'  
-                                    required: True                    
+                                    required: True                  
                                   """
 
         self.yaml_presence_check = """
                                    abundance:
                                      empty: True                   
                                    """
+
+        self.yaml_presence_inside_if = """
+                                        coordinateUncertaintyInMeters:
+                                          empty: true
+                                          if:
+                                            - verbatimCoordinateSystem:
+                                                allowed: UTM 1km
+                                              numberformat: x
+                                              allowed: '707'
+                                            - verbatimCoordinateSystem:
+                                                allowed: UTM 5km
+                                              numberformat: x
+                                              allowed: '3536'
+                                        """
 
     def test_allow_unknown_argument(self):
         """by providing the allow_unkown argument, not-mentioned fields are
@@ -1418,9 +1432,13 @@ class TestRequiredValidator(unittest.TestCase):
         self.assertEqual(val.errors, {'eventDate': ['required field']})
 
     def test_default_required(self):
-        """ by default, all listed terms are required - a virtual 'required'
-        is added to the schema for each listed term"""
-        """ by default, all listed terms are required"""
+        """ the handling of required specification is handled on data set
+        level, so the individual specification is not using required as a
+        rule
+
+        Still, requried can be added to have the errors explicitly taken into
+        row-evaluation.
+        """
         schema = yaml.load(self.yaml_multiple_term)
         val = DwcaValidator(schema)
 
@@ -1430,7 +1448,7 @@ class TestRequiredValidator(unittest.TestCase):
 
         document = {'eventDate': '2018-01-01'}
         val.validate(document)
-        self.assertEqual(val.errors, {'abundance': ['required field']})
+        self.assertEqual(val.errors, {})
 
     def test_check_presence_only(self):
         """A minimal check on the presence of a specific column can be
@@ -1444,9 +1462,20 @@ class TestRequiredValidator(unittest.TestCase):
         self.assertTrue(val.validate(document))
         document = {'eventDate': ''}
         val.validate(document)
-        self.assertEqual(val.errors, {'abundance': ['required field']})
+        self.assertEqual(val.errors, {})
 
+    def test_check_presence_on_if(self):
+        """When a field is mentioned inside an if condition, the condition
+        can not be checked. Warning is provided in the general whip-environment
+        as a preliminar check, here the if-statements are not executed
+        (no errors generated)"""
 
+        schema = yaml.load(self.yaml_presence_inside_if)
+        val = DwcaValidator(schema)
+
+        document = {'coordinateUncertaintyInMeters': '22'}
+        val.validate(document)
+        self.assertEqual(val.errors, {})
 
 
 
