@@ -11,7 +11,7 @@ from datetime import datetime
 
 from collections import defaultdict, Mapping, Sequence
 
-from pywhip.validators import DwcaValidator
+from pywhip.validators import DwcaValidator, WhipErrorHandler
 from dwca.read import DwCAReader
 
 from cerberus import SchemaError
@@ -61,7 +61,8 @@ class Whip(object):
             self.schema = schema
 
         # setup a DwcaValidator instance
-        self.validation = DwcaValidator(self.schema)
+        self.validation = DwcaValidator(self.schema,
+                                        error_handler=WhipErrorHandler)
 
         self.report = {'number_of_records': 0,
                        'executed_at': None,
