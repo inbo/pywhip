@@ -16,11 +16,19 @@ from rfc3987 import match
 
 from cerberus import Validator
 from cerberus import errors
-from cerberus.errors import ErrorDefinition
+from cerberus.errors import ErrorDefinition, BasicErrorHandler
 from cerberus.platform import _str_type, _int_types
 
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x86, 'if')
+MIN_NON_NUMERIC = ErrorDefinition(0x7, 'min')
+MAX_NON_NUMERIC = ErrorDefinition(0x8, 'max')
+
+
+class WhipErrorHandler(BasicErrorHandler):
+    messages = BasicErrorHandler.messages.copy()
+    messages[MIN_NON_NUMERIC.code] = "value '{value}' is not numeric"
+    messages[MAX_NON_NUMERIC.code] = "value '{value}' is not numeric"
 
 
 class DwcaValidator(Validator):
