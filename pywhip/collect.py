@@ -72,7 +72,8 @@ class Whip(object):
                        'warnings': []
                        }
 
-        self.errors = {}
+        self._errors = {}
+        self.error_messages = {}
         self._errorlog = defaultdict(lambda: defaultdict(list))
 
     @staticmethod
@@ -146,7 +147,8 @@ class Whip(object):
         for j, row in enumerate(input_generator):
             self.validation.validate(row)
             if len(self.validation.errors) > 0:
-                self.errors[j+1] = self.validation.errors
+                self.error_messages[j+1] = self.validation.errors
+                self._errors[j + 1] = self.validation._errors
             if maxentries:
                 if j >= maxentries-1:
                     break
@@ -159,7 +161,7 @@ class Whip(object):
 
     def _isitgreat(self):
         """check if there are any errors recorded"""
-        if len(self.errors) == 0:
+        if len(self.error_messages) == 0:
             print("Hooray, your data set is according to the guidelines!")
         else:
             print('Dataset does not comply the specifications, check errors'
@@ -183,7 +185,7 @@ class Whip(object):
 
     def _error_list_ids(self):
         """"""
-        for ids, errordict in self.errors.items():
+        for ids, errordict in self.error_messages.items():
             for term, errormessage in errordict.items():
                 if isinstance(errormessage, list):
                     errormessage = self.normalize_list(errormessage)
