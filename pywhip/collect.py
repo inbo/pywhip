@@ -7,6 +7,7 @@ Created on Wed May 18 11:08:55 2016
 
 import csv
 import yaml
+from datetime import datetime
 
 from collections import defaultdict, Mapping, Sequence
 
@@ -128,10 +129,10 @@ class Whip(object):
         except TypeError:
             raise TypeError
 
-        self.report['unvalidated_fields'] = file_fields.difference(
-            set(self.schema.keys()))
-        self.report['missing_fields'] = set(self.schema.keys()).difference(
-            file_fields)
+        self.report['unvalidated_fields'] = list(file_fields.difference(
+            set(self.schema.keys())))
+        self.report['missing_fields'] = list(set(self.schema.keys()).difference(
+            file_fields))
 
     def _whip(self, input_generator, field_names, maxentries=None):
         """"""
@@ -148,7 +149,11 @@ class Whip(object):
             if maxentries:
                 if j >= maxentries-1:
                     break
+
+        self.report['number_of_records'] = j + 1
+        self.report['executed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M")
         self._error_list_ids()
+        self.report['errors'] = self._errorlog
         self._isitgreat()
 
     def _isitgreat(self):
