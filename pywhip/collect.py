@@ -14,18 +14,33 @@ from pywhip.validators import DwcaValidator
 from dwca.read import DwCAReader
 
 
-def normalize_list(messages):
+def whip_dwca(dwca_zip, specifications, maxentries=None):
     """"""
-    normalized = []
-    for message in messages:
-        if isinstance(message, str):
-            normalized.append(message)
-        elif isinstance(message, dict):
-            for value in message.values():
-                normalized += normalize_list(value)
-        else:
-            NotImplemented
-    return normalized
+    # Extract data header - only core support
+    with DwCAReader(dwca_zip) as dwca:
+        field_names = [field['term'].split('/')[-1] for field in
+                       dwca.core_file.file_descriptor.fields]
+
+    # Apply whip
+    whip_it = Whip(specifications)
+    whip_it._whip(whip_it.generate_dwca(dwca_zip),
+                  field_names, maxentries)
+    return whip_it
+
+
+def whip_csv(csv_file, specifications, maxentries=None):
+    """"""
+
+    # Extract data header
+    with open(csv_file, "r") as dwc:
+        reader = csv.DictReader(dwc, delimiter="\t")
+        field_names = reader.fieldnames
+
+    # Apply whip
+    whip_it = Whip(specifications)
+    whip_it._whip(whip_it.generate_csv(csv_file),
+                  field_names, maxentries)
+    return whip_it
 
 
 class Whip(object):
@@ -33,6 +48,7 @@ class Whip(object):
     def __init__(self, schema,
                  lowercase_terms=False):
 
+        # TODO: change:
         if isinstance(schema, str):
             schema = yaml.load(schema)
 
@@ -43,6 +59,13 @@ class Whip(object):
 
         # setup a DwcaValidator instance
         self.validation = DwcaValidator(self.schema)
+
+        self.report = {'number_of_records': 0,
+                       'executed_at': None,
+                       'unvalidated_fields': None,  # exist in dataset, not in specs
+                       'missing_fields': None,  # exist in specs, not in data set
+                       'errors': {},
+                       }
 
         self.errors = {}
         self._errorlog = defaultdict(lambda: defaultdict(list))
@@ -55,6 +78,45 @@ class Whip(object):
             lowercase_schema[dwcterm.lower()] = specification
         return lowercase_schema
 
+    def _compare_headers(self, file_fields):
+        """Compare data fields and specifications
+
+        Compare the fields mentioned by the specifications schema and the
+        data set and update thereport attributes on unvalidated and missing
+        fields
+
+        Parameters
+        ----------
+        file_fields : list
+            All fields present in the data-set.
+        """
+        try:
+            file_fields = set(file_fields)
+        except TypeError:
+            raise TypeError
+
+        self.report['unvalidated_fields'] = file_fields.difference(
+            set(self.schema.keys()))
+        self.report['missing_fields'] = set(self.schema.keys()).difference(
+            file_fields)
+
+    def _whip(self, input_generator, field_names, maxentries=None):
+        """"""
+
+        # preliminar checks
+        self._compare_headers(field_names)
+
+        # validate each row and log the errors for each row
+        for j, row in enumerate(input_generator):
+            self.validation.validate(row)
+            if len(self.validation.errors) > 0:
+                self.errors[j+1] = self.validation.errors
+            if maxentries:
+                if j >= maxentries-1:
+                    break
+        self._error_list_ids()
+        self._isitgreat()
+
     def _isitgreat(self):
         """check if there are any errors recorded"""
         if len(self.errors) == 0:
@@ -63,43 +125,28 @@ class Whip(object):
             print('Dataset does not comply the specifications, check errors'
                   ' for a more detailed information.')
 
-    def whip_dwca(self, dwca_zip, maxentries=None):
+    @staticmethod
+    def generate_dwca(dwca_zip):
         """"""
         with DwCAReader(dwca_zip) as dwca:
-            for j, row in enumerate(dwca):
+            for row in dwca:
                 document = {k.split('/')[-1]: v for k, v in row.data.items()}
+                yield document
 
-                # validate each row and log the errors for each row
-                self.validation.validate(document)
-                if len(self.validation.errors) > 0:
-                    self.errors[j+1] = self.validation.errors
-                if maxentries:
-                    if j >= maxentries-1:
-                        break
-        self._error_list_ids()
-        self._isitgreat()
-
-    def whip_csv(self, csv, delimiter, maxentries=None):
+    @staticmethod
+    def generate_csv(csv_file, delimiter):
         """"""
-        with open(csv, "r") as dwc:
+        with open(csv_file, "r") as dwc:
             reader = csv.DictReader(dwc, delimiter=delimiter)
-            for j, document in enumerate(reader):
-                self.validation.validate(document)
-                if len(self.validation.errors) > 0:
-                    self.errors[j+1] = self.validation.errors
-                if maxentries:
-                    if j >= maxentries-1:
-                        break
-
-        self._error_list_ids()
-        self._isitgreat()
+            for document in reader:
+                yield document
 
     def _error_list_ids(self):
         """"""
         for ids, errordict in self.errors.items():
             for term, errormessage in errordict.items():
                 if isinstance(errormessage, list):
-                    errormessage = normalize_list(errormessage)
+                    errormessage = self.normalize_list(errormessage)
                     for error in errormessage:
                         self._errorlog[term][error].append(ids)
 
@@ -134,3 +181,16 @@ class Whip(object):
         for terms, errors in self._errorlog.items():
             error_types += [error for error in errors.keys()]
         return error_types
+
+    def normalize_list(self, messages):
+        """"""
+        normalized = []
+        for message in messages:
+            if isinstance(message, str):
+                normalized.append(message)
+            elif isinstance(message, dict):
+                for value in message.values():
+                    normalized += self.normalize_list(value)
+            else:
+                NotImplemented
+        return normalized
