@@ -132,8 +132,7 @@ class DwcaValidator(Validator):
             if float(min_value) > float(value):
                 self._error(field, errors.MIN_VALUE)
         except ValueError:
-            self._error(field,
-                        'min validation failed, value is not numeric')
+            self._error(field, MIN_NON_NUMERIC)
 
     def _validate_max(self, max_value, field, value):
         """ {'nullable': False} """
@@ -141,8 +140,7 @@ class DwcaValidator(Validator):
             if float(max_value) < float(value):
                 self._error(field, errors.MAX_VALUE)
         except ValueError:
-            self._error(field,
-                        'max validation failed, value is not numeric')
+            self._error(field, MAX_NON_NUMERIC)
 
     def _parse_date(self, field, date_string):
         """try to parse a string to date and log error when failing

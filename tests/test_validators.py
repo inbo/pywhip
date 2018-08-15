@@ -13,7 +13,7 @@ from datetime import datetime
 import cerberus
 import pytest
 
-from pywhip.validators import DwcaValidator
+from pywhip.validators import DwcaValidator, WhipErrorHandler
 
 
 class TestAllowedValidator(unittest.TestCase):
@@ -509,33 +509,33 @@ class TestMinMaxValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
 
         val = DwcaValidator(yaml.load(self.yaml_value))
-        document = {'individualCount' : 9}
+        document = {'individualCount': 9}
         self.assertFalse(val.validate(document))
-        document = {'individualCount' : 2}
+        document = {'individualCount': 2}
         self.assertFalse(val.validate(document))
 
     def test_min_int_string(self):
         """test if the value has minimal value with string input
         """
-        val = DwcaValidator(yaml.load(self.yaml_value))
+        val = DwcaValidator(yaml.load(self.yaml_value),
+                            error_handler=WhipErrorHandler)
         # provide error on type mismatch
         document = {'code': 'vijf'}
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'code': [
-                             'min validation failed, value is not numeric']},
+                         {'code': ["value 'vijf' is not numeric"]},
                          msg="alert on datatype mismatch for min "
                              "evaluation fails")
 
     def test_max_int_string(self):
         """test if the value has maximal value with string input
         """
-        val = DwcaValidator(yaml.load(self.yaml_value))
+        val = DwcaValidator(yaml.load(self.yaml_value),
+                            error_handler=WhipErrorHandler)
         document = {'age_3': 'vijf'}  # provide error on type mismatch
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'age_3': ['max validation failed, '
-                                   'value is not numeric']},
+                         {'age_3': ["value 'vijf' is not numeric"]},
                          msg="alert on datatype mismatch for max "
                              "evaluation fails")
 
