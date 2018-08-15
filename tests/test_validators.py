@@ -640,8 +640,8 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'length': '1223'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'length': ['numberformat of value 1223 not '
-                                     'in agreement with 2.3']})
+                         {'length': ["numberformat of value '1223' not in "
+                                     "agreement with '2.3'"]})
 
     def test_numberformat_left(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat3),
@@ -663,7 +663,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'height': '.1'}  # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'height': ['value .1 is not an integer']})
+                         {'height': ["value '.1' is not an integer"]})
         document = {'height': '12.1'}  # False
         self.assertFalse(val.validate(document))
 
@@ -689,7 +689,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'size': '1'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'size': ['value 1 is not a float']})
+                         {'size': ["value '1' is not a float"]})
 
     def test_numberformat_anyinteger(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat5),
@@ -705,7 +705,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'size': '1.0'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'size': ['value 1.0 is not an integer']})
+                         {'size': ["value '1.0' is not an integer"]})
 
     def test_numberformat_isnumber(self):
         val = DwcaValidator(yaml.load(self.yaml_numberformat1),
@@ -713,11 +713,11 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'size': '1234f.'}  # Not a number
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'size': ['1234f. is not numerical']})
+                         {'size': ["value '1234f.' is not numerical"]})
         document = {'length': 'a.abc'}  # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'length': ['a.abc is not numerical']})
+                         {'length': ["value 'a.abc' is not numerical"]})
         document = {'length': ';'}  # False
         self.assertFalse(val.validate(document))
 
@@ -734,7 +734,7 @@ class TestNumberFormatValidator(unittest.TestCase):
         document = {'length': '2-2'}  # negative int
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'length': ['2-2 is not numerical']})
+                         {'length': ["value '2-2' is not numerical"]})
 
 
 class TestDateValidator(unittest.TestCase):
@@ -1083,8 +1083,8 @@ class TestEmptyStringHandling(unittest.TestCase):
         document = {'field_1': '3'}
         val.validate(document)
         self.assertEqual(val.errors,
-                         {'field_1': ['value 3 is not a float',
-                                      'max value is 2', 'min value is 4']})
+                         {'field_1': ['max value is 2', 'min value is 4',
+                                      "value '3' is not a float"]})
         document = {'field_2': ''}
         self.assertTrue(val.validate(document))
 

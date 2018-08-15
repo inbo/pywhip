@@ -29,6 +29,10 @@ MAXDATE_VALUE = ErrorDefinition(0x102, 'maxdate')
 MINDATE_NOT_PARSED = ErrorDefinition(0x103, 'mindate')
 MAXDATE_NOT_PARSED = ErrorDefinition(0x104, 'maxdate')
 DATEFORMAT = ErrorDefinition(0x105, 'dateformat')
+NUMBERFORMAT_NON_NUM = ErrorDefinition(0x106, 'numberformat')
+NUMBERFORMAT_NON_FLOAT = ErrorDefinition(0x107, 'numberformat')
+NUMBERFORMAT_NON_INT = ErrorDefinition(0x108, 'numberformat')
+NUMBERFORMAT_VALUE = ErrorDefinition(0x109, 'numberformat')
 
 
 class WhipErrorHandler(BasicErrorHandler):
@@ -45,7 +49,11 @@ class WhipErrorHandler(BasicErrorHandler):
                                         "interpreted as date or datetime"
     messages[DATEFORMAT.code] = "string format of value '{value}' not " \
                                 "compliant with '{constraint}'"
-
+    messages[NUMBERFORMAT_NON_NUM.code] = "value '{value}' is not numerical"
+    messages[NUMBERFORMAT_NON_FLOAT.code] = "value '{value}' is not a float"
+    messages[NUMBERFORMAT_NON_INT.code] = "value '{value}' is not an integer"
+    messages[NUMBERFORMAT_VALUE.code] = "numberformat of value '{value}' " \
+                                        "not in agreement with '{constraint}'"
 
 class DwcaValidator(Validator):
     """
@@ -285,13 +293,10 @@ class DwcaValidator(Validator):
 
         # check if value is number format
         if not re.match('^[0-9]*\.[0-9]*$|^[0-9]+$', value_str):
-            self._error(field, "".join([value_str,
-                                        " is not numerical"]))
+            self._error(field, NUMBERFORMAT_NON_NUM)
         elif re.match('^x$', formatter):
             if not re.match('^[-+]?\d+$', value_str):
-                self._error(field, "".join(["value ",
-                                            value_str,
-                                            " is not an integer"]))
+                self._error(field, NUMBERFORMAT_NON_INT)
         else:
             if re.match("[1-9]\.[1-9]", formatter):
                 value_parsed = [len(side) for side in value_str.split(".")]
@@ -307,26 +312,19 @@ class DwcaValidator(Validator):
                     value_parsed = [len(value_str)]
                 else:
                     value_parsed = [None]
-                    self._error(field, "".join(["value ",
-                                                value_str,
-                                                " is not an integer"]))
+                    self._error(field, NUMBERFORMAT_NON_INT)
             elif re.match("^\.$", formatter):
                 if "." in value_str:
                     value_parsed = []
                 else:
                     value_parsed = [None]
-                    self._error(field, "".join(["value ",
-                                                value_str,
-                                                " is not a float"]))
+                    self._error(field, NUMBERFORMAT_NON_FLOAT)
 
             formatter_parsed = [int(length) for length in formatter.split(".")
                                 if not length == '']
 
             if formatter_parsed != value_parsed and value_parsed != [None]:
-                self._error(field, "".join(["numberformat of value ",
-                                            value_str,
-                                            " not in agreement with ",
-                                            formatter]))
+                self._error(field, NUMBERFORMAT_VALUE)
 
     def _validate_if(self, ifset, field, value):
         """ {'type': ['dict', 'list']} """
@@ -451,3 +449,4 @@ class DwcaValidator(Validator):
                 return True
             else:
                 self._error(field, "no valid url format")
+
