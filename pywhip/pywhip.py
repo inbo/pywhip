@@ -157,10 +157,13 @@ class Whip(object):
                     if error.is_group_error:  # if/delimitedvalues
                         for child_error in error.child_errors:
                             error_info = dict()
+                            error_info['value'] = child_error.value
                             error_info['rule'] = child_error.rule
                             error_info['constraint'] = child_error.constraint
-                            error_info['value'] = child_error.value
                             error_info['scope'] = error.rule
+                            error_info['message'] = \
+                                self.validation.schema.validator.error_handler._format_message(
+                                    field, child_error)
                             self._errors[row_id][field].append(error_info)
                     else:
                         error_info = dict()
@@ -168,6 +171,9 @@ class Whip(object):
                         error_info['rule'] = error.rule
                         error_info['constraint'] = error.constraint
                         error_info['scope'] = None
+                        error_info['message'] = \
+                            self.validation.schema.validator.error_handler._format_message(
+                                field, error)
                         self._errors[row_id][field].append(error_info)
 
             if maxentries:
