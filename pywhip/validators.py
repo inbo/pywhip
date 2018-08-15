@@ -19,9 +19,8 @@ from cerberus import errors
 from cerberus.errors import ErrorDefinition
 from cerberus.platform import _str_type, _int_types
 
-toy_error_handler = errors.ToyErrorHandler()
-DELIMITER_SCHEMA = ErrorDefinition(0x82, 'delimitedvalues')
-IF_SCHEMA = ErrorDefinition(0x82, 'if')
+DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
+IF_SCHEMA = ErrorDefinition(0x86, 'if')
 
 
 class DwcaValidator(Validator):
