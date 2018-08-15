@@ -16,11 +16,56 @@ from rfc3987 import match
 
 from cerberus import Validator
 from cerberus import errors
-from cerberus.errors import ErrorDefinition
+from cerberus.errors import ErrorDefinition, BasicErrorHandler
 from cerberus.platform import _str_type, _int_types
+
 
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x86, 'if')
+
+DELIMITER_DOUBLE = ErrorDefinition(0x107, 'delimitedvalues')
+DELIMITER_SPACE = ErrorDefinition(0x108, 'delimitedvalues')
+
+MIN_NON_NUMERIC = ErrorDefinition(0x7, 'min')
+MAX_NON_NUMERIC = ErrorDefinition(0x8, 'max')
+MINDATE_VALUE = ErrorDefinition(0xA, 'mindate')
+MAXDATE_VALUE = ErrorDefinition(0xB, 'maxdate')
+MINDATE_NOT_PARSED = ErrorDefinition(0xC, 'mindate')
+MAXDATE_NOT_PARSED = ErrorDefinition(0xD, 'maxdate')
+DATEFORMAT = ErrorDefinition(0xE, 'dateformat')
+
+NUMBERFORMAT_NON_NUM = ErrorDefinition(0x101, 'numberformat')
+NUMBERFORMAT_NON_FLOAT = ErrorDefinition(0x102, 'numberformat')
+NUMBERFORMAT_NON_INT = ErrorDefinition(0x103, 'numberformat')
+NUMBERFORMAT_VALUE = ErrorDefinition(0x104, 'numberformat')
+STRINGFORMAT_JSON = ErrorDefinition(0x105, 'stringformat')
+STRINGFORMAT_URL = ErrorDefinition(0x106, 'stringformat')
+
+class WhipErrorHandler(BasicErrorHandler):
+    messages = BasicErrorHandler.messages.copy()
+    messages[MIN_NON_NUMERIC.code] = "value '{value}' is not numeric"
+    messages[MAX_NON_NUMERIC.code] = "value '{value}' is not numeric"
+    messages[MINDATE_VALUE.code] = "date '{value}' is before min " \
+                                   "limit '{constraint}'"
+    messages[MAXDATE_VALUE.code] = "date '{value}' is after max " \
+                                   "limit '{constraint}'"
+    messages[MINDATE_NOT_PARSED.code] = "value '{value}' could not be " \
+                                        "interpreted as date or datetime"
+    messages[MAXDATE_NOT_PARSED.code] = "value '{value}' could not be " \
+                                        "interpreted as date or datetime"
+    messages[DATEFORMAT.code] = "string format of value '{value}' not " \
+                                "compliant with '{constraint}'"
+    messages[NUMBERFORMAT_NON_NUM.code] = "value '{value}' is not numerical"
+    messages[NUMBERFORMAT_NON_FLOAT.code] = "value '{value}' is not a float"
+    messages[NUMBERFORMAT_NON_INT.code] = "value '{value}' is not an integer"
+    messages[NUMBERFORMAT_VALUE.code] = "numberformat of value '{value}' " \
+                                        "not in agreement with '{constraint}'"
+    messages[STRINGFORMAT_JSON.code] = "not a valid json format"
+    messages[STRINGFORMAT_URL.code] = "not a valid url"
+
+    messages[DELIMITER_DOUBLE.code] = "duplicate values in delimitedvalues"
+    messages[DELIMITER_SPACE.code] = "contains empty string inside " \
+                                     "delimitedvalues"
 
 
 class DwcaValidator(Validator):
@@ -124,8 +169,7 @@ class DwcaValidator(Validator):
             if float(min_value) > float(value):
                 self._error(field, errors.MIN_VALUE)
         except ValueError:
-            self._error(field,
-                        'min validation failed, value is not numeric')
+            self._error(field, MIN_NON_NUMERIC)
 
     def _validate_max(self, max_value, field, value):
         """ {'nullable': False} """
@@ -133,8 +177,7 @@ class DwcaValidator(Validator):
             if float(max_value) < float(value):
                 self._error(field, errors.MAX_VALUE)
         except ValueError:
-            self._error(field,
-                        'max validation failed, value is not numeric')
+            self._error(field, MAX_NON_NUMERIC)
 
     def _parse_date(self, field, date_string):
         """try to parse a string to date and log error when failing
@@ -143,7 +186,6 @@ class DwcaValidator(Validator):
             event_date = parse(date_string)
             return event_date
         except ValueError:
-            self._error(field, "could not be interpreted as date or datetime")
             return None
 
     @staticmethod
@@ -183,8 +225,9 @@ class DwcaValidator(Validator):
             event_date = self._parse_date(field, value)
             if event_date:
                 if event_date < min_date:
-                    self._error(field, "date is before min limit " +
-                                min_date.date().isoformat())
+                    self._error(field, MINDATE_VALUE)
+            else:
+                self._error(field, MINDATE_NOT_PARSED)
 
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
@@ -207,8 +250,9 @@ class DwcaValidator(Validator):
             event_date = self._parse_date(field, value)
             if event_date:
                 if event_date > max_date:
-                    self._error(field, "date is after max limit " +
-                                max_date.date().isoformat())
+                    self._error(field, MAXDATE_VALUE)
+            else:
+                self._error(field, MAXDATE_NOT_PARSED)
 
     def _help_dateformat(self, formatstr, value):
         """"""
@@ -248,8 +292,7 @@ class DwcaValidator(Validator):
             tester = self._help_dateformat(ref_value, value)
 
         if not tester:
-            self._error(field, "String format not compliant with " +
-                        ', '.join(ref_value))
+            self._error(field, DATEFORMAT)
 
     def _validate_numberformat(self, formatter, field, value):
         """ {'type': ['string'],
@@ -263,13 +306,10 @@ class DwcaValidator(Validator):
 
         # check if value is number format
         if not re.match('^[0-9]*\.[0-9]*$|^[0-9]+$', value_str):
-            self._error(field, "".join([value_str,
-                                        " is not numerical"]))
+            self._error(field, NUMBERFORMAT_NON_NUM)
         elif re.match('^x$', formatter):
             if not re.match('^[-+]?\d+$', value_str):
-                self._error(field, "".join(["value ",
-                                            value_str,
-                                            " is not an integer"]))
+                self._error(field, NUMBERFORMAT_NON_INT)
         else:
             if re.match("[1-9]\.[1-9]", formatter):
                 value_parsed = [len(side) for side in value_str.split(".")]
@@ -285,26 +325,19 @@ class DwcaValidator(Validator):
                     value_parsed = [len(value_str)]
                 else:
                     value_parsed = [None]
-                    self._error(field, "".join(["value ",
-                                                value_str,
-                                                " is not an integer"]))
+                    self._error(field, NUMBERFORMAT_NON_INT)
             elif re.match("^\.$", formatter):
                 if "." in value_str:
                     value_parsed = []
                 else:
                     value_parsed = [None]
-                    self._error(field, "".join(["value ",
-                                                value_str,
-                                                " is not a float"]))
+                    self._error(field, NUMBERFORMAT_NON_FLOAT)
 
             formatter_parsed = [int(length) for length in formatter.split(".")
                                 if not length == '']
 
             if formatter_parsed != value_parsed and value_parsed != [None]:
-                self._error(field, "".join(["numberformat of value ",
-                                            value_str,
-                                            " not in agreement with ",
-                                            formatter]))
+                self._error(field, NUMBERFORMAT_VALUE)
 
     def _validate_if(self, ifset, field, value):
         """ {'type': ['dict', 'list']} """
@@ -332,8 +365,6 @@ class DwcaValidator(Validator):
                     self._drop_nodes_from_errorpaths(validator._errors,
                                                      [2], [2])
                     self._error(field, IF_SCHEMA, validator._errors)
-#            else:
-#                self._error(field, "condition not fulfilled in if statement")
 
         elif isinstance(ifset, Sequence) and not isinstance(ifset, _str_type):
             for i, ifsubschema in enumerate(ifset):
@@ -366,9 +397,6 @@ class DwcaValidator(Validator):
                         self._drop_nodes_from_errorpaths(validator._errors,
                                                          [2], [2])
                         self._error(field, IF_SCHEMA, validator._errors)
-#                else:
-#                    self._error(field, "condition not fulfilled in if
-#                    statement")
 
     def _validate_delimitedvalues(self, ruleset_schema, field, value):
         """ {'type' : 'dict'} """
@@ -382,13 +410,13 @@ class DwcaValidator(Validator):
 
         # check for empty string (edge case where we do not want 'male | ')
         if '' in value:
-            self._error(field,
-                        "contains empty string combined with delimiters")
+            self._error(field, DELIMITER_SPACE)
             return True
 
         # check for doubles ('male | female | male' needs error)
         if len(value) != len(set(value)):
-            self._error(field, "contains duplicate values in delimitedvalues")
+            self._error(field, DELIMITER_DOUBLE)
+            return True
 
         # reorganise schema to be used in child_validator
         ruleset.pop('delimiter')
@@ -423,9 +451,10 @@ class DwcaValidator(Validator):
                 json.loads(value)
                 return True
             except ValueError:
-                self._error(field, "no valid json format")
+                self._error(field, STRINGFORMAT_JSON)
         elif stringtype == 'url':
             if match(value, rule='URI'):
                 return True
             else:
-                self._error(field, "no valid url format")
+                self._error(field, STRINGFORMAT_URL)
+
