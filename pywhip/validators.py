@@ -22,18 +22,21 @@ from cerberus.platform import _str_type, _int_types
 
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x86, 'if')
+
 MIN_NON_NUMERIC = ErrorDefinition(0x7, 'min')
 MAX_NON_NUMERIC = ErrorDefinition(0x8, 'max')
-MINDATE_VALUE = ErrorDefinition(0x101, 'mindate')
-MAXDATE_VALUE = ErrorDefinition(0x102, 'maxdate')
-MINDATE_NOT_PARSED = ErrorDefinition(0x103, 'mindate')
-MAXDATE_NOT_PARSED = ErrorDefinition(0x104, 'maxdate')
-DATEFORMAT = ErrorDefinition(0x105, 'dateformat')
-NUMBERFORMAT_NON_NUM = ErrorDefinition(0x106, 'numberformat')
-NUMBERFORMAT_NON_FLOAT = ErrorDefinition(0x107, 'numberformat')
-NUMBERFORMAT_NON_INT = ErrorDefinition(0x108, 'numberformat')
-NUMBERFORMAT_VALUE = ErrorDefinition(0x109, 'numberformat')
+MINDATE_VALUE = ErrorDefinition(0xA, 'mindate')
+MAXDATE_VALUE = ErrorDefinition(0xB, 'maxdate')
+MINDATE_NOT_PARSED = ErrorDefinition(0xC, 'mindate')
+MAXDATE_NOT_PARSED = ErrorDefinition(0xD, 'maxdate')
+DATEFORMAT = ErrorDefinition(0xE, 'dateformat')
 
+NUMBERFORMAT_NON_NUM = ErrorDefinition(0x101, 'numberformat')
+NUMBERFORMAT_NON_FLOAT = ErrorDefinition(0x102, 'numberformat')
+NUMBERFORMAT_NON_INT = ErrorDefinition(0x103, 'numberformat')
+NUMBERFORMAT_VALUE = ErrorDefinition(0x104, 'numberformat')
+STRINGFORMAT_JSON = ErrorDefinition(0x105, 'stringformat')
+STRINGFORMAT_URL = ErrorDefinition(0x106, 'stringformat')
 
 class WhipErrorHandler(BasicErrorHandler):
     messages = BasicErrorHandler.messages.copy()
@@ -54,6 +57,9 @@ class WhipErrorHandler(BasicErrorHandler):
     messages[NUMBERFORMAT_NON_INT.code] = "value '{value}' is not an integer"
     messages[NUMBERFORMAT_VALUE.code] = "numberformat of value '{value}' " \
                                         "not in agreement with '{constraint}'"
+    messages[STRINGFORMAT_JSON.code] = "not a valid json format"
+    messages[STRINGFORMAT_URL.code] = "not a valid url"
+
 
 class DwcaValidator(Validator):
     """
@@ -443,10 +449,10 @@ class DwcaValidator(Validator):
                 json.loads(value)
                 return True
             except ValueError:
-                self._error(field, "no valid json format")
+                self._error(field, STRINGFORMAT_JSON)
         elif stringtype == 'url':
             if match(value, rule='URI'):
                 return True
             else:
-                self._error(field, "no valid url format")
+                self._error(field, STRINGFORMAT_URL)
 

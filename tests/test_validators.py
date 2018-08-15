@@ -343,7 +343,7 @@ class TestStringformatValidator(unittest.TestCase):
                                     """}
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'measurements': ['no valid json format']})
+                         {'measurements': ['not a valid json format']})
 
     def test_url_stringformat(self):
         val = DwcaValidator(yaml.load(self.yaml_url),
@@ -361,7 +361,7 @@ class TestStringformatValidator(unittest.TestCase):
         document = {'website': "github.com/inbo/whip"}
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'website': ['no valid url format']})
+                         {'website': ['not a valid url']})
 
 
 class TestRegexValidator(unittest.TestCase):
