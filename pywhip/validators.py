@@ -23,6 +23,9 @@ from cerberus.platform import _str_type, _int_types
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x86, 'if')
 
+DELIMITER_DOUBLE = ErrorDefinition(0x107, 'delimitedvalues')
+DELIMITER_SPACE = ErrorDefinition(0x108, 'delimitedvalues')
+
 MIN_NON_NUMERIC = ErrorDefinition(0x7, 'min')
 MAX_NON_NUMERIC = ErrorDefinition(0x8, 'max')
 MINDATE_VALUE = ErrorDefinition(0xA, 'mindate')
@@ -59,6 +62,10 @@ class WhipErrorHandler(BasicErrorHandler):
                                         "not in agreement with '{constraint}'"
     messages[STRINGFORMAT_JSON.code] = "not a valid json format"
     messages[STRINGFORMAT_URL.code] = "not a valid url"
+
+    messages[DELIMITER_DOUBLE.code] = "duplicate values in delimitedvalues"
+    messages[DELIMITER_SPACE.code] = "contains empty string inside " \
+                                     "delimitedvalues"
 
 
 class DwcaValidator(Validator):
@@ -403,13 +410,13 @@ class DwcaValidator(Validator):
 
         # check for empty string (edge case where we do not want 'male | ')
         if '' in value:
-            self._error(field,
-                        "contains empty string combined with delimiters")
+            self._error(field, DELIMITER_SPACE)
             return True
 
         # check for doubles ('male | female | male' needs error)
         if len(value) != len(set(value)):
-            self._error(field, "contains duplicate values in delimitedvalues")
+            self._error(field, DELIMITER_DOUBLE)
+            return True
 
         # reorganise schema to be used in child_validator
         ruleset.pop('delimiter')

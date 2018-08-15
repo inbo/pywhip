@@ -1147,8 +1147,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex': 'male | female | male'} # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': ['contains duplicate values in '
-                                  'delimitedvalues']})
+                         {'sex': ['duplicate values in delimitedvalues']})
 
     def test_delimiter_single_occurence(self):
         """should be passed and just checked as such
@@ -1187,8 +1186,8 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex': 'male | female | '}  # False (pipe too much)
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': ['contains empty string combined '
-                                  'with delimiters']})
+                         {'sex': ['contains empty string inside '
+                                  'delimitedvalues']})
         # regular empty value is default False
         document = {'sex': ''}
         self.assertFalse(val.validate(document))
@@ -1281,8 +1280,8 @@ class TestDelimitedValuesValidator(unittest.TestCase):
         document = {'sex': ' | '}  # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
-                         {'sex': ['contains empty string combined '
-                                  'with delimiters']})
+                         {'sex': ['contains empty string inside '
+                                  'delimitedvalues']})
 
 
 class TestIfValidator(unittest.TestCase):
