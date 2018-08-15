@@ -765,6 +765,9 @@ class TestDateValidator(unittest.TestCase):
         self.yaml_string_date4 = """
                                  moment:
                                      maxdate: 2014-10-20
+                                 date:
+                                     maxdate: 2014-10-20
+                                     mindate: 2000-10-20                                         
                                  """
         self.yaml_string_date5 = """
                                  moment:
@@ -825,7 +828,18 @@ class TestDateValidator(unittest.TestCase):
         document = {'moment': '1700101'}  # False
         val.validate(document)
         self.assertEqual(val.errors,
-                {'moment': ['could not be interpreted as date or datetime']})
+                         {'moment': [
+                             "value '1700101' could not be interpreted as "
+                             "date or datetime"]})
+
+        document = {'date': '1700101'}  # False
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'date': [
+                             "value '1700101' could not be interpreted as "
+                             "date or datetime",
+                             "value '1700101' could not be interpreted as "
+                             "date or datetime"]})
 
     def test_dateformat_line(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2),

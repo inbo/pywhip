@@ -26,6 +26,9 @@ MIN_NON_NUMERIC = ErrorDefinition(0x7, 'min')
 MAX_NON_NUMERIC = ErrorDefinition(0x8, 'max')
 MINDATE_VALUE = ErrorDefinition(0x101, 'mindate')
 MAXDATE_VALUE = ErrorDefinition(0x102, 'maxdate')
+MINDATE_NOT_PARSED = ErrorDefinition(0x103, 'mindate')
+MAXDATE_NOT_PARSED = ErrorDefinition(0x104, 'maxdate')
+
 
 class WhipErrorHandler(BasicErrorHandler):
     messages = BasicErrorHandler.messages.copy()
@@ -35,6 +38,10 @@ class WhipErrorHandler(BasicErrorHandler):
                                    "limit '{constraint}'"
     messages[MAXDATE_VALUE.code] = "date '{value}' is after max " \
                                    "limit '{constraint}'"
+    messages[MINDATE_NOT_PARSED.code] = "value '{value}' could not be " \
+                                        "interpreted as date or datetime"
+    messages[MAXDATE_NOT_PARSED.code] = "value '{value}' could not be " \
+                                        "interpreted as date or datetime"
 
 
 class DwcaValidator(Validator):
@@ -155,7 +162,6 @@ class DwcaValidator(Validator):
             event_date = parse(date_string)
             return event_date
         except ValueError:
-            self._error(field, "could not be interpreted as date or datetime")
             return None
 
     @staticmethod
@@ -196,6 +202,8 @@ class DwcaValidator(Validator):
             if event_date:
                 if event_date < min_date:
                     self._error(field, MINDATE_VALUE)
+            else:
+                self._error(field, MINDATE_NOT_PARSED)
 
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
@@ -219,6 +227,8 @@ class DwcaValidator(Validator):
             if event_date:
                 if event_date > max_date:
                     self._error(field, MAXDATE_VALUE)
+            else:
+                self._error(field, MAXDATE_NOT_PARSED)
 
     def _help_dateformat(self, formatstr, value):
         """"""
