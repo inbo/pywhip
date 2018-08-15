@@ -70,8 +70,6 @@ class Whip(object):
                        }
 
         self._errors = {}
-        self.error_messages = {}
-        self._errorlog = defaultdict(lambda: defaultdict(list))
 
     @staticmethod
     def _decapitalize_schema(schema):
@@ -210,14 +208,17 @@ class Whip(object):
             for document in reader:
                 yield document
 
-    def _error_list_ids(self):
-        """"""
-        for ids, errordict in self.error_messages.items():
-            for term, errormessage in errordict.items():
-                if isinstance(errormessage, list):
-                    errormessage = self.normalize_list(errormessage)
-                    for error in errormessage:
-                        self._errorlog[term][error].append(ids)
+    def _errors_to_field_based(self):
+        """Convert from line first to field first"""
+
+        errorlog = defaultdict(lambda: defaultdict(
+            lambda: defaultdict(list)))
+
+        for ids, errordict in self._errors.items():
+            for field, errors in errordict.items():
+                for error in errors:
+                    errorlog[field][error['rule']][ids].append(error)
+        self.report["errors"] = errorlog
 
     @staticmethod
     def _get_list_items(value):
@@ -243,23 +244,3 @@ class Whip(object):
         else:
             return errors_table
         """
-
-    def list_error_types(self):
-        """"""
-        error_types = []
-        for terms, errors in self._errorlog.items():
-            error_types += [error for error in errors.keys()]
-        return error_types
-
-    def normalize_list(self, messages):
-        """"""
-        normalized = []
-        for message in messages:
-            if isinstance(message, str):
-                normalized.append(message)
-            elif isinstance(message, dict):
-                for value in message.values():
-                    normalized += self.normalize_list(value)
-            else:
-                NotImplemented
-        return normalized
