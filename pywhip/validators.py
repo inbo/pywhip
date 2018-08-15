@@ -351,7 +351,7 @@ class DwcaValidator(Validator):
                 # when the conditional field is not existing in the document,
                 # ignore the if-statement
                 if not set(conditions.keys()).issubset(
-                    set(self.document_str_version.keys())):
+                        set(self.document_str_version.keys())):
                     return True
 
                 if tempvalidator.validate(copy(self.document_str_version),

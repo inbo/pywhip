@@ -8,10 +8,12 @@ Created on Wed May 18 11:08:55 2016
 import csv
 import yaml
 
-from collections import defaultdict
+from collections import defaultdict, Mapping, Sequence
 
 from pywhip.validators import DwcaValidator
 from dwca.read import DwCAReader
+
+from cerberus import SchemaError
 
 
 def whip_dwca(dwca_zip, specifications, maxentries=None):
@@ -65,6 +67,7 @@ class Whip(object):
                        'unvalidated_fields': None,  # exist in dataset, not in specs
                        'missing_fields': None,  # exist in specs, not in data set
                        'errors': {},
+                       'warnings': []
                        }
 
         self.errors = {}
@@ -77,6 +80,36 @@ class Whip(object):
         for dwcterm, specification in schema.items():
             lowercase_schema[dwcterm.lower()] = specification
         return lowercase_schema
+
+    def _conditional_fields(self, file_fields):
+        """Extract the field names mentioned inside if conditions
+
+        When fields are mentioned inside if statements, but not present in the
+        data, this should raise a preliminar warning/message as part of the
+        reporting
+        """
+        conditional_fields = []
+        for _, specs in self.schema.items():
+            if 'if' in specs.keys():
+                if_rules = specs['if']
+                # single if statement
+                if isinstance(if_rules, Mapping):
+                    conditional_fields += [key for key in if_rules.keys() if
+                                          isinstance(if_rules[key], dict)]
+                # multiple ifs combined
+                elif isinstance(if_rules, Sequence):
+                    for rule in if_rules:
+                        conditional_fields += ([key for key in rule.keys() if
+                                            isinstance(rule[key], dict)])
+                else:
+                    raise SchemaError
+        if not set(conditional_fields).issubset(set(file_fields)):
+            missing_if_fields = list(set(conditional_fields).difference(
+                set(file_fields)))
+            self.report['warnings'].append(
+                'Following fields mentioned inside if specifications do not '
+                'exist inside the document: {}'.format(
+                    ', '.join(missing_if_fields)))
 
     def _compare_headers(self, file_fields):
         """Compare data fields and specifications
@@ -105,6 +138,7 @@ class Whip(object):
 
         # preliminar checks
         self._compare_headers(field_names)
+        self._conditional_fields(field_names)
 
         # validate each row and log the errors for each row
         for j, row in enumerate(input_generator):
