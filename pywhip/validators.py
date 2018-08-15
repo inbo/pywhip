@@ -358,8 +358,6 @@ class DwcaValidator(Validator):
                     self._drop_nodes_from_errorpaths(validator._errors,
                                                      [2], [2])
                     self._error(field, IF_SCHEMA, validator._errors)
-#            else:
-#                self._error(field, "condition not fulfilled in if statement")
 
         elif isinstance(ifset, Sequence) and not isinstance(ifset, _str_type):
             for i, ifsubschema in enumerate(ifset):
@@ -392,9 +390,6 @@ class DwcaValidator(Validator):
                         self._drop_nodes_from_errorpaths(validator._errors,
                                                          [2], [2])
                         self._error(field, IF_SCHEMA, validator._errors)
-#                else:
-#                    self._error(field, "condition not fulfilled in if
-#                    statement")
 
     def _validate_delimitedvalues(self, ruleset_schema, field, value):
         """ {'type' : 'dict'} """
