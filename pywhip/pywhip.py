@@ -143,9 +143,33 @@ class Whip(object):
         # validate each row and log the errors for each row
         for j, row in enumerate(input_generator):
             self.validation.validate(row)
-            if len(self.validation.errors) > 0:
+            if len(self.validation._errors) > 0:
                 self.error_messages[j+1] = self.validation.errors
-                self._errors[j + 1] = self.validation._errors
+
+                row_id = j+1
+                self._errors[row_id] = {}
+
+                for error in self.validation._errors:
+                    field = error.field
+                    if field not in self._errors[row_id].keys():
+                        self._errors[row_id][field] = []
+
+                    if error.is_group_error:  # if/delimitedvalues
+                        for child_error in error.child_errors:
+                            error_info = dict()
+                            error_info['rule'] = child_error.rule
+                            error_info['constraint'] = child_error.constraint
+                            error_info['value'] = child_error.value
+                            error_info['scope'] = error.rule
+                            self._errors[row_id][field].append(error_info)
+                    else:
+                        error_info = dict()
+                        error_info['value'] = error.value
+                        error_info['rule'] = error.rule
+                        error_info['constraint'] = error.constraint
+                        error_info['scope'] = None
+                        self._errors[row_id][field].append(error_info)
+
             if maxentries:
                 if j >= maxentries-1:
                     break
