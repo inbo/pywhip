@@ -142,8 +142,6 @@ class Whip(object):
         for j, row in enumerate(input_generator):
             self.validation.validate(row)
             if len(self.validation._errors) > 0:
-                self.error_messages[j+1] = self.validation.errors
-
                 row_id = j+1
                 self._errors[row_id] = {}
 
@@ -157,7 +155,7 @@ class Whip(object):
                             error_info = dict()
                             error_info['value'] = child_error.value
                             error_info['rule'] = child_error.rule
-                            error_info['constraint'] = child_error.constraint
+                            error_info['constraint'] = str(child_error.constraint)
                             error_info['scope'] = error.rule
                             error_info['message'] = \
                                 self.validation.schema.validator.error_handler._format_message(
@@ -167,7 +165,7 @@ class Whip(object):
                         error_info = dict()
                         error_info['value'] = error.value
                         error_info['rule'] = error.rule
-                        error_info['constraint'] = error.constraint
+                        error_info['constraint'] = str(error.constraint)
                         error_info['scope'] = None
                         error_info['message'] = \
                             self.validation.schema.validator.error_handler._format_message(
@@ -180,13 +178,13 @@ class Whip(object):
 
         self.report['number_of_records'] = j + 1
         self.report['executed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M")
-        self._error_list_ids()
-        self.report['errors'] = self._errorlog
+
+        self._errors_to_field_based()
         self._isitgreat()
 
     def _isitgreat(self):
         """check if there are any errors recorded"""
-        if len(self.error_messages) == 0:
+        if len(self._errors) == 0:
             print("Hooray, your data set is according to the guidelines!")
         else:
             print('Dataset does not comply the specifications, check errors'
