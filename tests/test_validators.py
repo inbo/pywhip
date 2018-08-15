@@ -1394,6 +1394,20 @@ class TestRequiredValidator(unittest.TestCase):
                                      empty: True                   
                                    """
 
+        self.yaml_presence_inside_if = """
+                                        coordinateUncertaintyInMeters:
+                                          empty: true
+                                          if:
+                                            - verbatimCoordinateSystem:
+                                                allowed: UTM 1km
+                                              numberformat: x
+                                              allowed: '707'
+                                            - verbatimCoordinateSystem:
+                                                allowed: UTM 5km
+                                              numberformat: x
+                                              allowed: '3536'
+                                        """
+
     def test_allow_unknown_argument(self):
         """by providing the allow_unkown argument, not-mentioned fields are
          allowed or not in the document"""
@@ -1450,7 +1464,18 @@ class TestRequiredValidator(unittest.TestCase):
         val.validate(document)
         self.assertEqual(val.errors, {})
 
+    def test_check_presence_on_if(self):
+        """When a field is mentioned inside an if condition, the condition
+        can not be checked. Warning is provided in the general whip-environment
+        as a preliminar check, here the if-statements are not executed
+        (no errors generated)"""
 
+        schema = yaml.load(self.yaml_presence_inside_if)
+        val = DwcaValidator(schema)
+
+        document = {'coordinateUncertaintyInMeters': '22'}
+        val.validate(document)
+        self.assertEqual(val.errors, {})
 
 
 

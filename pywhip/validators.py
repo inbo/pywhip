@@ -348,6 +348,12 @@ class DwcaValidator(Validator):
                 tempvalidator = DwcaValidator(conditions)
                 tempvalidator.allow_unknown = True
 
+                # when the conditional field is not existing in the document,
+                # ignore the if-statement
+                if not set(conditions.keys()).issubset(
+                    set(self.document_str_version.keys())):
+                    return True
+
                 if tempvalidator.validate(copy(self.document_str_version),
                                           normalize=True):
                     validator = self._get_child_validator(
@@ -398,7 +404,7 @@ class DwcaValidator(Validator):
         # provide support for if-statements -> add field from root document
         if 'if' in ruleset.keys():
             term = [key for key in ruleset['if'].keys() if
-                     isinstance(ruleset['if'][key], dict)]
+                    isinstance(ruleset['if'][key], dict)]
             if len(term) > 1:  # multiple if statements  not supported
                 NotImplementedError
             else:
