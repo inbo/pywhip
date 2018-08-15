@@ -19,16 +19,22 @@ from cerberus import errors
 from cerberus.errors import ErrorDefinition, BasicErrorHandler
 from cerberus.platform import _str_type, _int_types
 
+
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x86, 'if')
 MIN_NON_NUMERIC = ErrorDefinition(0x7, 'min')
 MAX_NON_NUMERIC = ErrorDefinition(0x8, 'max')
-
+MINDATE_VALUE = ErrorDefinition(0x101, 'mindate')
+MAXDATE_VALUE = ErrorDefinition(0x102, 'maxdate')
 
 class WhipErrorHandler(BasicErrorHandler):
     messages = BasicErrorHandler.messages.copy()
     messages[MIN_NON_NUMERIC.code] = "value '{value}' is not numeric"
     messages[MAX_NON_NUMERIC.code] = "value '{value}' is not numeric"
+    messages[MINDATE_VALUE.code] = "date '{value}' is before min " \
+                                   "limit '{constraint}'"
+    messages[MAXDATE_VALUE.code] = "date '{value}' is after max " \
+                                   "limit '{constraint}'"
 
 
 class DwcaValidator(Validator):
@@ -189,8 +195,7 @@ class DwcaValidator(Validator):
             event_date = self._parse_date(field, value)
             if event_date:
                 if event_date < min_date:
-                    self._error(field, "date is before min limit " +
-                                min_date.date().isoformat())
+                    self._error(field, MINDATE_VALUE)
 
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
@@ -213,8 +218,7 @@ class DwcaValidator(Validator):
             event_date = self._parse_date(field, value)
             if event_date:
                 if event_date > max_date:
-                    self._error(field, "date is after max limit " +
-                                max_date.date().isoformat())
+                    self._error(field, MAXDATE_VALUE)
 
     def _help_dateformat(self, formatstr, value):
         """"""
