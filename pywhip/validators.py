@@ -28,6 +28,7 @@ MINDATE_VALUE = ErrorDefinition(0x101, 'mindate')
 MAXDATE_VALUE = ErrorDefinition(0x102, 'maxdate')
 MINDATE_NOT_PARSED = ErrorDefinition(0x103, 'mindate')
 MAXDATE_NOT_PARSED = ErrorDefinition(0x104, 'maxdate')
+DATEFORMAT = ErrorDefinition(0x105, 'dateformat')
 
 
 class WhipErrorHandler(BasicErrorHandler):
@@ -42,6 +43,8 @@ class WhipErrorHandler(BasicErrorHandler):
                                         "interpreted as date or datetime"
     messages[MAXDATE_NOT_PARSED.code] = "value '{value}' could not be " \
                                         "interpreted as date or datetime"
+    messages[DATEFORMAT.code] = "string format of value '{value}' not " \
+                                "compliant with '{constraint}'"
 
 
 class DwcaValidator(Validator):
@@ -268,8 +271,7 @@ class DwcaValidator(Validator):
             tester = self._help_dateformat(ref_value, value)
 
         if not tester:
-            self._error(field, "String format not compliant with " +
-                        ', '.join(ref_value))
+            self._error(field, DATEFORMAT)
 
     def _validate_numberformat(self, formatter, field, value):
         """ {'type': ['string'],

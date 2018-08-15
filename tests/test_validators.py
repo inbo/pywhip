@@ -854,8 +854,16 @@ class TestDateValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'date': '2016-12'}  # False
         self.assertFalse(val.validate(document))
+
+
+    def test_dateformat_line_error(self):
+        val = DwcaValidator(yaml.load(self.yaml_string_date2),
+                            error_handler=WhipErrorHandler)
         document = {'date': '2016-12-32'}  # False
-        self.assertFalse(val.validate(document))
+        val.validate(document)
+        self.assertEqual(val.errors, {'date': ["string format of value "
+                                               "'2016-12-32' not compliant "
+                                               "with '%Y-%m-%d'"]})
 
     def test_dateformat_day(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2),
@@ -874,6 +882,11 @@ class TestDateValidator(unittest.TestCase):
                             error_handler=WhipErrorHandler)
         document = {'moment': '19970105'}  # False
         self.assertFalse(val.validate(document))
+        val.validate(document)
+        self.assertEqual(val.errors,
+                         {'moment': ["string format of value '19970105' not "
+                                     "compliant with "
+                                     "'['%Y-%m-%d', '%Y-%m', '%Y']'"]})
 
     def test_dateformat_single(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date3),
