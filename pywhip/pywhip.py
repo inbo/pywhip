@@ -3,13 +3,16 @@
 @author: stijn_vanhoey
 """
 
+import os
 import csv
 import yaml
 from datetime import datetime
 from collections import defaultdict, Mapping, Sequence
+from pkg_resources import resource_filename
 
 from dwca.read import DwCAReader
 from cerberus import SchemaError
+from jinja2 import FileSystemLoader, Environment
 
 from pywhip.validators import DwcaValidator, WhipErrorHandler
 
@@ -242,3 +245,24 @@ class Whip(object):
         else:
             return errors_table
         """
+
+    def create_html(self, html_output="index.html"):
+        """build html from report
+
+        Parameters
+        -----------
+        html_output : str
+            relative path and filename to write the resulting index.html
+        """
+
+        path = "./static/template.html"
+
+        html_template_path = resource_filename(__name__, path)
+        env = Environment(loader=FileSystemLoader(
+            os.path.dirname(html_template_path)))
+        template = env.get_template(os.path.basename(html_template_path))
+        html = template.render(self.report)
+
+        with open(html_output, "w") as index_page:
+            index_page.write(str(html))
+
