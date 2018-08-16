@@ -90,7 +90,7 @@
                            </td>
                             <td>
                                 {% for rule, _ in rules.items() %}
-                                <span class="badge badge-primary">{{ rule }}</span>
+                                  <a href="#{{ field }}_{{ rule }}" class="badge badge-primary">{{ rule }}</a>
                                 {% endfor %}
                             </td>
                         </tr>
@@ -106,6 +106,7 @@
                     {% for field, rules in report.errors.items()|sort %}
                       <h3>{{ field }}</h3>
                         {% for rule, rows in rules.items()|sort %}
+                        <a id="{{ field }}_{{ rule }}" class="anchor"></a>
                         <h4>{{ rule }}</h4>
                           <div class="table-responsive">
                                 <table class="table table-striped">
