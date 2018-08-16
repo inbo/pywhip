@@ -107,10 +107,12 @@
                       <h3>{{ field }}</h3>
                         {% for rule, rows in rules.items()|sort %}
                         <a id="{{ field }}_{{ rule }}" class="anchor"></a>
-                        <h4>{{ rule }}</h4>
                           <div class="table-responsive">
-                                <table class="table table-striped">
+                                <table class="table">
                                   <thead>
+                                    <tr class="active">
+                                      <th colspan="4">{{ rule }}</th>
+                                    </tr>
                                     <tr>
                                       <th scope="col">Row number</th>
                                       <th scope="col">Value</th>
