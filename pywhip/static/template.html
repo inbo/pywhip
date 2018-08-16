@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+        <title>Whip validator report</title>
+    </head>
+
+  <body>
+    <header></header>
+    <main>
+        <div class="container">
+
+        <h1>Whip validator report created on {{ report.executed_at }}</h1>
+
+            <div class="row">
+                <h2>Warming up the whip...</h2>
+                <div class="col-md-10 col-md-offset-1">
+                <div id="accordion">
+                  <div class="card">
+                    <div class="card-header" id="headingOne">
+                      <h5 class="mb-0">
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#missingData" aria-expanded="true" aria-controls="missing-data">
+                          Fields missing in data...
+                        </button>
+                      </h5>
+                    </div>
+                    <div id="missingData" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                      <div class="card-body">
+                          <ul class="list-group">
+                              {% for field in report.missing_fields %}
+                                <li class="list-group-item">{{ field }}</li>
+                              {% endfor %}
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-header" id="headingTwo">
+                      <h5 class="mb-0">
+                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#missingSpecs" aria-expanded="false" aria-controls="collapseTwo">
+                          Fields without specification...
+                        </button>
+                      </h5>
+                    </div>
+                    <div id="missingSpecs" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                      <div class="card-body">
+                          <ul class="list-group">
+                              {% for field in report.unvalidated_fields %}
+                                <li class="list-group-item">{{ field }}</li>
+                              {% endfor %}
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="alert alert-warning" role="alert">
+                  <h4 class="alert-heading">Attention!</h4>
+                    {% for warning in report.warnings %}
+                    <p>{{ warning }}</p>
+                    {% endfor %}
+                </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <h2>Whipped values</h2>
+                <div class="col-md-10 col-md-offset-1">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th scope="col">Field</th>
+                          <th scope="col">Percentage correct</th>
+                          <th scope="col">Violated rules</th>
+                          <th scope="col">Examples...</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for field, rules in report.errors.items()|sort %}
+                        <tr>
+                           <td>{{ field }}</td>
+                           <td>
+                               <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: {{ correct_percentage[field] }}%;" aria-valuenow={{ correct_percentage[field] }} aria-valuemin="0" aria-valuemax="100">{{ correct_percentage[field] }}%</div>
+                               </div>
+                           </td>
+                            <td>
+                                {% for rule, _ in rules.items() %}
+                                <span class="badge badge-primary">{{ rule }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
+            <div class="row">
+                <p></p>
+            </div>
+
+        </div>
+
+    </main>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
+</html>
