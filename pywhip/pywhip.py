@@ -246,6 +246,21 @@ class Whip(object):
             return errors_table
         """
 
+    def percentage_correct(self):
+        """get the percentage of correct values for each field"""
+        error_enlist = defaultdict(list)
+
+        for field, rules in self.report["errors"].items():
+            for _, row_ids in rules.items():
+                error_enlist[field] += (list(row_ids.keys()))
+
+        # count unique
+        total_records = self.report['number_of_records']
+        correct_percentage = {key : 100*(1 - len(set(value))/total_records)
+                            for (key, value) in error_enlist.items()}
+
+        return correct_percentage
+
     def create_html(self, html_output="index.html"):
         """build html from report
 
@@ -257,11 +272,14 @@ class Whip(object):
 
         path = "./static/template.html"
 
+        percentage = self.percentage_correct()
+
         html_template_path = resource_filename(__name__, path)
         env = Environment(loader=FileSystemLoader(
             os.path.dirname(html_template_path)))
         template = env.get_template(os.path.basename(html_template_path))
-        html = template.render(self.report)
+        html = template.render(report=self.report,
+                               correct_percentage=percentage)
 
         with open(html_output, "w") as index_page:
             index_page.write(str(html))
