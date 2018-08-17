@@ -14,24 +14,47 @@
     <main>
         <div class="container">
 
-        <h1>Whip validator report created on {{ report.executed_at }}</h1>
+        <h1>Whip validator report</h1>
+
+        <p>Date: {{ report.executed_at }}</p>
 
             <div class="row">
-                <h2>Warming up the whip...</h2>
+                <h2>Summary</h2>
+
+                <p>Total rows: {{ report.results.total_rows }}</p>
                 <div class="col-md-10 col-md-offset-1">
                 <div id="accordion">
                   <div class="card">
-                    <div class="card-header" id="headingOne">
+                    <div class="card-header" id="summary-warnings">
                       <h5 class="mb-0">
-                        <button class="btn btn-link" data-toggle="collapse" data-target="#missingData" aria-expanded="true" aria-controls="missing-data">
-                          Fields missing in data...
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#generalwarnings" aria-expanded="true" aria-controls="missing-data">
+                          General warnings:
                         </button>
                       </h5>
                     </div>
-                    <div id="missingData" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                    <div id="generalwarnings" class="collapse" aria-labelledby="generalWarnings" data-parent="#accordion">
                       <div class="card-body">
                           <ul class="list-group">
-                              {% for field in report.missing_fields|sort %}
+                              {% for field in report.results.warnings|sort %}
+                                <li class="list-group-item">{{ field }}</li>
+                              {% endfor %}
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header" id="summary-unkown">
+                      <h5 class="mb-0">
+                        <button class="btn btn-link" data-toggle="collapse" data-target="#missingData" aria-expanded="true" aria-controls="missing-data">
+                          Unknown fields:
+                        </button>
+                      </h5>
+                    </div>
+                    <div id="missingData" class="collapse" aria-labelledby="summary-unkown" data-parent="#accordion">
+                      <div class="card-body">
+                          <ul class="list-group">
+                              {% for field in report.results.unknown_fields|sort %}
                                 <li class="list-group-item">{{ field }}</li>
                               {% endfor %}
                           </ul>
@@ -39,105 +62,60 @@
                     </div>
                   </div>
                   <div class="card">
-                    <div class="card-header" id="headingTwo">
+                    <div class="card-header" id="summary-unspecified">
                       <h5 class="mb-0">
                         <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#missingSpecs" aria-expanded="false" aria-controls="collapseTwo">
-                          Fields without specification...
+                          Unspecified fields:
                         </button>
                       </h5>
                     </div>
-                    <div id="missingSpecs" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                    <div id="missingSpecs" class="collapse" aria-labelledby="summary-unspecified" data-parent="#accordion">
                       <div class="card-body">
                           <ul class="list-group">
-                              {% for field in report.unvalidated_fields|sort %}
+                              {% for field in report.results.unspecified_fields|sort %}
                                 <li class="list-group-item">{{ field }}</li>
                               {% endfor %}
                           </ul>
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div class="alert alert-warning" role="alert">
-                  <h4 class="alert-heading">Attention!</h4>
-                    {% for warning in report.warnings %}
-                    <p>{{ warning }}</p>
-                    {% endfor %}
-                </div>
                 </div>
             </div>
 
             <div class="row">
-                <h2>Summary</h2>
+                <h2>Specifications</h2>
                 <div class="col-md-10 col-md-offset-1">
                 <div class="table-responsive">
                     <table class="table table-striped">
                       <thead>
                         <tr>
                           <th scope="col">Field</th>
-                          <th scope="col">Percentage correct</th>
-                          <th scope="col">Violated rules</th>
+                          <th scope="col">Specification</th>
+                          <th scope="col">Constraint</th>
+                          <th scope="col">Passed records</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {% for field, rules in report.errors.items()|sort %}
+                        {% for field, rules in report.results.specified_fields.items()|sort %}
+                            {% for rule, info in rules.items() %}
                         <tr>
                            <td>{{ field }}</td>
+                           <td>{{ rule }}</td>
+                           <td>{{ info.constraint }}</td>
                            <td>
                                <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: {{ correct_percentage[field] }}%;" aria-valuenow={{ correct_percentage[field] }} aria-valuemin="0" aria-valuemax="100">{{ correct_percentage[field] }}%</div>
+                                <div class="progress-bar" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow={{ 100*info.passed_rows/report.results.total_rows }} aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
                                </div>
                            </td>
-                            <td>
-                                {% for rule, _ in rules.items() %}
-                                  <a href="#{{ field }}_{{ rule }}" class="badge badge-primary">{{ rule }}</a>
-                                {% endfor %}
-                            </td>
                         </tr>
+                            {% endfor %}
                         {% endfor %}
                       </tbody>
                     </table>
                 </div>
                 </div>
             </div>
-            <div class="row">
-                <h2>Detailed overview</h2>
-                <div class="col-md-10 col-md-offset-1">
-                    {% for field, rules in report.errors.items()|sort %}
-                      <h3>{{ field }}</h3>
-                        {% for rule, rows in rules.items()|sort %}
-                        <a id="{{ field }}_{{ rule }}" class="anchor"></a>
-                          <div class="table-responsive">
-                                <table class="table">
-                                  <thead>
-                                    <tr class="active">
-                                      <th colspan="4">{{ rule }}</th>
-                                    </tr>
-                                    <tr>
-                                      <th scope="col">Row number</th>
-                                      <th scope="col">Value</th>
-                                      <th scope="col">Constraint</th>
-                                      <th scope="col">Message</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {% for row_id, errors in rows.items()|sort %}
-                                    {% for error in errors %}
-                                    <tr>
-                                       <td>{{ row_id }}</td>
-                                       <td>{{ error.value }}</td>
-                                       <td>{{ error.constraint }}</td>
-                                       <td>{{ error.message }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                    {% endfor %}
-                                  </tbody>
-                                </table>
-                            </div>
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-            </div>
+
 
         </div>
 
