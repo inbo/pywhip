@@ -4,8 +4,31 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <link rel="stylesheet" href="https://dev.tdwg.org/theme/css/main.css">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+        <style>
+            h1, h2, h3, h4, h5, h6 {
+                margin-top: 1em;
+            }
+            h2 {
+                line-height: 1.7;
+                margin-bottom: 0.5em;
+            }
+            a, a:active, a:hover, a:focus, a:visited {
+                color: #808080;
+            }
+            section {
+               display: block;
+               background-color: #F5F5F5;
+               padding:1em;
+            }
+
+            .theme-sidebar-primary {
+                position: sticky;
+                top: 2rem;
+            }
+        </style>
 
         <title>Whip validator report</title>
     </head>
@@ -14,70 +37,57 @@
     <header></header>
     <main class="container-fluid">
         <div class="row">
+
             <div class="col-12 col-md-9 order-md-1">
             <h1>Whip validator report</h1>
                 <p>Date: {{ report.executed_at }}</p>
 
             <h2>Summary</h2>
+            <section>
                 <p>Total rows: {{ report.results.total_rows }}</p>
-                <div id="accordion">
-                  <div class="card">
-                    <div class="card-header" id="summary-warnings">
-                      <h5 class="mb-0">
-                        <button class="btn btn-link" data-toggle="collapse" data-target="#generalwarnings" aria-expanded="true" aria-controls="missing-data">
-                          General warnings:
-                        </button>
-                      </h5>
-                    </div>
-                    <div id="generalwarnings" class="collapse" aria-labelledby="generalWarnings" data-parent="#accordion">
-                      <div class="card-body">
-                          <ul class="list-group">
-                              {% for field in report.results.warnings|sort %}
-                                <li class="list-group-item">{{ field }}</li>
-                              {% endfor %}
-                          </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div class="card-header" id="summary-unkown">
-                      <h5 class="mb-0">
-                        <button class="btn btn-link" data-toggle="collapse" data-target="#missingData" aria-expanded="true" aria-controls="missing-data">
-                          Unknown fields:
-                        </button>
-                      </h5>
-                    </div>
-                    <div id="missingData" class="collapse" aria-labelledby="summary-unkown" data-parent="#accordion">
-                      <div class="card-body">
-                          <ul class="list-group">
-                              {% for field in report.results.unknown_fields|sort %}
-                                <li class="list-group-item">{{ field }}</li>
-                              {% endfor %}
-                          </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card">
-                    <div class="card-header" id="summary-unspecified">
-                      <h5 class="mb-0">
-                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#missingSpecs" aria-expanded="false" aria-controls="collapseTwo">
-                          Unspecified fields:
-                        </button>
-                      </h5>
-                    </div>
-                    <div id="missingSpecs" class="collapse" aria-labelledby="summary-unspecified" data-parent="#accordion">
-                      <div class="card-body">
-                          <ul class="list-group">
-                              {% for field in report.results.unspecified_fields|sort %}
-                                <li class="list-group-item">{{ field }}</li>
-                              {% endfor %}
-                          </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <h4>Unknown fields:</h4>
+                    <p><i><small>(these fields are described in the whip specifications, but are missing in the data)</small></i></p>
+                    {% for field in report.results.unknown_fields|sort %}
+                        <span class="badge badge-secondary">{{ field }}</span>
+                    {% endfor %}
 
-            <h2>Specifications</h2>
+                <h4>Unspecified fields:</h4>
+                    <p><i><small>(these fields exist in data, but have no whip specification):</small></i></p>
+                    {% for field in report.results.unspecified_fields|sort %}
+                        <span class="badge badge-secondary">{{ field }}</span>
+                    {% endfor %}
+                {% if report.results.warnings %}
+                <h4>General warnings:</h4>
+                    <ul>
+                        {% for warning in report.results.warnings|sort %}
+                            <li>{{ warning }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </section>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 col-md-9 order-md-1">
+                <h2>Specifications</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 col-md-3 order-md-2" >
+                <nav class="navbar theme-sidebar-primary">
+                    <ul class="nav flex-column nav-stacked">
+                        {% for field, rules in report.results.specified_fields.items()|sort %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#{{ field }}_nav">{{ field }}</a><!-- anchor to class_group -->
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="col-12 col-md-9 order-md-1">
             <div class="table-responsive">
                 <table class="table">
                   <thead class="thead-dark">
@@ -93,8 +103,8 @@
                     {% for field, rules in report.results.specified_fields.items()|sort %}
                         <tbody class="fields">
                             <tr class="table-secondary">
-                                <td colspan="5">
-                                    {{ field }}
+                                <td colspan="5" >
+                                    <div id="{{ field }}_nav"> {{ field }} </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -136,7 +146,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for value, details in info.samples.items()|sort %}
+                                            {% for value, details in info.samples.items()|sort(attribute='1.failed_rows', reverse=True) %}
                                             <tr>
                                                <td>{{loop.index}}</td>
                                                <td>{{ value  }}</td>
@@ -160,8 +170,8 @@
             </div>
         </div>
     </main>
-        <script src="https://www.tdwg.org/theme/js/jquery.min.js"></script>
-        <script src="https://www.tdwg.org/theme/js/popper.min.js"></script>
-        <script src="https://www.tdwg.org/theme/js/bootstrap.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   </body>
 </html>
