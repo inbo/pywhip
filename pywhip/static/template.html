@@ -109,8 +109,6 @@
                                    <div class="progress">
                                        {% if  not info.failed_rows %}
                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
-                                       {% elif info.passed_rows == report.results.total_rows %}
-                                       <div class="progress-bar bg-danger" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
                                        {% else %}
                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
                                        {% endif %}
