@@ -107,7 +107,13 @@
                                <td>{{ info.constraint }}</td>
                                <td>
                                    <div class="progress">
-                                       <div class="progress-bar" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
+                                       {% if  not info.failed_rows %}
+                                       <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
+                                       {% elif info.passed_rows == report.results.total_rows %}
+                                       <div class="progress-bar bg-danger" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
+                                       {% else %}
+                                       <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
+                                       {% endif %}
                                    </div>
                                </td>
                                <td>
@@ -118,24 +124,27 @@
                             </tr>
                             {% if info.failed_rows %}
                             <tr>
-                                <td colspan="12" class="hiddenRow">
+                                <td colspan="4" class="hiddenRow">
                                     <div class="accordian-body collapse" id="{{ field }}_{{ rule }}_examples">
+                                    <p>Value issue samples:</p>
                                     <table class="table table-striped">
                                         <thead>
                                             <tr>
-                                              <th scope="col">First row</th>
+                                              <th scope="col"></th>
                                               <th scope="col">Data value</th>
                                               <th scope="col">Message</th>
-                                              <th scope="col">#Rows failed</th>
+                                              <th scope="col"># Rows failed</th>
+                                              <th scope="col">First presence row index</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for value, details in info.samples.items()|sort %}
                                             <tr>
-                                               <td>{{ details.first_row}}</td>
+                                               <td>{{loop.index}}</td>
                                                <td>{{ value  }}</td>
                                                <td>{{ details.message}}</td>
                                                <td>{{ details.failed_rows}}</td>
+                                               <td>{{ details.first_row}}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
