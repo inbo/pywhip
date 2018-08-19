@@ -4,25 +4,22 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://dev.tdwg.org/theme/css/main.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
 
         <title>Whip validator report</title>
     </head>
 
   <body>
     <header></header>
-    <main>
-        <div class="container">
+    <main class="container-fluid">
+        <div class="row">
+            <div class="col-12 col-md-9 order-md-1">
+            <h1>Whip validator report</h1>
+                <p>Date: {{ report.executed_at }}</p>
 
-        <h1>Whip validator report</h1>
-
-        <p>Date: {{ report.executed_at }}</p>
-
-            <div class="row">
-                <h2>Summary</h2>
-
+            <h2>Summary</h2>
                 <p>Total rows: {{ report.results.total_rows }}</p>
-                <div class="col-md-10 col-md-offset-1">
                 <div id="accordion">
                   <div class="card">
                     <div class="card-header" id="summary-warnings">
@@ -42,7 +39,6 @@
                       </div>
                     </div>
                   </div>
-
                   <div class="card">
                     <div class="card-header" id="summary-unkown">
                       <h5 class="mb-0">
@@ -80,47 +76,119 @@
                     </div>
                   </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <h2>Specifications</h2>
-                <div class="col-md-10 col-md-offset-1">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                      <thead>
-                        <tr>
-                          <th scope="col">Field</th>
-                          <th scope="col">Specification</th>
-                          <th scope="col">Constraint</th>
-                          <th scope="col">Passed records</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {% for field, rules in report.results.specified_fields.items()|sort %}
-                            {% for rule, info in rules.items() %}
-                        <tr>
-                           <td>{{ field }}</td>
-                           <td>{{ rule }}</td>
-                           <td>{{ info.constraint }}</td>
-                           <td>
-                               <div class="progress">
-                                <div class="progress-bar" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow={{ 100*info.passed_rows/report.results.total_rows }} aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
-                               </div>
-                           </td>
-                        </tr>
-                            {% endfor %}
+            <h2>Specifications</h2>
+            <div class="table-responsive">
+                <table class="table">
+                  <thead class="thead-dark">
+                    <tr>
+                      <th scope="col">Field</th>
+                      <th scope="col">Specification</th>
+                      <th scope="col">Constraint</th>
+                      <th scope="col">Passed records</th>
+                      <th scope="col"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for field, rules in report.results.specified_fields.items()|sort %}
+                        <tbody class="fields">
+                            <tr class="table-secondary">
+                                <td colspan="5">
+                                    {{ field }}
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        {% for rule, info in rules.items()|sort %}
+                        <tbody class="rules">
+                            <tr data-toggle="collapse" data-target="#{{ field }}_{{ rule }}_examples" class="accordion-toggle">
+                               <td width="15%"></td>
+                               <td>{{ rule }}</td>
+                               <td>{{ info.constraint }}</td>
+                               <td>
+                                   <div class="progress">
+                                       <div class="progress-bar" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
+                                   </div>
+                               </td>
+                               <td>
+                                   {% if info.failed_rows %}
+                                    <i class="fas fa-chevron-down"></i>
+                                   {% endif %}
+                               </td>
+                            </tr>
+                            {% if info.failed_rows %}
+                            <tr>
+                                <td colspan="12" class="hiddenRow">
+                                    <div class="accordian-body collapse" id="{{ field }}_{{ rule }}_examples">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                              <th scope="col">First row</th>
+                                              <th scope="col">Data value</th>
+                                              <th scope="col">Message</th>
+                                              <th scope="col">#Rows failed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for value, details in info.samples.items()|sort %}
+                                            <tr>
+                                               <td>{{ details.first_row}}</td>
+                                               <td>{{ value  }}</td>
+                                               <td>{{ details.message}}</td>
+                                               <td>{{ details.failed_rows}}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+               	                    </table>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
                         {% endfor %}
-                      </tbody>
-                    </table>
-                </div>
-                </div>
+                    {% endfor %}
+                  </tbody>
+                </table>
             </div>
 
+            <h2>Details</h2>
+                {% for field, rules in report.results.specified_fields.items()|sort %}
+                <h3>{{ field }}</h3>
+                {% for rule, info in rules.items()|sort %}
+                    {% if info.failed_rows %}
+                    <h4>{{ rule }}</h4>
+                        Constraint: {{ info.constraint }}
+                        <div class="table-responsive">
+                        <table class="table">
+                            <thead class="thead-light">
+                                <tr>
+                                  <th scope="col">Data value</th>
+                                  <th scope="col">First row</th>
+                                  <th scope="col">Message</th>
+                                  <th scope="col">#Rows failed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for value, details in info.samples.items()|sort %}
+                                <tr>
+                                   <td>{{ value  }}</td>
+                                   <td>{{ details.first_row}}</td>
+                                   <td>{{ details.message}}</td>
+                                   <td>{{ details.failed_rows}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% endfor %}
 
+            </div>
         </div>
-
     </main>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://www.tdwg.org/theme/js/jquery.min.js"></script>
+        <script src="https://www.tdwg.org/theme/js/popper.min.js"></script>
+        <script src="https://www.tdwg.org/theme/js/bootstrap.min.js"></script>
   </body>
 </html>
