@@ -150,40 +150,6 @@
                   </tbody>
                 </table>
             </div>
-
-            <h2>Details</h2>
-                {% for field, rules in report.results.specified_fields.items()|sort %}
-                <h3>{{ field }}</h3>
-                {% for rule, info in rules.items()|sort %}
-                    {% if info.failed_rows %}
-                    <h4>{{ rule }}</h4>
-                        Constraint: {{ info.constraint }}
-                        <div class="table-responsive">
-                        <table class="table">
-                            <thead class="thead-light">
-                                <tr>
-                                  <th scope="col">Data value</th>
-                                  <th scope="col">First row</th>
-                                  <th scope="col">Message</th>
-                                  <th scope="col">#Rows failed</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for value, details in info.samples.items()|sort %}
-                                <tr>
-                                   <td>{{ value  }}</td>
-                                   <td>{{ details.first_row}}</td>
-                                   <td>{{ details.message}}</td>
-                                   <td>{{ details.failed_rows}}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                {% endfor %}
-
             </div>
         </div>
     </main>
