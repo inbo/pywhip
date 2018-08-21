@@ -1,0 +1,64 @@
+occurrenceID:
+ empty: False # Every record should have an occurrenceID.
+
+basisOfRecord:
+ allowed: [HumanObservation, PreservedSpecimen, Occurrence]
+ 
+license:
+ stringformat: url
+ 
+datasetID:
+ allowed: 'http://doi.org/10.15468/njgbmh'
+
+eventDate:
+ dateformat: ['%Y-%m-%d', '%Y-%m', '%Y'] # The ISO8601 format, but no ranges
+ mindate: 1830-01-01
+ maxdate: 2014-12-31
+
+decimalLatitude:
+ numberformat: '.5'
+ # Coordinates are within Flanders, Belgium
+ min: 50.68
+ max: 51.51
+
+decimalLongitude:
+ numberformat: '.5'
+ # Coordinates are within Flanders, Belgium
+ min: 2.54
+ max: 5.92
+
+recordedBy:
+ maxlength: 25
+ delimitedvalues:
+   delimiter: " | " # Observers are delimited with space pipe space
+   regex: 'observerID:.+'
+   maxlength: 17 # ID contains 6 characters (11 for observerID: + 6 for ID itself)
+
+individualCount:
+ numberformat: x
+ min: 1
+ max: 200
+ 
+type:
+ allowed: [Event, PhysicalObject, Text]
+ if:
+   - basisOfRecord:
+       allowed: [HumanObservation]
+     allowed: [Event]
+     minlength: 10
+   - basisOfRecord:
+       allowed: [PreservedSpecimen]
+     allowed: [PhysicalObject]
+   - basisOfRecord:
+       allowed: [Occurrence]
+     allowed: [Text]
+
+language:
+ empty: True
+ if:
+   - anotherNonExistigColumn:
+        allowed: [whatever]
+     allowed: [nl]   
+   
+nonExistingColumn:
+ allowed: anything
