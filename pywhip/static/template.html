@@ -52,6 +52,7 @@
             
             <p>Total rows: {{ report.results.total_rows }}</p>
 
+            {% if report.results.unknown_fields %}
             <section>
                 <h4>Unknown fields</h4>
                 <p>These fields are described in the whip specifications, but are missing in the data:</p>
@@ -59,7 +60,9 @@
                     <span class="badge badge-secondary">{{ field }}</span>
                 {% endfor %}
             </section>
+            {% endif %}
 
+            {% if report.results.unspecified_fields %}
             <section>
                 <h4>Unspecified fields</h4>
                 <p>These fields exist in data, but have no whip specification:</p>
@@ -67,13 +70,16 @@
                     <span class="badge badge-secondary">{{ field }}</span>
                 {% endfor %}
             </section>
+            {% endif %}
 
+            {% if report.results.unspecified_fields %}
             <section>
                 <h4>General warnings</h4>
                 {% for warning in report.results.warnings|sort %}
                     <p class="small">{{ warning }}</p>
                 {% endfor %}
             </section>
+            {% endif %}
 
             <hr>
 
