@@ -4,6 +4,8 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+        <title>Whip validator report</title>
+
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
@@ -11,13 +13,16 @@
             h1, h2, h3, h4, h5, h6 {
                 margin-top: 1em;
             }
+
             h2 {
                 line-height: 1.7;
                 margin-bottom: 0.5em;
             }
+
             a, a:active, a:hover, a:focus, a:visited {
                 color: #808080;
             }
+
             section {
                display: block;
                background-color: #F5F5F5;
@@ -43,147 +48,149 @@
                 text-align: center;
             }
         </style>
-
-        <title>Whip validator report</title>
     </head>
 
-  <body>
-    <header></header>
-    <main class="container-fluid">
-        <div class="row">
+    <body>
+        <header></header>
+        <main class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-md-9 order-md-1">
+                    <h1>Whip validator report</h1>
+                    <p>Date: {{ report.executed_at }}</p>
 
-            <div class="col-12 col-md-9 order-md-1">
-            <h1>Whip validator report</h1>
-                <p>Date: {{ report.executed_at }}</p>
-
-            <h2>Summary</h2>
-            <section>
-                <p>Total rows: {{ report.results.total_rows }}</p>
-                <h4>Unknown fields:</h4>
-                    <p><i><small>(these fields are described in the whip specifications, but are missing in the data)</small></i></p>
-                    {% for field in report.results.unknown_fields|sort %}
-                        <span class="badge badge-secondary">{{ field }}</span>
-                    {% endfor %}
-
-                <h4>Unspecified fields:</h4>
-                    <p><i><small>(these fields exist in data, but have no whip specification):</small></i></p>
-                    {% for field in report.results.unspecified_fields|sort %}
-                        <span class="badge badge-secondary">{{ field }}</span>
-                    {% endfor %}
-                {% if report.results.warnings %}
-                <h4>General warnings:</h4>
-                    <ul>
-                        {% for warning in report.results.warnings|sort %}
-                            <li>{{ warning }}</li>
+                    <h2>Summary</h2>
+                    <section>
+                        <p>Total rows: {{ report.results.total_rows }}</p>
+                        
+                        <h4>Unknown fields:</h4>
+                        <p><i><small>(these fields are described in the whip specifications, but are missing in the data)</small></i></p>
+                        
+                        {% for field in report.results.unknown_fields|sort %}
+                            <span class="badge badge-secondary">{{ field }}</span>
                         {% endfor %}
-                    </ul>
-                {% endif %}
-            </section>
-            </div>
-        </div>
 
-        <div class="row">
-            <div class="col-12 col-md-9 order-md-1">
-                <h2>Specifications</h2>
+                        <h4>Unspecified fields:</h4>
+                        <p><i><small>(these fields exist in data, but have no whip specification):</small></i></p>
+                        {% for field in report.results.unspecified_fields|sort %}
+                            <span class="badge badge-secondary">{{ field }}</span>
+                        {% endfor %}
+                        
+                        {% if report.results.warnings %}
+                            <h4>General warnings:</h4>
+                            <ul>
+                            {% for warning in report.results.warnings|sort %}
+                                <li>{{ warning }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </section>
+                </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-12 col-md-3 order-md-2" >
-                <nav class="navbar theme-sidebar-primary">
-                    <ul class="nav flex-column nav-stacked">
+            <div class="row">
+                <div class="col-12 col-md-9 order-md-1">
+                    <h2>Specifications</h2>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 col-md-3 order-md-2" >
+                    <nav class="navbar theme-sidebar-primary">
+                        <ul class="nav flex-column nav-stacked">
                         {% for field, rules in report.results.specified_fields.items()|sort %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="#{{ field }}_nav">{{ field }}</a><!-- anchor to class_group -->
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#{{ field }}_nav">{{ field }}</a><!-- anchor to class_group -->
+                            </li>
                         {% endfor %}
-                    </ul>
-                </nav>
-            </div>
+                        </ul>
+                    </nav>
+                </div>
 
-            <div class="col-12 col-md-9 order-md-1">
-            <div class="table-responsive">
-                <table class="table">
-                  <thead class="thead-dark">
-                    <tr>
-                      <th scope="col">Field</th>
-                      <th scope="col">Specification</th>
-                      <th scope="col">Constraint</th>
-                      <th scope="col">Passed records</th>
-                      <th scope="col"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for field, rules in report.results.specified_fields.items()|sort %}
-                        <tbody class="fields">
-                            <tr class="table-secondary">
-                                <td colspan="5" >
-                                    <div id="{{ field }}_nav"> {{ field }} </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                <div class="col-12 col-md-9 order-md-1">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Field</th>
+                                    <th scope="col">Specification</th>
+                                    <th scope="col">Constraint</th>
+                                    <th scope="col">Passed records</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            
+                            <tbody>
+                            {% for field, rules in report.results.specified_fields.items()|sort %}
+                                <tbody class="fields">
+                                    <tr class="table-secondary">
+                                        <td colspan="5" >
+                                            <div id="{{ field }}_nav"> {{ field }}</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
 
-                        {% for rule, info in rules.items()|sort %}
-                        <tbody class="rules">
-                            <tr data-toggle="collapse" data-target="#{{ field }}_{{ rule }}_examples" class="accordion-toggle">
-                               <td width="15%"></td>
-                               <td>{{ rule }}</td>
-                               <td>{{ info.constraint }}</td>
-                               <td>
-                                   <div class="progress">
-                                       {% if  not info.failed_rows %}
-                                       <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
-                                       {% else %}
-                                       <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
-                                       {% endif %}
-                                   </div>
-                               </td>
-                               <td>
-                                   {% if info.failed_rows %}
-                                    <i class="fas fa-chevron-down"></i>
-                                   {% endif %}
-                               </td>
-                            </tr>
-                            {% if info.failed_rows %}
-                            <tr>
-                                <td colspan="4" class="hiddenRow">
-                                    <div class="accordian-body collapse" id="{{ field }}_{{ rule }}_examples">
-                                    <p>Value issue samples:</p>
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                              <th scope="col"></th>
-                                              <th scope="col">Data value</th>
-                                              <th scope="col">Message</th>
-                                              <th scope="col"># Rows failed</th>
-                                              <th scope="col">First presence row index</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for value, details in info.samples.items()|sort(attribute='1.failed_rows', reverse=True) %}
-                                            <tr>
-                                               <td>{{loop.index}}</td>
-                                               <td>{{ value  }}</td>
-                                               <td>{{ details.message}}</td>
-                                               <td>{{ details.failed_rows}}</td>
-                                               <td>{{ details.first_row}}</td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-               	                    </table>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endif %}
+                                {% for rule, info in rules.items()|sort %}
+                                    <tbody class="rules">
+                                        <tr data-toggle="collapse" data-target="#{{ field }}_{{ rule }}_examples" class="accordion-toggle">
+                                            <td width="15%"></td>
+                                            <td>{{ rule }}</td>
+                                            <td>{{ info.constraint }}</td>
+                                            <td>
+                                               <div class="progress">
+                                                {% if  not info.failed_rows %}
+                                                   <div class="progress-bar bg-success" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
+                                                {% else %}
+                                                   <div class="progress-bar bg-warning" role="progressbar" style="width: {{ 100*info.passed_rows/report.results.total_rows }}%;" aria-valuenow="{{ 100*info.passed_rows/report.results.total_rows }}" aria-valuemin="0" aria-valuemax="100">{{ info.passed_rows }}</div>
+                                                {% endif %}
+                                                </div>
+                                            </td>
+                                            <td>
+                                            {% if info.failed_rows %}
+                                                <i class="fas fa-chevron-down"></i>
+                                            {% endif %}
+                                            </td>
+                                        </tr>
+                                        
+                                    {% if info.failed_rows %}
+                                        <tr>
+                                            <td colspan="4" class="hiddenRow">
+                                                <div class="accordian-body collapse" id="{{ field }}_{{ rule }}_examples">
+                                                    <p>Value issue samples:</p>
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col"></th>
+                                                                <th scope="col">Data value</th>
+                                                                <th scope="col">Message</th>
+                                                                <th scope="col"># Rows failed</th>
+                                                                <th scope="col">First presence row index</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {% for value, details in info.samples.items()|sort(attribute='1.failed_rows', reverse=True) %}
+                                                            <tr>
+                                                                <td>{{loop.index}}</td>
+                                                                <td>{{ value  }}</td>
+                                                                <td>{{ details.message}}</td>
+                                                                <td>{{ details.failed_rows}}</td>
+                                                                <td>{{ details.first_row}}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                        </tbody>
+                           	                        </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                    </tbody>
+                                {% endfor %}
+                            {% endfor %}
                         </tbody>
-                        {% endfor %}
-                    {% endfor %}
-                  </tbody>
-                </table>
+                        </table>
+                    </div>
+                </div>
             </div>
-            </div>
-        </div>
-    </main>
+        </main>
         <footer>
             <div class="container-fluid">
                 <div>
@@ -194,17 +201,13 @@
                 </div>
 
                 <div class="foot-info">
-                    Whip validation executed by <a href="https://inbo.github.io/pywhip/" target="_blank">pywhip</a>
-                    using the <a href="https://github.com/inbo/whip" target="_blank"> whip</a> syntax,
-                    a human and machine-readable syntax to express specifications for data.
+                    Whip validation executed by <a href="https://inbo.github.io/pywhip/" target="_blank">pywhip</a> using the <a href="https://github.com/inbo/whip" target="_blank"> whip</a> syntax, a human and machine-readable syntax to express specifications for data.
                 </div>
             </div>
         </footer>
 
-
-
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-  </body>
+    </body>
 </html>
