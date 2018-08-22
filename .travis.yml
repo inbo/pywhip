@@ -1,9 +1,6 @@
 install: 
     - pip install -U tox-travis
     - pip install -U travis-sphinx
-    - pip install recommonmark markdown
-    - pip install sphinx-markdown-tables
-    - pip install sphinx_bootstrap_theme
 language: python
 python:
     - 3.6
@@ -13,6 +10,10 @@ python:
 script:
     tox
 before_deploy:
+    - pip install recommonmark markdown
+    - pip install sphinx-markdown-tables
+    - pip install sphinx_bootstrap_theme
+    - pip install -r requirements.txt
     - travis-sphinx --outdir='docs/_build' build --source=docs --nowarn
     - touch docs/_build/.nojekyll
 deploy:
