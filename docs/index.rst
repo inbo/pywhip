@@ -2,7 +2,7 @@
 pywhip
 ======
 
-------------
+----
 
 The pywhip package is a Python package to validate data against
 `whip specifications`_, a human and machine-readable syntax to express
