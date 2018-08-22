@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 22 13:07:01 2016
 
-@author: stijn_vanhoey
-"""
 import re
 from copy import copy
 from datetime import datetime, date
@@ -17,7 +13,7 @@ from rfc3987 import match
 from cerberus import Validator
 from cerberus import errors
 from cerberus.errors import ErrorDefinition, BasicErrorHandler
-from cerberus.platform import _str_type, _int_types
+from cerberus.platform import _str_type
 
 
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')

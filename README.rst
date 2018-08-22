@@ -2,6 +2,14 @@
 pywhip
 ======
 
+The pywhip package is a Python package to validate data against
+`whip specifications`_, a human and machine-readable syntax to express
+specifications for data.
+
+.. _`whip specifications`: https://github.com/inbo/whip
+
+* Free software: MIT license
+* Documentation: https://inbo.github.io/pywhip
 
 .. image:: https://img.shields.io/pypi/v/pywhip.svg
         :target: https://pypi.python.org/pypi/pywhip
@@ -13,14 +21,10 @@ pywhip
      :target: https://pyup.io/repos/github/inbo/pywhip/
      :alt: Updates
 
+Quickstart
+----------
 
-Python package to validate data against `whip specifications`_
-
-.. _`whip specifications`: https://github.com/inbo/whip
-
-* Free software: MIT license
-* Documentation: https://inbo.github.io/pywhip
-
+# TODO
 
 Credits
 ---------

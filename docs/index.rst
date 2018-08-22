@@ -1,17 +1,23 @@
-Welcome to pywhip's documentation!
-======================================
+======
+pywhip
+======
 
-Contents:
+The pywhip package is a Python package to validate data against
+`whip specifications`_, a human and machine-readable syntax to express
+specifications for data.
 
-The pywhip package is a Python package to validate data against whip specifications, defined in a YAML file:
+.. _`whip specifications`: https://github.com/inbo/whip
+
+
+Table of Contents
+==================
 
 .. toctree::
    :maxdepth: 2
 
-   readme
    installation
    usage
-   modules
+   reference
    contributing
    authors
    history
