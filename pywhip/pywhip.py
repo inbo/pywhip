@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-@author: stijn_vanhoey
-"""
 
 import os
 import csv
@@ -9,7 +6,6 @@ from datetime import datetime
 from collections import defaultdict, Mapping, Sequence
 from pkg_resources import resource_filename
 
-import yaml
 from dwca.read import DwCAReader
 from cerberus import SchemaError
 from jinja2 import FileSystemLoader, Environment
@@ -48,6 +44,7 @@ def whip_csv(csv_file, specifications, delimiter, maxentries=None):
 
 
 class Whip(object):
+    """Some information"""
 
     def __init__(self, schema, sample_size=10):
 
@@ -82,6 +79,7 @@ class Whip(object):
 
     @property
     def sample_size(self):
+        """Number of value-examples to use in reporting"""
         return self._sample_size
 
     def get_report(self, format='json'):
@@ -269,13 +267,16 @@ class Whip(object):
                                           self.sample_size)
         self._isitgreat()
 
+        # TODO: add generator function and dict-searches to query errors
+
     def _isitgreat(self):
         """check if there are any errors recorded"""
         if self._report['results']['failed_rows'] == 0:
             print("Hooray, your data set is according to the guidelines!")
         else:
-            print('Dataset does not comply the specifications, check errors'
-                  ' for a more detailed information.')
+            print('Dataset does not comply the specifications, check reports'
+                  ' by using the `get_report` method '
+                  'for a more detailed information.')
 
     @staticmethod
     def generate_dwca(dwca_zip):
@@ -311,6 +312,7 @@ class Whip(object):
         -----------
         html_output : str
             relative path and filename to write the resulting index.html
+
         """
         path = "./static/template.html"
 

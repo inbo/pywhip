@@ -1,6 +1,4 @@
-"""
-S. Van Hoey
-"""
+# -*- coding: utf-8 -*-
 
 from collections import Mapping, defaultdict
 
@@ -10,6 +8,7 @@ class WhipReportException(Exception):
 
 
 class SpecificationErrorHandler(Mapping):
+    """Class handler for field-rule entity reporting"""
 
     def __init__(self, constraint):
         self._samples = defaultdict(set)

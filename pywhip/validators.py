@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 22 13:07:01 2016
 
-@author: stijn_vanhoey
-"""
 import re
 from copy import copy
 from datetime import datetime, date

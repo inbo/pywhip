@@ -8,11 +8,36 @@ import json
 import yaml
 import requests
 
-from pywhip import whip_dwca, whip_csv
+from pywhip import whip_dwca, whip_csv, Whip
 
 
 # -------
-# EXAMPLE
+# DICT EXAMPLE
+# -------
+
+# TODO
+
+# -------
+# DOCS CSV EXAMPLE
+# -------
+
+# TODO: make sure this is recreated when sphinx is building...
+
+with open("../../docs/_static/observations_example.yaml") as schema_file:
+    specifications = yaml.load(schema_file)
+
+observations_whip = whip_csv("../../docs/_static/observations_data.csv",
+                             specifications, delimiter=',')
+
+with open("../../docs/_static/report_observations.html", "w") as index_page:
+    index_page.write(observations_whip.get_report('html'))
+
+with open('../../docs/_static/report_observations.json', 'w') as json_report:
+    json.dump(observations_whip.get_report(), json_report, indent=4,
+              sort_keys=True, ensure_ascii=False)
+
+# -------
+# CSV
 # -------
 
 with open("example_dwc_occurrence.yaml") as schema_file:
