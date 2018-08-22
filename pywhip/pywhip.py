@@ -10,8 +10,8 @@ from dwca.read import DwCAReader
 from cerberus import SchemaError
 from jinja2 import FileSystemLoader, Environment
 
-from pywhip.validators import DwcaValidator, WhipErrorHandler
-from pywhip.reporters import SpecificationErrorHandler
+from .validators import DwcaValidator, WhipErrorHandler
+from .reporters import SpecificationErrorHandler
 
 
 def whip_dwca(dwca_zip, specifications, maxentries=None):

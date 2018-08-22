@@ -6,7 +6,6 @@ __author__ = """Stijn Van Hoey"""
 __email__ = 'stijn.vanhoey@gmail.com'
 __version__ = '0.2.1'
 
-
-from pywhip.pywhip import Whip, whip_dwca, whip_csv
+from .pywhip import Whip, whip_dwca, whip_csv
 
 __all__ = ['Whip', 'whip_dwca', 'whip_csv']
