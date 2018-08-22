@@ -21,13 +21,16 @@ import os
 # https://stackoverflow.com/questions/12772927/specifying-an-online-image-in-sphinx-restructuredtext-format
 import sphinx.environment
 from docutils.utils import get_source_line
+
+
 from recommonmark.parser import CommonMarkParser
+import sphinx_bootstrap_theme
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory is
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
+#sys.path.insert(0, os.path.abspath('.'))
 
 # Get the project root dir, which is the parent dir of this
 cwd = os.getcwd()
@@ -40,6 +43,10 @@ sys.path.insert(0, project_root)
 
 import pywhip
 
+
+def setup(app):
+    app.add_stylesheet("css/custom.css")
+
 # -- General configuration ---------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -47,7 +54,13 @@ import pywhip
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.viewcode',
+              'numpydoc',
+              'sphinx_markdown_tables']
+
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -68,7 +81,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pywhip'
-copyright = u"2017, Stijn Van Hoey"
+copyright = u"2018, Stijn Van Hoey"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -123,15 +136,31 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'bootstrap'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'navbar_title': "pywhip",
+
+    # Tab name for entire site. (Default: "Site")
+    'navbar_site_name': "pywhip",
+    'bootswatch_theme': "yeti",
+    'navbar_sidebarrel': False,
+    'navbar_pagenav': False,
+    'globaltoc_depth': 0,
+    'navbar_links': [
+        ("Install", "installation"),
+        ("Tutorial", "usage"),
+        ("API Reference", "reference"),
+        ("Contributing", "contributing"),
+    ],
+    'source_link_position': 'footer'
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -155,6 +184,8 @@ html_theme = 'alabaster'
 # static files, so a file named "default.css" will overwrite the builtin
 # "default.css".
 html_static_path = ['_static']
+html_extra_path = ['_static/report_observations.html',
+                   '_static/report_observations.json']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page
 # bottom, using the given strftime format.
@@ -165,7 +196,8 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    '**': ['localtoc.html']}
 
 # Additional templates that should be rendered to pages, maps page names
 # to template names.

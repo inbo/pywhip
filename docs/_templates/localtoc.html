@@ -1,0 +1,45 @@
+{% if pagename == 'index' %}
+<div class="home_sidebar">
+    <div class="links" id="home-sidebar-external-links">
+    <h3>Links</h3>
+    <ul class="list-unstyled">
+        <li>Browse source code at <br><a href="https://github.com/inbo/pywhip">https://​github.com/​inbo/pywhip</a></li>
+        <li>Report a bug at <br><a href="https://github.com/inbo/pywhip/issues">https://​github.com/​inbo/pywhip/​issues</a></li>
+        <li>Get to know our team at <br><a href="https://lifewatch.inbo.be">https://​lifewatch.inbo.be</a></li>
+    </ul>
+    </div>
+
+    <div class="license">
+    <h3>License</h3>
+    <ul class="list-unstyled">
+        <li>
+            <p><a href="https://opensource.org/licenses/mit-license.php">MIT</a> + file <a href="https://github.com/inbo/pywhip/blob/master/LICENSE">LICENSE</a></p>
+        </li>
+    </ul>
+    </div>
+
+    <div class="developers">
+    <h3>Developers</h3>
+    <ul class="list-unstyled">
+        <li>
+            <p><a href="https://twitter.com/SVanHoey">Stijn Van Hoey</a>
+                <br><small class="roles"> Author, maintainer </small>
+            <a href="https://orcid.org/0000-0001-6413-3185" target="orcid.widget">
+                <img src="https://members.orcid.org/sites/default/files/vector_iD_icon.svg" class="orcid" height="16"></a></p>
+        </li>
+        <li><a href="authors.html">All authors...</a></li>
+    </ul>
+    </div>
+
+    <div class="dev-status">
+    <h3>Dev status</h3>
+    <ul class="list-unstyled">
+        <li><a href="https://travis-ci.org/inbo/pywhip"><img alt="https://img.shields.io/travis/inbo/pywhip.svg" src="https://img.shields.io/travis/inbo/pywhip.svg"></a></li>
+        <li><a href="https://pypi.python.org/pypi/pywhip"><img alt="https://img.shields.io/pypi/v/pywhip.svg" src="https://img.shields.io/pypi/v/pywhip.svg"></a></li>
+        <li><a href="https://pyup.io/repos/github/inbo/pywhip/"><img alt="Updates" src="https://pyup.io/repos/github/inbo/pywhip/shield.svg"></a></li>
+    </ul>
+    </div>
+</div>
+{% else %}
+    {{ toc }}
+{% endif %}

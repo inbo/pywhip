@@ -1,0 +1,11 @@
+.bs-sidenav {
+  background-color: white;
+}
+
+.bs-sidenav .nav .nav > li > a {
+    color: #008cba;
+}
+
+#home-sidebar-external-links a {
+    color: #008cba;
+}

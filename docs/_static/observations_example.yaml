@@ -1,0 +1,14 @@
+#
+# Benelux Observations project data file whip specifications
+#
+country:
+   allowed: [BE, NL]
+eventDate:
+    dateformat: '%Y-%m-%d'
+    mindate: 2016-01-01
+    maxdate: 2018-12-31
+individualCount:
+    numberformat: x  # needs to be an integer value
+    min: 1
+    max: 100
+
