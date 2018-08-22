@@ -142,9 +142,6 @@ class DwcaValidator(Validator):
         allow_unknown : boolean
             if False only terms with specifications are allowed as input
         """
-        # prepare the string version of each document in the namespace
-        self.document_str_version = None
-
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
         if 'allow_unknown' in kwargs:
@@ -157,19 +154,6 @@ class DwcaValidator(Validator):
 
         # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
-
-    def validate(self, document, *args, **kwargs):
-        """Validates a mapping against a validation-schema of defined rules.
-
-        For more information, see the cerberus
-        :meth:`~cerberus.Validator.validate` method.
-        """
-        # add a str-version of the document before any coercing/normalizing
-        self.document_str_version = document.copy()
-
-        return super(DwcaValidator, self).validate(document, *args, **kwargs)
-
-    __call__ = validate
 
     @staticmethod
     def _schema_add_empty(dict_schema):
@@ -406,12 +390,12 @@ class DwcaValidator(Validator):
             tempvalidator = DwcaValidator(conditions)
             tempvalidator.allow_unknown = True
 
-            if tempvalidator.validate(copy(self.document_str_version),
+            if tempvalidator.validate(copy(self.document),
                                       normalize=True):
                 validator = self._get_child_validator(
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
-                validator.validate(copy(self.document_str_version),
+                validator.validate(copy(self.document),
                                    normalize=False) 
 
                 if validator._errors:
@@ -434,16 +418,16 @@ class DwcaValidator(Validator):
                 # when the conditional field is not existing in the document,
                 # ignore the if-statement
                 if not set(conditions.keys()).issubset(
-                        set(self.document_str_version.keys())):
+                        set(self.document.keys())):
                     return True
 
-                if tempvalidator.validate(copy(self.document_str_version),
+                if tempvalidator.validate(copy(self.document),
                                           normalize=True):
                     validator = self._get_child_validator(
                         document_crumb=(field, ''.join(['if_', str(i)])),
                         schema_crumb=(field, 'if'),
                         schema={field: rules}, allow_unknown=True)
-                    validator.validate(copy(self.document_str_version),
+                    validator.validate(copy(self.document),
                                        normalize=False)
 
                     if validator._errors:
