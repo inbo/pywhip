@@ -57,6 +57,7 @@ def setup(app):
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.viewcode',
+              'sphinx.ext.intersphinx',
               'numpydoc',
               'markdown-tables']
 
@@ -233,6 +234,14 @@ html_sidebars = {
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'pywhipdoc'
+
+# -- Options for intersphinx extension -----------------------------------------
+
+intersphinx_mapping = {
+    'python2': ('https://docs.python.org/2', None),
+    'python3': ('https://docs.python.org/3', None),
+    'cerberus': ('http://docs.python-cerberus.org/en/stable/', None)
+}
 
 
 # -- Options for LaTeX output ------------------------------------------
