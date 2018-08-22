@@ -10,4 +10,6 @@ cryptography
 PyYAML
 pytest
 pytest-runner
-recommonmark 
+recommonmark
+markdown
+sphinx-markdown-tables

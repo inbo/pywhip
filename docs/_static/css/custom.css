@@ -9,3 +9,7 @@
 #home-sidebar-external-links a {
     color: #008cba;
 }
+
+.content h1 {
+    padding-top: 40px;
+}
