@@ -280,7 +280,20 @@ class Whip(object):
 
     @staticmethod
     def generate_dwca(dwca_zip):
-        """"""
+        """
+
+
+        Parameters
+        ----------
+        dwca_zip
+
+        Yields
+        ------
+        document : dict
+            Provides a single line document values (as dict values) and
+            field names (as dict keys)
+
+        """
         with DwCAReader(dwca_zip) as dwca:
             for row in dwca:
                 document = {k.split('/')[-1]: v for k, v in row.data.items()}
@@ -288,7 +301,21 @@ class Whip(object):
 
     @staticmethod
     def generate_csv(csv_file, delimiter):
-        """"""
+        """
+
+
+        Parameters
+        ----------
+        csv_file
+        delimiter
+
+        Yields
+        ------
+        document : dict
+            Provides a single line document values (as dict values) and
+            field names (as dict keys)
+
+        """
         with open(csv_file, "r") as dwc:
             reader = csv.DictReader(dwc, delimiter=delimiter)
             for document in reader:

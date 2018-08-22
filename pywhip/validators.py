@@ -15,7 +15,10 @@ from cerberus import errors
 from cerberus.errors import ErrorDefinition, BasicErrorHandler
 from cerberus.platform import _str_type
 
-
+"""
+For each pywhip custom rule, a :class:`~cerberus.errors.ErrorDefinition` 
+instance is created to link specifications with unique identifiers.
+"""
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x86, 'if')
 
@@ -37,7 +40,27 @@ NUMBERFORMAT_VALUE = ErrorDefinition(0x104, 'numberformat')
 STRINGFORMAT_JSON = ErrorDefinition(0x105, 'stringformat')
 STRINGFORMAT_URL = ErrorDefinition(0x106, 'stringformat')
 
+
 class WhipErrorHandler(BasicErrorHandler):
+    """Class to store custom error message handling
+
+    The WhipErrorHandler updates the
+    :class:`~cerberus.errors.BasicErrorHandler` with custom messages for
+    pywhip specific specifications. Each of the messages updates the
+    message of a specification error, using the unique code
+    attributed in the :class:`~cerberus.errors.ErrorDefinition` setup.
+
+    The message is a descriptive message about the error and can optionally
+    use the following variables:
+
+    * value
+        This refers to the individual data value of the document,
+        use ``{value}``
+    * constraint
+        This refers to the constraint provided by the whip
+        specification right hand side of the colon, use ``{constraint}``
+    """
+
     messages = BasicErrorHandler.messages.copy()
     messages[MIN_NON_NUMERIC.code] = "value '{value}' is not numeric"
     messages[MAX_NON_NUMERIC.code] = "value '{value}' is not numeric"
@@ -63,18 +86,52 @@ class WhipErrorHandler(BasicErrorHandler):
     messages[DELIMITER_SPACE.code] = "contains empty string inside " \
                                      "delimitedvalues"
 
+    def __iter__(self):
+        raise NotImplementedError
+
 
 class DwcaValidator(Validator):
-    """
-    directly available by cerberus:
-        allowed, minlength, maxlength, minimum, maximum, regex
+    """Validates any mapping against specifications defined in a
+    validation-schema
 
-    custom validation functions:
-        daterange, numberformat, dateformat
-        listvalues
+    In the context of pywhip, a mapping is generally a single line of data,
+    with the keys the fields (data headers) and the values the data values for
+    that particular line.
 
-    environments:
+    Notes
+    ------
+    This class subclasses :class:`~cerberus.Validator` and adds pywhip specific
+    ``_validate_<specification>`` methods.
+
+    The whip specifications are a combination of cerberus native specifications
+    and pywhip custom ones:
+
+    * directly available by cerberus
+        minlength, maxlength, regex
+
+    * cerberus specifications overwritten by pywhip
+        allowed, empty, min, max
+
+    * pywhip specific specification functions
+        numberformat, dateformat, mindate, maxdate, stringformat
+
+    * pywhip specific specification environments:
         delimitedValues, if
+
+    Each ``_validate_<specification>`` assumes the following input arguments:
+
+    * constraint:
+        The constraint provided in the whip specification, i.e. the
+        right hand side of the colon in the whip specifications. In the
+        implementation, the input parameter can be names differently to clarify
+        the role of the constraint in the validation function.
+    * field:
+        The name of the field, i.e. the left hand side of the colon
+        in the whip specifications which corresponds to the field header name
+        in the data.
+    * value:
+        A single data value for which the whip specification needs to be tested
+        using the provided constraint.
     """
 
     def __init__(self, *args, **kwargs):
@@ -102,10 +159,12 @@ class DwcaValidator(Validator):
         self.schema = self._schema_add_empty(self.schema)
 
     def validate(self, document, *args, **kwargs):
-        """adds document parsing to the validation process
+        """Validates a mapping against a validation-schema of defined rules.
+
+        For more information, see the cerberus
+        :meth:`~cerberus.Validator.validate` method.
         """
-        # store a dwcareader string version of the document
-        # if not self.document_str_version:
+        # add a str-version of the document before any coercing/normalizing
         self.document_str_version = document.copy()
 
         return super(DwcaValidator, self).validate(document, *args, **kwargs)
@@ -294,8 +353,6 @@ class DwcaValidator(Validator):
         """ {'type': ['string'],
             'regex': '^[1-9]\.[1-9]$|^[1-9]\.$|^\.[1-9]$|^[1-9]$|^\.$|^x$'}
         """
-
-        # value_str = self.document_str_version[field]
 
         # ignore - sign to handle negative numbers
         value_str = re.sub("^-", "", value)
