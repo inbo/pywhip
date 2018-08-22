@@ -7,7 +7,6 @@ import pytest
 
 from click.testing import CliRunner
 
-from pywhip import pywhip
 from pywhip import cli
 
 
