@@ -12,4 +12,3 @@ pytest
 pytest-runner
 markdown
 recommonmark
-sphinx-markdown-tables
