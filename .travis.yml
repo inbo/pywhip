@@ -1,7 +1,7 @@
 install: 
     - pip install -U tox-travis
     - pip install -U travis-sphinx
-    - pip install recommonmark
+    - pip install recommonmark markdown
     - pip install sphinx-markdown-tables
 language: python
 python:
