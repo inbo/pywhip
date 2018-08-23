@@ -62,6 +62,7 @@ extensions = ['sphinx.ext.autodoc',
               'markdown-tables']
 
 numpydoc_show_class_members = False
+autoclass_content = 'both'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -238,9 +239,10 @@ htmlhelp_basename = 'pywhipdoc'
 # -- Options for intersphinx extension -----------------------------------------
 
 intersphinx_mapping = {
-    'python2': ('https://docs.python.org/2', None),
     'python3': ('https://docs.python.org/3', None),
-    'cerberus': ('http://docs.python-cerberus.org/en/stable/', None)
+    'cerberus': ('http://docs.python-cerberus.org/en/stable/', None),
+    'dwca': ('https://python-dwca-reader.readthedocs.io/en/latest/',
+                    None)
 }
 
 
