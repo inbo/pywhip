@@ -154,9 +154,10 @@ html_theme_options = {
     'globaltoc_depth': 0,
     'navbar_links': [
         ("Install", "installation"),
-        ("Tutorial", "usage"),
+        ("Tutorial", "tutorial"),
         ("API Reference", "reference"),
         ("Contributing", "contributing"),
+        ("History", "history"),
     ],
     'source_link_position': 'footer'
 }

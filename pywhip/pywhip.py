@@ -15,7 +15,29 @@ from .reporters import SpecificationErrorHandler
 
 
 def whip_dwca(dwca_zip, specifications, maxentries=None):
-    """"""
+    """Whip a Darwin Core Archive
+
+    Validate the core file of a `Darwin Core Archive`_ zipped data set,
+    using the :class:`~dwca.read.DwCAReader` reading and iterator capabilities.
+
+    .. _Darwin Core Archive: https://en.wikipedia.org/wiki/Darwin_Core_Archive
+
+    Parameters
+    ----------
+    dwca_zip : str
+        Filename of the zipped Darwin Core Archive.
+    specifications : dict
+        Valid specifications whip dictionary schema.
+    maxentries : int
+        Define the limit of records to validate from the Archive, useful to
+        have a quick set on the frst subset of data.
+
+    Returns
+    -------
+    whip_it : pywhip.pywhi.Whip
+        Whip validator clasc instance, containing the errors and reporting
+        capabilities.
+    """
     # Extract data header - only core support
     with DwCAReader(dwca_zip) as dwca:
         field_names = [field['term'].split('/')[-1] for field in
@@ -29,7 +51,29 @@ def whip_dwca(dwca_zip, specifications, maxentries=None):
 
 
 def whip_csv(csv_file, specifications, delimiter, maxentries=None):
-    """"""
+    """Whip a CSV-like file
+
+    Validate a CSV file, using the :class:`CSV <python3:csv.DictReader>`
+    reading and iterator capabilities of the Python standard library.
+
+    Parameters
+    ----------
+    csv_file : str
+        Filename of the CSV file to whip validate.
+    specifications : dict
+        Valid specifications whip dictionary schema.
+    delimiter : str
+        A one-character string used to separate fields, e.g. ``','``.
+    maxentries : int
+        Define the limit of records to validate from the Archive, useful to
+        have a quick set on the frst subset of data.
+
+    Returns
+    -------
+    whip_it : pywhip.pywhi.Whip
+        Whip validator class instance, containing the errors and reporting
+        capabilities.
+    """
 
     # Extract data header
     with open(csv_file, "r") as dwc:
@@ -44,9 +88,40 @@ def whip_csv(csv_file, specifications, delimiter, maxentries=None):
 
 
 class Whip(object):
-    """Some information"""
+    """Whip document validation class
+
+    Validates (multiple row) documents against a whip specification schema
+    using the high-level functions ``whip_...`` and creates a validation report
+    with the :meth:`~pywhip.pywhip.Whip.get_report` method.
+
+    Attributes
+    ----------
+    sample_size : int
+        Number of value-examples to use in reporting
+    schema : dict
+        Whip specification schema, consisting of `field : constraint`
+        combinations
+    validation : pywhip.validators.DwcaValidator
+        A :class:`~pywhip.validators.DwcaValidator` class instance.
+    _report : dict
+        Base report container to collect document errors. Errors are
+        collected in the ['results']['specified_fields'] values, having
+        a :class:`~pywhip.reporters.SpecificationErrorHandler` for each
+        field-specification combination.
+    """
 
     def __init__(self, schema, sample_size=10):
+        """
+
+        Parameters
+        ----------
+        schema : dict
+            Whip specification schema, consisting of `field : constraint`
+            combinations.
+        sample_size : int
+            For each of the field-rules combinations, the (top) number of data
+            value samples/examples to include in the report.
+        """
 
         if not isinstance(schema, dict):
             raise SchemaError("Input schema need to be dictionary")
@@ -79,29 +154,62 @@ class Whip(object):
 
     @property
     def sample_size(self):
-        """Number of value-examples to use in reporting"""
         return self._sample_size
 
     def get_report(self, format='json'):
+        """Collect errors into reporting format (json/html)
+
+        Converts the logged errors into a json or html style report.
+
+        Parameters
+        ----------
+        format : json | html
+            Define the output format the report is used.
+
+        Returns
+        -------
+        str
+
+        """
         if format == 'json':
             return self._report
         elif format == 'html':
             return self.create_html()
-        return self._schema
 
     @staticmethod
     def format_if_rule(rule, number):
-        """support to vuild if-based-rules in report"""
+        """Support to build if-based-rules in report
+
+        Parameters
+        ----------
+        rule : str
+            A whip specification rule.
+        number : int
+            The counter of the if-statements used in the whip specification,
+            counter starts at 1.
+        """
         return '{}_if_{}'.format(rule, number)
 
     @staticmethod
     def format_delimited_rule(rule):
-        """support to vuild delimitedvalues-based-rules in report"""
+        """Support to build delimitedvalues-based-rules in report
+
+        Parameters
+        ----------
+        rule : str
+            A whip specification rule.
+        """
         return '{}_delimitedvalue'.format(rule)
 
     @staticmethod
     def clean_constraint(constraint):
-        """clean constraint for reports"""
+        """Clean constraint for reports
+
+        Parameters
+        ----------
+        constraint : str
+            The constraint as defined in the whip specification.
+        """
         if isinstance(constraint, list):
             return ', '.join([str(el) for el in constraint])
         else:
@@ -114,6 +222,11 @@ class Whip(object):
         inner-rules from the scope and combine it with the if/delimitedvalue
         to ahve unique specification names. A delimitedvalues is providioned
         as well for generl delimitedvalues errors
+
+        Parameters
+        ----------
+        schema : dict
+            Whip specification schema.
         """
         schema_layout = {}
         for field, rules in schema.items():
@@ -149,6 +262,11 @@ class Whip(object):
         When fields are mentioned inside if statements, but not present in the
         data, this should raise a preliminar warning/message as part of the
         reporting
+
+        Parameters
+        ----------
+        file_fields : list | set
+            List of the field names present in the input data file.
         """
         conditional_fields = []
         for _, specs in self.schema.items():
@@ -182,8 +300,8 @@ class Whip(object):
 
         Parameters
         ----------
-        file_fields : list
-            All fields present in the data-set.
+        file_fields : list | set
+            List of the field names present in the input data file
         """
         try:
             file_fields = set(file_fields)
@@ -196,7 +314,24 @@ class Whip(object):
             self.schema.keys()).difference(file_fields))
 
     def _whip(self, input_generator, field_names, maxentries=None):
-        """"""
+        """Validate whip specifications on the input
+
+         For each entry of the input generator (which can be limited using the
+         ``maxentries`` parameter, the validation is recording the errors. At
+         the end, the :attr:`~pywhip.pywhip.Whip._report` attribute is updated
+         with the error logs and other relevant metadata.
+
+        Parameters
+        ----------
+        input_generator : iterator
+            An iterator, yielding `field : value` combinations of the document
+            on each iteration.
+        field_names : list | set
+            List of the field names present in the input data file.
+        maxentries : int
+            Define the limit of records to validate from the Archive, useful to
+            have a quick set on the frst subset of data.
+        """
 
         # preliminar checks
         self._compare_fields(field_names)
@@ -280,18 +415,21 @@ class Whip(object):
 
     @staticmethod
     def generate_dwca(dwca_zip):
-        """
+        """Darwin core archive generator
 
+        Yields `field : value` combinations of the document on each iteration,
+        corresponding to individual rows of the data file.
 
         Parameters
         ----------
-        dwca_zip
+        dwca_zip : str
+            Filename of the zipped Darwin Core Archive.
 
         Yields
         ------
         document : dict
             Provides a single line document values (as dict values) and
-            field names (as dict keys)
+            field names (as dict keys).
 
         """
         with DwCAReader(dwca_zip) as dwca:
@@ -301,19 +439,23 @@ class Whip(object):
 
     @staticmethod
     def generate_csv(csv_file, delimiter):
-        """
+        """CSV File generator
 
+        Yields `field : value` combinations of the document on each iteration,
+        corresponding to individual rows of the data file.
 
         Parameters
         ----------
-        csv_file
-        delimiter
+        csv_file : str
+            Filename of the CSV file to whip validate.
+        delimiter : str
+            A one-character string used to separate fields, e.g. ``','``.
 
         Yields
         ------
         document : dict
             Provides a single line document values (as dict values) and
-            field names (as dict keys)
+            field names (as dict keys).
 
         """
         with open(csv_file, "r") as dwc:
@@ -323,7 +465,20 @@ class Whip(object):
 
     @staticmethod
     def _report_specified_fields(specified_fields, nrows, nsample):
-        """Transform the data objects to report objects"""
+        """Transform the data objects to report objects
+
+        Parameters
+        ----------
+        specified_fields : dict
+            Dictionary with a `~pywhip.reporters.SpecificationErrorHandler`
+            object for each field-specification combination.
+        nrows : int
+            Total rows of the current document working with, used to calculate
+            passed rows as well
+        nsample : int
+            Number of samples (ordered on the number of rows) to retain for
+            reporting purposes
+        """
 
         for field, rules in specified_fields.items():
             for rule, error_report in rules.items():
@@ -332,15 +487,15 @@ class Whip(object):
                                                                      nsample)
         return specified_fields
 
-    def create_html(self, html_output="index.html"):
-        """build html from report
+    def create_html(self):
+        """Build html using template
 
-        Parameters
-        -----------
-        html_output : str
-            relative path and filename to write the resulting index.html
+        Returns
+        -------
+        str
 
         """
+
         path = "./static/template.html"
 
         html_template_path = resource_filename(__name__, path)

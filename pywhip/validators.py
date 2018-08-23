@@ -132,15 +132,27 @@ class DwcaValidator(Validator):
     * value:
         A single data value for which the whip specification needs to be tested
         using the provided constraint.
+
+    To validate the schema input itself, cerberus validation rules can be added
+    to the docstring TODO ADDLINK
     """
 
     def __init__(self, *args, **kwargs):
-        """add pre processing rules to alter the schema
+        """Extends the handling of Cerberus :class:`~cerberus.Validator`
+
+        The following alterations are done:
+        * Allow_unkown is default set on True
+        * Initaition requires a schema
+        * By default, all fields without ``empty`` specification get an
+        ``empty: False`` specification. As such, empy strings are not allowed
+        by default, according to whip specifications.
 
         Parameters
         ----------
         allow_unknown : boolean
-            if False only terms with specifications are allowed as input
+            If False, only terms with specifications are allowed as input. As
+            unknown fields are reported by pywhip after validation, the
+            default value is False.
         """
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
@@ -157,9 +169,14 @@ class DwcaValidator(Validator):
 
     @staticmethod
     def _schema_add_empty(dict_schema):
-        """the empty rule should be added for each of the fields
-        (should be possible to simplify using mandatory_validations, but this
-        provides bug in cerberus that needs further check)
+        """Add `empty: False`` specification for all fields without
+        ``empty`` specification
+
+        Parameters
+        ----------
+        dict_schema : dict
+            Schema of ``field: specification`` items, for which each
+            specification is a dict itself.
         """
         for term, rules in dict_schema.items():
             if 'empty' not in rules.keys():
@@ -167,8 +184,7 @@ class DwcaValidator(Validator):
         return dict_schema
 
     def _validate_empty(self, empty, field, value):
-        """{'type': 'boolean'}
-        """
+        """ {'type': 'boolean'} """
         # Dropping all remaining rules except of if (instead of subselection)
         # when empty = True
         from collections import Sized
@@ -218,8 +234,19 @@ class DwcaValidator(Validator):
         except ValueError:
             self._error(field, MAX_NON_NUMERIC)
 
-    def _parse_date(self, field, date_string):
-        """try to parse a string to date and log error when failing
+    def _parse_date(self, date_string):
+        """Try to parse a string to a Python :class:`~python3.datetime.dateime`
+        datetime.
+
+        Parameters
+        ----------
+        date_string : str
+
+        Returns
+        -------
+        datetime | None
+            If parsing fails, return None, otherwise parsed
+            :class:`~python3.datetime.dateime`
         """
         try:
             event_date = parse(date_string)
@@ -229,7 +256,18 @@ class DwcaValidator(Validator):
 
     @staticmethod
     def _dateisrange(value):
-        """"""
+        """Test if the given string representing date is a range
+
+        Parameters
+        ----------
+        value : str
+            date, e.g. 2018-01-01 (no range) or 2010-01-01/2018-05-01
+
+        Returns
+        -------
+        value : boolean
+            True if daterange is given, otherwise False
+        """
         if len(re.findall('([0-9])/([0-9])', value)) > 1:
             NotImplemented
         elif len(re.findall('([0-9])/([0-9])', value)) == 1:
@@ -239,15 +277,25 @@ class DwcaValidator(Validator):
 
     @staticmethod
     def _dateformatisrange(value):
-        """"""
+        """Test if the given dateformat representing is a range
+
+        Parameters
+        ----------
+        value : str
+            dateformat, e.g. %Y-%m-%d (no range) or %Y-%m-%d/%Y-%m-%d (range)
+
+        Returns
+        -------
+        value : boolean
+            True if daterange is given, otherwise False
+        """
         datesymbols = re.sub('[^a-zA-Z]', '', value)
         return len(set(datesymbols)) != len(datesymbols)
 
     def _validate_mindate(self, min_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
-        # Remarks
-        # -------
+        # TODO:
         # the yaml-reader prepares a datetime.date objects when possible,
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
@@ -261,7 +309,7 @@ class DwcaValidator(Validator):
                 min_date = datetime.combine(min_date, datetime.min.time())
 
             # try to parse the datetime-format
-            event_date = self._parse_date(field, value)
+            event_date = self._parse_date(value)
             if event_date:
                 if event_date < min_date:
                     self._error(field, MINDATE_VALUE)
@@ -271,8 +319,7 @@ class DwcaValidator(Validator):
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
-        # Remarks
-        # -------
+        # TODO:
         # the yaml-reader prepares a datetime.date objects when possible,
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
@@ -286,7 +333,7 @@ class DwcaValidator(Validator):
                 max_date = datetime.combine(max_date, datetime.min.time())
 
             # try to parse the datetime-format
-            event_date = self._parse_date(field, value)
+            event_date = self._parse_date(value)
             if event_date:
                 if event_date > max_date:
                     self._error(field, MAXDATE_VALUE)
@@ -294,7 +341,20 @@ class DwcaValidator(Validator):
                 self._error(field, MAXDATE_NOT_PARSED)
 
     def _help_dateformat(self, formatstr, value):
-        """"""
+        """Test if a date is according to a given dateformat
+
+        Parameters
+        ----------
+        formatstr : str
+            dateformat string, e.g. %Y-%m-%d or %Y-%m-%d/%Y-%m-%d
+        value : str
+            date str representation, e.g. 2018-01-01 or 2015-01-01/2018-01-01
+
+        Returns
+        -------
+        boolean
+            when True, the date string is accoring to the format
+        """
         if self._dateformatisrange(formatstr):
             if self._dateisrange(value):  # both ranges-> test
                 range_test = [self._help_dateformat(dt_format, dt) for
@@ -326,7 +386,6 @@ class DwcaValidator(Validator):
                 current_test = self._help_dateformat(formatstr, value)
                 if current_test:
                     tester = True
-
         else:
             tester = self._help_dateformat(ref_value, value)
 
