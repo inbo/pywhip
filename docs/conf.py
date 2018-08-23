@@ -57,10 +57,12 @@ def setup(app):
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.viewcode',
+              'sphinx.ext.intersphinx',
               'numpydoc',
               'markdown-tables']
 
 numpydoc_show_class_members = False
+autoclass_content = 'both'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -152,9 +154,10 @@ html_theme_options = {
     'globaltoc_depth': 0,
     'navbar_links': [
         ("Install", "installation"),
-        ("Tutorial", "usage"),
+        ("Tutorial", "tutorial"),
         ("API Reference", "reference"),
         ("Contributing", "contributing"),
+        ("History", "history"),
     ],
     'source_link_position': 'footer'
 }
@@ -233,6 +236,15 @@ html_sidebars = {
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'pywhipdoc'
+
+# -- Options for intersphinx extension -----------------------------------------
+
+intersphinx_mapping = {
+    'python3': ('https://docs.python.org/3', None),
+    'cerberus': ('http://docs.python-cerberus.org/en/stable/', None),
+    'dwca': ('https://python-dwca-reader.readthedocs.io/en/latest/',
+                    None)
+}
 
 
 # -- Options for LaTeX output ------------------------------------------

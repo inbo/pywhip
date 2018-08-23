@@ -15,7 +15,10 @@ from cerberus import errors
 from cerberus.errors import ErrorDefinition, BasicErrorHandler
 from cerberus.platform import _str_type
 
-
+"""
+For each pywhip custom rule, a :class:`~cerberus.errors.ErrorDefinition` 
+instance is created to link specifications with unique identifiers.
+"""
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
 IF_SCHEMA = ErrorDefinition(0x86, 'if')
 
@@ -37,7 +40,27 @@ NUMBERFORMAT_VALUE = ErrorDefinition(0x104, 'numberformat')
 STRINGFORMAT_JSON = ErrorDefinition(0x105, 'stringformat')
 STRINGFORMAT_URL = ErrorDefinition(0x106, 'stringformat')
 
+
 class WhipErrorHandler(BasicErrorHandler):
+    """Class to store custom error message handling
+
+    The WhipErrorHandler updates the
+    :class:`~cerberus.errors.BasicErrorHandler` with custom messages for
+    pywhip specific specifications. Each of the messages updates the
+    message of a specification error, using the unique code
+    attributed in the :class:`~cerberus.errors.ErrorDefinition` setup.
+
+    The message is a descriptive message about the error and can optionally
+    use the following variables:
+
+    * value
+        This refers to the individual data value of the document,
+        use ``{value}``
+    * constraint
+        This refers to the constraint provided by the whip
+        specification right hand side of the colon, use ``{constraint}``
+    """
+
     messages = BasicErrorHandler.messages.copy()
     messages[MIN_NON_NUMERIC.code] = "value '{value}' is not numeric"
     messages[MAX_NON_NUMERIC.code] = "value '{value}' is not numeric"
@@ -63,31 +86,74 @@ class WhipErrorHandler(BasicErrorHandler):
     messages[DELIMITER_SPACE.code] = "contains empty string inside " \
                                      "delimitedvalues"
 
+    def __iter__(self):
+        raise NotImplementedError
+
 
 class DwcaValidator(Validator):
-    """
-    directly available by cerberus:
-        allowed, minlength, maxlength, minimum, maximum, regex
+    """Validates any mapping against specifications defined in a
+    validation-schema
 
-    custom validation functions:
-        daterange, numberformat, dateformat
-        listvalues
+    In the context of pywhip, a mapping is generally a single line of data,
+    with the keys the fields (data headers) and the values the data values for
+    that particular line.
 
-    environments:
+    Notes
+    ------
+    This class subclasses :class:`~cerberus.Validator` and adds pywhip specific
+    ``_validate_<specification>`` methods.
+
+    The whip specifications are a combination of cerberus native specifications
+    and pywhip custom ones:
+
+    * directly available by cerberus
+        minlength, maxlength, regex
+
+    * cerberus specifications overwritten by pywhip
+        allowed, empty, min, max
+
+    * pywhip specific specification functions
+        numberformat, dateformat, mindate, maxdate, stringformat
+
+    * pywhip specific specification environments:
         delimitedValues, if
+
+    Each ``_validate_<specification>`` assumes the following input arguments:
+
+    * constraint:
+        The constraint provided in the whip specification, i.e. the
+        right hand side of the colon in the whip specifications. In the
+        implementation, the input parameter can be names differently to clarify
+        the role of the constraint in the validation function.
+    * field:
+        The name of the field, i.e. the left hand side of the colon
+        in the whip specifications which corresponds to the field header name
+        in the data.
+    * value:
+        A single data value for which the whip specification needs to be tested
+        using the provided constraint.
+
+    To validate the schema input itself, cerberus validation rules can be added
+    to the docstring TODO ADDLINK
     """
 
     def __init__(self, *args, **kwargs):
-        """add pre processing rules to alter the schema
+        """Extends the handling of Cerberus :class:`~cerberus.Validator`
+
+        The following alterations are done:
+        * Allow_unkown is default set on True
+        * Initaition requires a schema
+        * By default, all fields without ``empty`` specification get an
+        ``empty: False`` specification. As such, empy strings are not allowed
+        by default, according to whip specifications.
 
         Parameters
         ----------
         allow_unknown : boolean
-            if False only terms with specifications are allowed as input
+            If False, only terms with specifications are allowed as input. As
+            unknown fields are reported by pywhip after validation, the
+            default value is False.
         """
-        # prepare the string version of each document in the namespace
-        self.document_str_version = None
-
         super(DwcaValidator, self).__init__(*args, **kwargs)
 
         if 'allow_unknown' in kwargs:
@@ -101,22 +167,16 @@ class DwcaValidator(Validator):
         # Extend schema with empty: False by default
         self.schema = self._schema_add_empty(self.schema)
 
-    def validate(self, document, *args, **kwargs):
-        """adds document parsing to the validation process
-        """
-        # store a dwcareader string version of the document
-        # if not self.document_str_version:
-        self.document_str_version = document.copy()
-
-        return super(DwcaValidator, self).validate(document, *args, **kwargs)
-
-    __call__ = validate
-
     @staticmethod
     def _schema_add_empty(dict_schema):
-        """the empty rule should be added for each of the fields
-        (should be possible to simplify using mandatory_validations, but this
-        provides bug in cerberus that needs further check)
+        """Add `empty: False`` specification for all fields without
+        ``empty`` specification
+
+        Parameters
+        ----------
+        dict_schema : dict
+            Schema of ``field: specification`` items, for which each
+            specification is a dict itself.
         """
         for term, rules in dict_schema.items():
             if 'empty' not in rules.keys():
@@ -124,8 +184,7 @@ class DwcaValidator(Validator):
         return dict_schema
 
     def _validate_empty(self, empty, field, value):
-        """{'type': 'boolean'}
-        """
+        """ {'type': 'boolean'} """
         # Dropping all remaining rules except of if (instead of subselection)
         # when empty = True
         from collections import Sized
@@ -175,8 +234,19 @@ class DwcaValidator(Validator):
         except ValueError:
             self._error(field, MAX_NON_NUMERIC)
 
-    def _parse_date(self, field, date_string):
-        """try to parse a string to date and log error when failing
+    def _parse_date(self, date_string):
+        """Try to parse a string to a Python :class:`~python3.datetime.dateime`
+        datetime.
+
+        Parameters
+        ----------
+        date_string : str
+
+        Returns
+        -------
+        datetime | None
+            If parsing fails, return None, otherwise parsed
+            :class:`~python3.datetime.dateime`
         """
         try:
             event_date = parse(date_string)
@@ -186,7 +256,18 @@ class DwcaValidator(Validator):
 
     @staticmethod
     def _dateisrange(value):
-        """"""
+        """Test if the given string representing date is a range
+
+        Parameters
+        ----------
+        value : str
+            date, e.g. 2018-01-01 (no range) or 2010-01-01/2018-05-01
+
+        Returns
+        -------
+        value : boolean
+            True if daterange is given, otherwise False
+        """
         if len(re.findall('([0-9])/([0-9])', value)) > 1:
             NotImplemented
         elif len(re.findall('([0-9])/([0-9])', value)) == 1:
@@ -196,15 +277,25 @@ class DwcaValidator(Validator):
 
     @staticmethod
     def _dateformatisrange(value):
-        """"""
+        """Test if the given dateformat representing is a range
+
+        Parameters
+        ----------
+        value : str
+            dateformat, e.g. %Y-%m-%d (no range) or %Y-%m-%d/%Y-%m-%d (range)
+
+        Returns
+        -------
+        value : boolean
+            True if daterange is given, otherwise False
+        """
         datesymbols = re.sub('[^a-zA-Z]', '', value)
         return len(set(datesymbols)) != len(datesymbols)
 
     def _validate_mindate(self, min_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
-        # Remarks
-        # -------
+        # TODO:
         # the yaml-reader prepares a datetime.date objects when possible,
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
@@ -218,7 +309,7 @@ class DwcaValidator(Validator):
                 min_date = datetime.combine(min_date, datetime.min.time())
 
             # try to parse the datetime-format
-            event_date = self._parse_date(field, value)
+            event_date = self._parse_date(value)
             if event_date:
                 if event_date < min_date:
                     self._error(field, MINDATE_VALUE)
@@ -228,8 +319,7 @@ class DwcaValidator(Validator):
     def _validate_maxdate(self, max_date, field, value):
         """ {'type': ['date', 'datetime']} """
 
-        # Remarks
-        # -------
+        # TODO:
         # the yaml-reader prepares a datetime.date objects when possible,
         # the dwca-reader is not doing this, so compatibility need to be better
         # ensured
@@ -243,7 +333,7 @@ class DwcaValidator(Validator):
                 max_date = datetime.combine(max_date, datetime.min.time())
 
             # try to parse the datetime-format
-            event_date = self._parse_date(field, value)
+            event_date = self._parse_date(value)
             if event_date:
                 if event_date > max_date:
                     self._error(field, MAXDATE_VALUE)
@@ -251,7 +341,20 @@ class DwcaValidator(Validator):
                 self._error(field, MAXDATE_NOT_PARSED)
 
     def _help_dateformat(self, formatstr, value):
-        """"""
+        """Test if a date is according to a given dateformat
+
+        Parameters
+        ----------
+        formatstr : str
+            dateformat string, e.g. %Y-%m-%d or %Y-%m-%d/%Y-%m-%d
+        value : str
+            date str representation, e.g. 2018-01-01 or 2015-01-01/2018-01-01
+
+        Returns
+        -------
+        boolean
+            when True, the date string is accoring to the format
+        """
         if self._dateformatisrange(formatstr):
             if self._dateisrange(value):  # both ranges-> test
                 range_test = [self._help_dateformat(dt_format, dt) for
@@ -283,7 +386,6 @@ class DwcaValidator(Validator):
                 current_test = self._help_dateformat(formatstr, value)
                 if current_test:
                     tester = True
-
         else:
             tester = self._help_dateformat(ref_value, value)
 
@@ -294,8 +396,6 @@ class DwcaValidator(Validator):
         """ {'type': ['string'],
             'regex': '^[1-9]\.[1-9]$|^[1-9]\.$|^\.[1-9]$|^[1-9]$|^\.$|^x$'}
         """
-
-        # value_str = self.document_str_version[field]
 
         # ignore - sign to handle negative numbers
         value_str = re.sub("^-", "", value)
@@ -349,12 +449,12 @@ class DwcaValidator(Validator):
             tempvalidator = DwcaValidator(conditions)
             tempvalidator.allow_unknown = True
 
-            if tempvalidator.validate(copy(self.document_str_version),
+            if tempvalidator.validate(copy(self.document),
                                       normalize=True):
                 validator = self._get_child_validator(
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
-                validator.validate(copy(self.document_str_version),
+                validator.validate(copy(self.document),
                                    normalize=False) 
 
                 if validator._errors:
@@ -377,16 +477,16 @@ class DwcaValidator(Validator):
                 # when the conditional field is not existing in the document,
                 # ignore the if-statement
                 if not set(conditions.keys()).issubset(
-                        set(self.document_str_version.keys())):
+                        set(self.document.keys())):
                     return True
 
-                if tempvalidator.validate(copy(self.document_str_version),
+                if tempvalidator.validate(copy(self.document),
                                           normalize=True):
                     validator = self._get_child_validator(
                         document_crumb=(field, ''.join(['if_', str(i)])),
                         schema_crumb=(field, 'if'),
                         schema={field: rules}, allow_unknown=True)
-                    validator.validate(copy(self.document_str_version),
+                    validator.validate(copy(self.document),
                                        normalize=False)
 
                     if validator._errors:

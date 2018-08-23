@@ -1,5 +1,5 @@
 
-# Usage
+# Tutorial
 
 ## Writing and loading whip specification files
 
@@ -45,7 +45,7 @@ individualCount:
     min: 1
     max: 100
 ```
-*Notice the possibility to include comments*
+*(Notice the possibility to include comments)*
 
 These specifications can be saved to a yaml-file (use the extention `.yaml`), e.g. `observations_example.yaml` 
 and parsed into Python using the yaml-package:
@@ -77,7 +77,7 @@ whip_specs = """
  
 specifications = yaml.load(whip_specs)  
 ```
-or just the Python-object itself:
+or directly the Python-object itself:
 ```python
 import datetime
 specifications = {'individualCount': {'min': 1, 'max': 100, 
@@ -88,7 +88,7 @@ specifications = {'individualCount': {'min': 1, 'max': 100,
                   'country': {'allowed': ['BE', 'NL']}}
 
 ```
-*Notice that the dates are coerced to `datetime.date` objects*
+*(Notice that the dates are coerced to `datetime.date` objects)*
 
 Using one of these approaches, the `specifications` can be used by `pywhip` to control incoming data sets.
 
@@ -145,10 +145,38 @@ with open('report_observations.json', 'w') as json_report:
 
 Which provides a file version of the [json report](report_observations.json).
 
+**Remark:**
+
+In some occasions it is useful to not directly validate the entire data set. In that case,
+use the `maxentries` parameter to define the number of lines to validate: 
+
+```python
+observations_whip = whip_csv("observations_data.csv", 
+                             specifications, delimiter=',',
+                             maxentries=50)
+```
 
 ### Darwin Core Archive
 
-...
+To validate the core file of a [Darwin Core Archive](https://en.wikipedia.org/wiki/Darwin_Core_Archive) 
+zipped data set, the packages relies on the [Darwin Core Reader](https://python-dwca-reader.readthedocs.io/en/latest/)
+package. To directly apply the specifications on a Darwin Core Archive, use the `whip_dwca` function:
+
+```python
+import yaml
+
+from pywhip import whip_dwca
+
+with open("observations_example.yaml") as whip_specs_file:
+    specifications = yaml.load(whip_specs_file)
+
+observations_whip = whip_dwca("observations_data.csv", 
+                              specifications)
+```
+
+Reporting functionalities are the same as the csv-version.
+
+
 
 
 
