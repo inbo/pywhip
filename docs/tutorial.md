@@ -177,8 +177,27 @@ observations_whip = whip_dwca("observations_data.csv",
 Reporting functionalities are the same as the csv-version.
 
 
+## Whip CSV files from the command line
 
+To apply pywhip for data set validation outside Python, use the command line
+interface providing direct application of pywhip on a CSV data set. By installing
+the package, the `whip_csv` command will be available from the command line.
 
+To read the documentation:
+
+```bash
+whip_csv --help
+```
+
+As an example, to whip the data set `observations_data.csv` with a comma as delimiter
+using the whip specifications defined in the `observations_example.yaml` file 
+and printing the output to an `index.html` as an HTML page:
+
+```bash
+whip_csv observations_data.csv observations_example.yaml index.html --delimiter ','
+```
+
+    
 
 
 
