@@ -2,6 +2,10 @@
 History
 =======
 
+0.3.2 (2018-08-27)
+------------------
+* Hot fix on CLI tests
+
 0.3.1 (2018-08-27)
 ------------------
 * Add CLI support to pywhip for CSV files
