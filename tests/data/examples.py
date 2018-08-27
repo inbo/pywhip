@@ -12,10 +12,24 @@ from pywhip import whip_dwca, whip_csv, Whip
 
 
 # -------
-# DICT EXAMPLE
+# URL EXAMPLE
 # -------
 
-# TODO
+alien_macroinvertebrates_yaml = 'https://raw.githubusercontent.com/trias-project/alien-macroinvertebrates/master/specification/dwc_occurrence.yaml'
+# read from URL
+response = requests.get(alien_macroinvertebrates_yaml)
+alien_macroinvertebrates_specifications = yaml.load(response.text)
+
+
+data_url = 'https://raw.githubusercontent.com/trias-project/alien-macroinvertebrates/master/data/processed/dwc_occurrence/occurrence.csv'
+response = requests.get(data_url)
+
+checklist_whip = whip_csv(response.text,
+                          alien_macroinvertebrates_specifications,
+                          delimiter=',')
+
+with open("alien_example.html", "w") as index_page:
+    index_page.write(checklist_whip.get_report('html'))
 
 # -------
 # DOCS CSV EXAMPLE
@@ -23,35 +37,35 @@ from pywhip import whip_dwca, whip_csv, Whip
 
 # TODO: make sure this is recreated when sphinx is building...
 
-with open("../../docs/_static/observations_example.yaml") as schema_file:
-    specifications = yaml.load(schema_file)
-
-observations_whip = whip_csv("../../docs/_static/observations_data.csv",
-                             specifications, delimiter=',')
-
-with open("../../docs/_static/report_observations.html", "w") as index_page:
-    index_page.write(observations_whip.get_report('html'))
-
-with open('../../docs/_static/report_observations.json', 'w') as json_report:
-    json.dump(observations_whip.get_report(), json_report, indent=4,
-              sort_keys=True, ensure_ascii=False)
+# with open("../../docs/_static/observations_example.yaml") as schema_file:
+#     specifications = yaml.load(schema_file)
+#
+# observations_whip = whip_csv("../../docs/_static/observations_data.csv",
+#                              specifications, delimiter=',')
+#
+# with open("../../docs/_static/report_observations.html", "w") as index_page:
+#     index_page.write(observations_whip.get_report('html'))
+#
+# with open('../../docs/_static/report_observations.json', 'w') as json_report:
+#     json.dump(observations_whip.get_report(), json_report, indent=4,
+#               sort_keys=True, ensure_ascii=False)
 
 # -------
 # CSV
 # -------
 
-with open("example_dwc_occurrence.yaml") as schema_file:
-    specifications = yaml.load(schema_file)
-
-example = whip_csv("example_dwc_occurrence_draft.tsv",
-                   specifications, delimiter='\t')
-
-with open("report_example.html", "w") as index_page:
-    index_page.write(example.get_report('html'))
-
-with open('report_example.json', 'w') as json_report:
-    json.dump(example.get_report(), json_report, indent=4,
-              sort_keys=True, ensure_ascii=False)
+# with open("example_dwc_occurrence.yaml") as schema_file:
+#     specifications = yaml.load(schema_file)
+#
+# example = whip_csv("example_dwc_occurrence_draft.tsv",
+#                    specifications, delimiter='\t')
+#
+# with open("report_example.html", "w") as index_page:
+#     index_page.write(example.get_report('html'))
+#
+# with open('report_example.json', 'w') as json_report:
+#     json.dump(example.get_report(), json_report, indent=4,
+#               sort_keys=True, ensure_ascii=False)
 
 # -------
 # SALTABEL
