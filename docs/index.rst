@@ -10,7 +10,8 @@ specifications for data.
 
 .. _`whip specifications`: https://github.com/inbo/whip
 
-.. image:: https://mybinder.org/badge.svg :target: https://mybinder.org/v2/gh/inbo/pywhip/master?filepath=notebooks%2Fwhip_csv_data.ipynb
+.. image:: https://mybinder.org/badge.svg
+   :target: https://mybinder.org/v2/gh/inbo/pywhip/master?filepath=notebooks%2Fwhip_csv_data.ipynb
 
 The short story
 ==================
