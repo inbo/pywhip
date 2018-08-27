@@ -33,7 +33,7 @@ setup(
     packages=find_packages(include=['pywhip']),
     entry_points={
         'console_scripts': [
-            'pywhip=pywhip.cli:main'
+            'whip_csv=pywhip.cli:main'
         ]
     },
     include_package_data=True,

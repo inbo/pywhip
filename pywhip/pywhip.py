@@ -410,7 +410,6 @@ class Whip(object):
             print("Hooray, your data set is according to the guidelines!")
         else:
             print('Dataset does not comply the specifications, check reports'
-                  ' by using the `get_report` method '
                   'for a more detailed information.')
 
     @staticmethod
