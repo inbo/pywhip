@@ -24,7 +24,7 @@ test_requirements = [
 
 setup(
     name='pywhip',
-    version='0.3.1',
+    version='0.3.2',
     description="Python package to validate data against whip specifications",
     long_description=readme + '\n\n' + history,
     author="Stijn Van Hoey",
