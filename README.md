@@ -26,6 +26,12 @@ pip install pywhip
 For more detailed installation instructions, see the 
 [documentation pages](https://inbo.github.io/pywhip/installation.html).
 
+## Test pywhip in jupyter notebook
+
+Launch a jupyter notebook to interactively try out the pywhip package:
+
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/inbo/pywhip/master?filepath=notebooks%2Fwhip_csv_data.ipynb)
+
 ## Quickstart
 
 To validate a CSV data file with the field headers `country`, `eventDate`
