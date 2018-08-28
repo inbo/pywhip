@@ -73,3 +73,6 @@ examples/*/*.zip
 examples/dummy*
 examples/*/dwca-*
 examples/*/*natuurpunt-occurrences*
+
+# Mac OS X
+.DS_Store
