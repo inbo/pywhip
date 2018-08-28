@@ -409,7 +409,7 @@ class Whip(object):
         if self._report['results']['failed_rows'] == 0:
             print("Hooray, your data set is according to the guidelines!")
         else:
-            print('Dataset does not comply the specifications, check reports'
+            print('Dataset does not comply the specifications, check reports '
                   'for a more detailed information.')
 
     @staticmethod
