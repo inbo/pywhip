@@ -407,10 +407,10 @@ class Whip(object):
     def _isitgreat(self):
         """check if there are any errors recorded"""
         if self._report['results']['failed_rows'] == 0:
-            print("Hooray, your data set is according to the guidelines!")
+            print("Hooray, your dataset complies with the specifications!")
         else:
-            print('Dataset does not comply the specifications, check reports'
-                  'for a more detailed information.')
+            print('Your dataset does not comply with the specifications, '
+                  'check reports for a more detailed information.')
 
     @staticmethod
     def generate_dwca(dwca_zip):
