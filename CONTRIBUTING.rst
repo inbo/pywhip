@@ -112,3 +112,17 @@ To run a subset of tests::
 
 $ py.test tests.test_pywhip
 
+Note for maintainers
+--------------------
+
+The repo uses the `bumpversion` package to keep track of the package version. use the following commands to switch the version:
+
+#. ``bumpversion patch`` to increase version from 1.0.0 to 1.0.1.
+#. ``bumpversion minor`` to increase version from 1.0.0 to 1.1.0.
+#. ``bumpversion major`` to increase version from 1.0.0 to 2.0.0.
+
+and push these tags to Github: `git push --tags` to create the release.
+
+
+
+
