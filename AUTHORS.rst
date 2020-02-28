@@ -2,8 +2,10 @@
 Credits
 =======
 
-* Stijn Van Hoey
 * Peter Desmet
+* Nicolas Noé
+* Stijn Van Hoey
+
 
 
 

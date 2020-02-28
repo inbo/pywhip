@@ -8,9 +8,6 @@ from setuptools import setup, find_packages
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
@@ -26,7 +23,8 @@ setup(
     name='pywhip',
     version='0.3.3',
     description="Python package to validate data against whip specifications",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
+    long_description_content_type='text/markdown',
     author="Stijn Van Hoey",
     author_email='stijn.vanhoey@gmail.com',
     url='https://github.com/inbo/pywhip',

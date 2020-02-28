@@ -38,7 +38,7 @@ To validate a CSV data file with the field headers `country`, `eventDate`
 and `individualCount`, write whip specifications, according to the
 [whip syntax](https://github.com/inbo/whip):
 
-```
+```yaml
 specifications = """
     country:
        allowed: [BE, NL]
