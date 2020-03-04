@@ -9,7 +9,7 @@ machine-readable syntax to express specifications for data.
 
 [![Build Status](https://img.shields.io/pypi/v/pywhip.svg)](https://pypi.python.org/pypi/pywhip)
 
-[![Build Status](https://travis-ci.org/inbo/pywhip.svg?branch=master)](https://travis-ci.org/inbo/pywhip)
+[![Build Status](https://travis-ci.com/inbo/pywhip.svg?branch=master)](https://travis-ci.com/inbo/pywhip)
 
 [![Updates](https://pyup.io/repos/github/inbo/pywhip/shield.svg)](https://pyup.io/repos/github/inbo/pywhip/)
 
