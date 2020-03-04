@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from collections import Mapping, defaultdict, MutableMapping
+from collections import Mapping, defaultdict
 
 
 class WhipReportException(Exception):
