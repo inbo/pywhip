@@ -5,6 +5,7 @@ History
 Current
 -------
 * Dropped support for Python 3.4
+* Added official support for Python 3.7 and 3.8
 
 0.3.3
 -----
