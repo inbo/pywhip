@@ -2,6 +2,13 @@
 History
 =======
 
+Current
+-------
+* Dropped support for Python 3.4
+
+0.3.3
+-----
+
 0.3.2 (2018-08-27)
 ------------------
 * Hot fix on CLI tests
