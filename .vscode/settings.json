@@ -1,0 +1,7 @@
+{
+    "python.linting.pylintEnabled": false,
+    "python.linting.banditEnabled": false,
+    "python.linting.enabled": true,
+    "python.pythonPath": "/Users/nicolas_noe/miniconda3/envs/pywhip-dev/bin/python",
+    "python.linting.flake8Enabled": true
+}

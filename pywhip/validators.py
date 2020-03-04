@@ -16,7 +16,7 @@ from cerberus.errors import ErrorDefinition, BasicErrorHandler
 from cerberus.platform import _str_type
 
 """
-For each pywhip custom rule, a :class:`~cerberus.errors.ErrorDefinition` 
+For each pywhip custom rule, a :class:`~cerberus.errors.ErrorDefinition`
 instance is created to link specifications with unique identifiers.
 """
 DELIMITER_SCHEMA = ErrorDefinition(0x85, 'delimitedvalues')
@@ -393,36 +393,36 @@ class DwcaValidator(Validator):
             self._error(field, DATEFORMAT)
 
     def _validate_numberformat(self, formatter, field, value):
-        """ {'type': ['string'],
-            'regex': '^[1-9]\.[1-9]$|^[1-9]\.$|^\.[1-9]$|^[1-9]$|^\.$|^x$'}
+        r""" {'type': ['string'],
+            'regex': r'^[1-9]\.[1-9]$|^[1-9]\.$|^\.[1-9]$|^[1-9]$|^\.$|^x$'}
         """
 
         # ignore - sign to handle negative numbers
         value_str = re.sub("^-", "", value)
 
         # check if value is number format
-        if not re.match('^[0-9]*\.[0-9]*$|^[0-9]+$', value_str):
+        if not re.match(r'^[0-9]*\.[0-9]*$|^[0-9]+$', value_str):
             self._error(field, NUMBERFORMAT_NON_NUM)
-        elif re.match('^x$', formatter):
-            if not re.match('^[-+]?\d+$', value_str):
+        elif re.match(r'^x$', formatter):
+            if not re.match(r'^[-+]?\d+$', value_str):
                 self._error(field, NUMBERFORMAT_NON_INT)
         else:
-            if re.match("[1-9]\.[1-9]", formatter):
+            if re.match(r"[1-9]\.[1-9]", formatter):
                 value_parsed = [len(side) for side in value_str.split(".")]
-            elif re.match("\.[1-9]", formatter):
+            elif re.match(r"\.[1-9]", formatter):
                 if "." in value_str:
                     value_parsed = [len(value_str.split(".")[1])]
                 else:
                     value_parsed = [0]
-            elif re.match("[1-9]\.", formatter):
+            elif re.match(r"[1-9]\.", formatter):
                 value_parsed = [len(value_str.split(".")[0])]
-            elif re.match("[1-9]", formatter):
-                if re.match("[0-9]+", value_str):
+            elif re.match(r"[1-9]", formatter):
+                if re.match(r"[0-9]+", value_str):
                     value_parsed = [len(value_str)]
                 else:
                     value_parsed = [None]
                     self._error(field, NUMBERFORMAT_NON_INT)
-            elif re.match("^\.$", formatter):
+            elif re.match(r"^\.$", formatter):
                 if "." in value_str:
                     value_parsed = []
                 else:
@@ -455,7 +455,7 @@ class DwcaValidator(Validator):
                     document_crumb=(field, 'if'), schema_crumb=(field, 'if'),
                     schema={field: rules}, allow_unknown=True)
                 validator.validate(copy(self.document),
-                                   normalize=False) 
+                                   normalize=False)
 
                 if validator._errors:
                     self._drop_nodes_from_errorpaths(validator._errors,
@@ -553,4 +553,3 @@ class DwcaValidator(Validator):
                 return True
             else:
                 self._error(field, STRINGFORMAT_URL)
-

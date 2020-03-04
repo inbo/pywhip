@@ -3,7 +3,7 @@
 import os
 import csv
 from datetime import datetime
-from collections import defaultdict, Mapping, Sequence
+from collections import Mapping, Sequence
 from pkg_resources import resource_filename
 
 from dwca.read import DwCAReader
@@ -274,13 +274,11 @@ class Whip(object):
                 if_rules = specs['if']
                 # single if statement
                 if isinstance(if_rules, Mapping):
-                    conditional_fields += [key for key in if_rules.keys() if
-                                          isinstance(if_rules[key], dict)]
+                    conditional_fields += [key for key in if_rules.keys() if isinstance(if_rules[key], dict)]
                 # multiple ifs combined
                 elif isinstance(if_rules, Sequence):
                     for rule in if_rules:
-                        conditional_fields += ([key for key in rule.keys() if
-                                            isinstance(rule[key], dict)])
+                        conditional_fields += ([key for key in rule.keys() if isinstance(rule[key], dict)])
                 else:
                     raise SchemaError
         if not set(conditional_fields).issubset(set(file_fields)):
@@ -393,8 +391,7 @@ class Whip(object):
         self._report['results']['total_rows'] = self._total_row_count
         self._report['results']['passed_row_ids'] = passed_row_ids
         self._report['results']['passed_rows'] = len(passed_row_ids)
-        self._report['results']['failed_rows'] = self._total_row_count - \
-                                                 len(passed_row_ids)
+        self._report['results']['failed_rows'] = self._total_row_count - len(passed_row_ids)
         self._report['executed_at'] = datetime.now().strftime("%Y-%m-%d %H:%M")
         self._report['results']['specified_fields'] = \
             self._report_specified_fields(specified_fields,
@@ -504,6 +501,3 @@ class Whip(object):
         html = template.render(report=self._report)
 
         return str(html)
-
-
-

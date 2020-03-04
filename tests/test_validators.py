@@ -8,7 +8,6 @@ Created on Mon Feb 22 15:46:18 2016
 
 import yaml
 import unittest
-from datetime import datetime
 
 import cerberus
 import pytest
@@ -24,23 +23,23 @@ class TestAllowedValidator(unittest.TestCase):
 
         self.yaml_allowed_string = r"""
                                    abundance:
-                                       allowed: many                                  
+                                       allowed: many
                                    """
 
         self.yaml_allowed_list = r"""
                      rightsHolder:
-                         allowed : [INBO]   
+                         allowed : [INBO]
                      sex:
                          allowed : [male, female]
                      age:
-                         allowed : [adult, juvenile, 'adult | juvenile']                                     
+                         allowed : [adult, juvenile, 'adult | juvenile']
                      """
 
         self.yaml_allowed_inputs = r"""
                      age:
                          allowed : 30
                      abundance:
-                         allowed : '30'                                                                
+                         allowed : '30'
                      """
 
     def test_allowed_string(self):
@@ -56,7 +55,7 @@ class TestAllowedValidator(unittest.TestCase):
     def test_allowed_list(self):
         """test if the value is one of the allowed values
         """
-        val = DwcaValidator(yaml.load(self.yaml_allowed_list),
+        val = DwcaValidator(yaml.load(self.yaml_allowed_list, Loader=yaml.FullLoader),
                             error_handler=WhipErrorHandler)
         document = {'rightsHolder': 'INBO'}
         self.assertTrue(val.validate(document))
@@ -77,18 +76,11 @@ class TestAllowedValidator(unittest.TestCase):
         document = {'age': 'adult|juvenile'}
         self.assertFalse(val.validate(document))
 
-    def test_allowed_list(self):
+    def test_allowed_list2(self):
         """see https://github.com/inbo/whip/issues/22
         """
-        with pytest.raises(cerberus.schema.SchemaError) as excinfo:
-            val = DwcaValidator(yaml.load(self.yaml_allowed_inputs, Loader=yaml.FullLoader),
-                                error_handler=WhipErrorHandler)
-
-        #val = DwcaValidator(yaml.load(self.yaml_allowed_inputs))
-        #document = {'age': '30'}
-        #val.validate(document)
-        #document = {'abundance': '30'}
-        #self.assertTrue(val.validate(document))
+        with pytest.raises(cerberus.schema.SchemaError):
+            DwcaValidator(yaml.load(self.yaml_allowed_inputs, Loader=yaml.FullLoader), error_handler=WhipErrorHandler)
 
 
 class TestAllowedQuoteFlavors(unittest.TestCase):
@@ -394,7 +386,7 @@ class TestRegexValidator(unittest.TestCase):
 
         self.yaml_regexfullmatch = r"""
             occurrenceid:
-                regex: '\d{3}:\d{8}'   
+                regex: '\d{3}:\d{8}'
             """
 
     def test_regex_inbo_ids(self):
@@ -432,8 +424,7 @@ class TestRegexValidator(unittest.TestCase):
         """error handling without quotes on regex specifications"""
 
         with pytest.raises(cerberus.schema.SchemaError) as excinfo:
-            val = DwcaValidator(yaml.load(self.yaml_regexit, Loader=yaml.FullLoader),
-                                error_handler=WhipErrorHandler)
+            DwcaValidator(yaml.load(self.yaml_regexit, Loader=yaml.FullLoader), error_handler=WhipErrorHandler)
 
         assert "{'quotes': [{'regex': ['must be of string type']}]}" in \
                str(excinfo.value)
@@ -441,8 +432,7 @@ class TestRegexValidator(unittest.TestCase):
     def test_regex_doublequotehandling(self):
         """error handling with double quotes on regex specifications"""
         with pytest.raises(yaml.scanner.ScannerError) as excinfo:
-            val = DwcaValidator(yaml.load(self.yaml_regexitdouble, Loader=yaml.FullLoader),
-                                error_handler = WhipErrorHandler)
+            DwcaValidator(yaml.load(self.yaml_regexitdouble, Loader=yaml.FullLoader), error_handler=WhipErrorHandler)
         assert "found unknown escape character 'd'" in str(excinfo.value)
 
     def test_regex_onlyfullmatch(self):
@@ -767,7 +757,7 @@ class TestDateValidator(unittest.TestCase):
                                      maxdate: 2014-10-20
                                  date:
                                      maxdate: 2014-10-20
-                                     mindate: 2000-10-20                                         
+                                     mindate: 2000-10-20
                                  """
         self.yaml_string_date5 = r"""
                                  moment:
@@ -776,7 +766,6 @@ class TestDateValidator(unittest.TestCase):
                                  date:
                                      dateformat: ['%Y-%m-%d/%Y-%m-%d']
                                      required: False
-                                    
                                  """
 
     def test_daterange_iso(self):
@@ -854,7 +843,6 @@ class TestDateValidator(unittest.TestCase):
         self.assertFalse(val.validate(document))
         document = {'date': '2016-12'}  # False
         self.assertFalse(val.validate(document))
-
 
     def test_dateformat_line_error(self):
         val = DwcaValidator(yaml.load(self.yaml_string_date2, Loader=yaml.FullLoader),
@@ -988,8 +976,8 @@ class TestEmptyStringHandling(unittest.TestCase):
                             min: 4
                             max: 2
                             numberformat: '.'
-                            empty: True    
-                            required: False                 
+                            empty: True
+                            required: False
                         """
 
     def test_default_error_empty_string(self):
@@ -1144,7 +1132,7 @@ class TestDelimitedValuesValidator(unittest.TestCase):
     def test_delimiter_doubles(self):
         val = DwcaValidator(yaml.load(self.yaml_delimited1, Loader=yaml.FullLoader),
                             error_handler=WhipErrorHandler)
-        document = {'sex': 'male | female | male'} # False
+        document = {'sex': 'male | female | male'}  # False
         self.assertFalse(val.validate(document))
         self.assertEqual(val.errors,
                          {'sex': ['duplicate values in delimitedvalues']})
@@ -1332,7 +1320,7 @@ class TestIfValidator(unittest.TestCase):
                                         sex:
                                             empty: True
                                         lifestage:
-                                            empty: True 
+                                            empty: True
                                             if:
                                                 - sex:
                                                       allowed: [male, female]
@@ -1479,20 +1467,20 @@ class TestRequiredValidator(unittest.TestCase):
 
         self.yaml_single_term = r"""
                                 abundance:
-                                    allowed: many                          
+                                    allowed: many
                                 """
 
         self.yaml_multiple_term = r"""
                                   abundance:
                                     allowed: many
                                   eventDate:
-                                    dateformat: '%Y-%m-%d'  
-                                    required: True                  
+                                    dateformat: '%Y-%m-%d'
+                                    required: True
                                   """
 
         self.yaml_presence_check = r"""
                                    abundance:
-                                     empty: True                   
+                                     empty: True
                                    """
 
         self.yaml_presence_inside_if = r"""
@@ -1580,6 +1568,3 @@ class TestRequiredValidator(unittest.TestCase):
         document = {'coordinateUncertaintyInMeters': '22'}
         val.validate(document)
         self.assertEqual(val.errors, {})
-
-
-

@@ -12,7 +12,7 @@ from pywhip import whip_csv
 
 def _get_output_format(filename):
     """Extract data type format from provided filepath"""
-    regex_extension = "(?<=\.)[a-zA-Z]+$"
+    regex_extension = r"(?<=\.)[a-zA-Z]+$"
     extension = re.findall(regex_extension, filename)[0]
     if extension not in ["json", "html"]:
         raise Exception("Not a valid output file extension for whip reporting,"
