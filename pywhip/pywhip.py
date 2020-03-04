@@ -410,7 +410,7 @@ class Whip(object):
             print("Hooray, your dataset complies with the specifications!")
         else:
             print('Your dataset does not comply with the specifications, '
-                  'check reports for a more detailed information.')
+                  'use get_report() for more detailed information.')
 
     @staticmethod
     def generate_dwca(dwca_zip):

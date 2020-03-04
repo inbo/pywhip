@@ -121,8 +121,7 @@ Hooray, your data set is according to the guidelines!
 If not, a message alerts you to check the errors:
 
 ```
-Dataset does not comply the specifications, check reports by using the `get_report` method 
-for a more detailed information.
+Your dataset does not comply with the specifications, use get_report() for more detailed information.'
 ```
 
 Default reports are provided as `json` or `html`. It is advised to use a context to store 
