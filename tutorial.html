@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&lt;no title&gt; &#8212; pywhip 0.3.3 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API reference" href="reference.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          pywhip</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.3.3</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="installation.html">Install</a></li>
+                <li><a href="#">Tutorial</a></li>
+                <li><a href="reference.html">API Reference</a></li>
+                <li><a href="contributing.html">Contributing</a></li>
+                <li><a href="history.html">History</a></li>
+            
+            
+              
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+<ul class="nav navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="https://twitter.com/LifeWatchINBO">
+        <img src="_static/png/twitter.png" height="15">
+    </a>
+</li>
+<li class="nav-item">
+    <a href="https://github.com/inbo/pywhip">
+        <img src="_static/png/github.png" height="15">
+    </a>
+</li>
+      </ul>
+
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-9 content">
+      
+  <p># Tutorial</p>
+<p>## Writing and loading whip specification files</p>
+<p>Whip specifications in text format are expressed in [YAML](<a class="reference external" href="https://en.wikipedia.org/wiki/YAML">https://en.wikipedia.org/wiki/YAML</a>)
+language,  It uses both Python-style indentation to indicate nesting, and a more compact
+format that uses <cite>[]</cite> for lists and <cite>{}</cite> for key-value maps, making YAML 1.2 a superset of JSON.</p>
+<p>The whip syntax is explained in more detail on the [whip](<a class="reference external" href="https://github.com/inbo/whip">https://github.com/inbo/whip</a>) repository,
+explaining the available specifications.</p>
+<p>Consider the following data set used in a project, with 3 columns:
+* a <cite>eventDate</cite> column, representing the date of occurrence
+* a <cite>individualCount</cite> column with the counts of individuals seen on the date
+* a <cite>country</cite> column, defining the country of the observation</p>
+<p>An subset of the data could look like this:</p>
+<p>&lt;table border=”1” class=”docutils”&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;eventDate&lt;/th&gt;
+&lt;th&gt;individualCount&lt;/th&gt;
+&lt;th&gt;country&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;2018-01-03&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;BA&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2018-04-02&lt;/td&gt;
+&lt;td&gt;20&lt;/td&gt;
+&lt;td&gt;NL&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2016-07-06&lt;/td&gt;
+&lt;td&gt;3300&lt;/td&gt;
+&lt;td&gt;BE&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2017-03-02&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;BE&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;1018-01-08&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;NL&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;</p>
+<p>In the current project, we do know the following about the data:
+* The project was running from 2016 until 2018, so date values should be in this range
+* The project was happening in Belgium and The Netherlandsa and country need to be either <cite>BE</cite> or <cite>NL</cite>
+* Individual counts can not be higher than 100 and should be at least 1
+* Empty values are not allowed (default according to whip specifications)</p>
+<p>We can express these rules as [whip specifications](<a class="reference external" href="https://github.com/inbo/whip">https://github.com/inbo/whip</a>):</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>yaml
+country:</p>
+<blockquote>
+<div><p>allowed: [BE, NL]</p>
+</div></blockquote>
+<dl class="simple">
+<dt>eventDate:</dt><dd><p>dateformat: ‘%Y-%m-%d’
+mindate: 2016-01-01
+maxdate: 2018-12-31</p>
+</dd>
+<dt>individualCount:</dt><dd><p>numberformat: x  # needs to be an integer value
+min: 1
+max: 100</p>
+</dd>
+</dl>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a>`
+<em>(Notice the possibility to include comments)</em></p>
+<p>These specifications can be saved to a yaml-file (use the extention <cite>.yaml</cite>), e.g. <cite>observations_example.yaml</cite>
+and parsed into Python using the yaml-package:</p>
+<p><a href="#id7"><span class="problematic" id="id8">``</span></a><a href="#id9"><span class="problematic" id="id10">`</span></a>python
+import yaml</p>
+<dl class="simple">
+<dt>with open(“observations_example.yaml”) as whip_specs_file:</dt><dd><p>specifications = yaml.load(whip_specs_file)</p>
+</dd>
+</dl>
+<p><a href="#id11"><span class="problematic" id="id12">``</span></a><a href="#id13"><span class="problematic" id="id14">`</span></a></p>
+<p>Similar to loading the file, one can also write the specifications directly in a Python script:</p>
+<p><a href="#id15"><span class="problematic" id="id16">``</span></a><a href="#id17"><span class="problematic" id="id18">`</span></a>python
+import yaml</p>
+<dl>
+<dt>whip_specs = “””</dt><dd><dl class="simple">
+<dt>country:</dt><dd><p>allowed: [BE, NL]</p>
+</dd>
+<dt>eventDate:</dt><dd><p>dateformat: ‘%Y-%m-%d’
+mindate: 2016-01-01
+maxdate: 2018-12-31</p>
+</dd>
+<dt>individualCount:</dt><dd><p>numberformat: x  # needs to be an integer value
+min: 1
+max: 100</p>
+</dd>
+</dl>
+<p>“””</p>
+</dd>
+</dl>
+<p>specifications = yaml.load(whip_specs)
+<a href="#id19"><span class="problematic" id="id20">``</span></a>`
+or directly the Python-object itself:
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a>python
+import datetime
+specifications = {‘individualCount’: {‘min’: 1, ‘max’: 100,</p>
+<blockquote>
+<div><blockquote>
+<div><p>‘numberformat’: ‘x’},</p>
+</div></blockquote>
+<p>‘eventDate’: {‘dateformat’: ‘%Y-%m-%d’,
+‘maxdate’: datetime.date(2018, 12, 31),
+‘mindate’: datetime.date(2016, 1, 1)},
+‘country’: {‘allowed’: [‘BE’, ‘NL’]}}</p>
+</div></blockquote>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a>`
+<em>(Notice that the dates are coerced to `datetime.date` objects)</em></p>
+<p>Using one of these approaches, the <cite>specifications</cite> can be used by <cite>pywhip</cite> to control incoming data sets.</p>
+<p>## Whip a data set</p>
+<p>Pywhip supports a number of data input formats that can be used to apply the whip specifications.</p>
+<p>### CSV files</p>
+<p>Applying whip specifications to a CSV file is supported by the function <cite>whip_csv</cite>, which requires
+a data  file, the whip specifications and the delimiter of the CSV file (<cite>“,”</cite> for CSV, <cite>“t”</cite> for TSV,…)</p>
+<p><a href="#id27"><span class="problematic" id="id28">``</span></a><a href="#id29"><span class="problematic" id="id30">`</span></a>python
+import yaml</p>
+<p>from pywhip import whip_csv</p>
+<dl class="simple">
+<dt>with open(“observations_example.yaml”) as whip_specs_file:</dt><dd><p>specifications = yaml.load(whip_specs_file)</p>
+</dd>
+<dt>observations_whip = whip_csv(“observations_data.csv”,</dt><dd><p>specifications, delimiter=’,’)</p>
+</dd>
+</dl>
+<p><a href="#id31"><span class="problematic" id="id32">``</span></a>`
+When the data set is according to the provided whip specifications, a Hooray message prints to stdout:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">Hooray,</span> <span class="pre">your</span> <span class="pre">data</span> <span class="pre">set</span> <span class="pre">is</span> <span class="pre">according</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">guidelines!</span>
+<span class="pre">`</span></code></p>
+<p>If not, a message alerts you to check the errors:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">Your</span> <span class="pre">dataset</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">comply</span> <span class="pre">with</span> <span class="pre">the</span> <span class="pre">specifications,</span> <span class="pre">use</span> <span class="pre">get_report()</span> <span class="pre">for</span> <span class="pre">more</span> <span class="pre">detailed</span> <span class="pre">information.'</span>
+<span class="pre">`</span></code></p>
+<p>Default reports are provided as <cite>json</cite> or <cite>html</cite>. It is advised to use a context to store
+store the output as file (e.g. called <cite>report_observations.html</cite>):</p>
+<p><a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>python
+with open(“report_observations.html”, “w”) as index_page:</p>
+<blockquote>
+<div><p>index_page.write(observations_whip.get_report(‘html’))</p>
+</div></blockquote>
+<p><a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+<p>By which an [HTML version](report_observations.html) of the error report is generated. Similar,
+a json version of the report can be provided (and returned or saved to file):</p>
+<p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a>python
+import json</p>
+<dl class="simple">
+<dt>with open(‘report_observations.json’, ‘w’) as json_report:</dt><dd><p>json.dump(observations_whip.get_report(), json_report)</p>
+</dd>
+</dl>
+<p><a href="#id45"><span class="problematic" id="id46">``</span></a><a href="#id47"><span class="problematic" id="id48">`</span></a></p>
+<p>Which provides a file version of the [json report](report_observations.json).</p>
+<p><strong>Remark:</strong></p>
+<p>In some occasions it is useful to not directly validate the entire data set. In that case,
+use the <cite>maxentries</cite> parameter to define the number of lines to validate:</p>
+<p><a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a>python
+observations_whip = whip_csv(“observations_data.csv”,</p>
+<blockquote>
+<div><p>specifications, delimiter=’,’,
+maxentries=50)</p>
+</div></blockquote>
+<p><a href="#id53"><span class="problematic" id="id54">``</span></a><a href="#id55"><span class="problematic" id="id56">`</span></a></p>
+<p>### Darwin Core Archive</p>
+<p>To validate the core file of a [Darwin Core Archive](<a class="reference external" href="https://en.wikipedia.org/wiki/Darwin_Core_Archive">https://en.wikipedia.org/wiki/Darwin_Core_Archive</a>)
+zipped data set, the packages relies on the [Darwin Core Reader](<a class="reference external" href="https://python-dwca-reader.readthedocs.io/en/latest/">https://python-dwca-reader.readthedocs.io/en/latest/</a>)
+package. To directly apply the specifications on a Darwin Core Archive, use the <cite>whip_dwca</cite> function:</p>
+<p><a href="#id57"><span class="problematic" id="id58">``</span></a><a href="#id59"><span class="problematic" id="id60">`</span></a>python
+import yaml</p>
+<p>from pywhip import whip_dwca</p>
+<dl class="simple">
+<dt>with open(“observations_example.yaml”) as whip_specs_file:</dt><dd><p>specifications = yaml.load(whip_specs_file)</p>
+</dd>
+<dt>observations_whip = whip_dwca(“observations_data.csv”,</dt><dd><p>specifications)</p>
+</dd>
+</dl>
+<p><a href="#id61"><span class="problematic" id="id62">``</span></a><a href="#id63"><span class="problematic" id="id64">`</span></a></p>
+<p>Reporting functionalities are the same as the csv-version.</p>
+<p>## Whip CSV files from the command line</p>
+<p>To apply pywhip for data set validation outside Python, use the command line
+interface providing direct application of pywhip on a CSV data set. By installing
+the package, the <cite>whip_csv</cite> command will be available from the command line.</p>
+<p>To read the documentation:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">whip_csv</span> <span class="pre">--help</span>
+<span class="pre">`</span></code></p>
+<p>As an example, to whip the data set <cite>observations_data.csv</cite> with a comma as delimiter
+using the whip specifications defined in the <cite>observations_example.yaml</cite> file
+and printing the output to an <cite>index.html</cite> as an HTML page:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">whip_csv</span> <span class="pre">observations_data.csv</span> <span class="pre">observations_example.yaml</span> <span class="pre">index.html</span> <span class="pre">--delimiter</span> <span class="pre">','</span>
+<span class="pre">`</span></code></p>
+
+
+    </div>
+     
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+    <ul class="simple">
+</ul>
+
+
+        </div>
+      </div> 
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/tutorial.md.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, Stijn Van Hoey.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

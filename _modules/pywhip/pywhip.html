@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pywhip.pywhip &#8212; pywhip 0.3.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          pywhip</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.3.3</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../installation.html">Install</a></li>
+                <li><a href="../../tutorial.html">Tutorial</a></li>
+                <li><a href="../../reference.html">API Reference</a></li>
+                <li><a href="../../contributing.html">Contributing</a></li>
+                <li><a href="../../history.html">History</a></li>
+            
+            
+              
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+<ul class="nav navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="https://twitter.com/LifeWatchINBO">
+        <img src="_static/png/twitter.png" height="15">
+    </a>
+</li>
+<li class="nav-item">
+    <a href="https://github.com/inbo/pywhip">
+        <img src="_static/png/github.png" height="15">
+    </a>
+</li>
+      </ul>
+
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-9 content">
+      
+  <h1>Source code for pywhip.pywhip</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+
+<span class="kn">from</span> <span class="nn">dwca.read</span> <span class="kn">import</span> <span class="n">DwCAReader</span>
+<span class="kn">from</span> <span class="nn">cerberus</span> <span class="kn">import</span> <span class="n">SchemaError</span>
+<span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">FileSystemLoader</span><span class="p">,</span> <span class="n">Environment</span>
+
+<span class="kn">from</span> <span class="nn">.validators</span> <span class="kn">import</span> <span class="n">DwcaValidator</span><span class="p">,</span> <span class="n">WhipErrorHandler</span>
+<span class="kn">from</span> <span class="nn">.reporters</span> <span class="kn">import</span> <span class="n">SpecificationErrorHandler</span>
+
+
+<div class="viewcode-block" id="whip_dwca"><a class="viewcode-back" href="../../reference.html#pywhip.pywhip.whip_dwca">[docs]</a><span class="k">def</span> <span class="nf">whip_dwca</span><span class="p">(</span><span class="n">dwca_zip</span><span class="p">,</span> <span class="n">specifications</span><span class="p">,</span> <span class="n">maxentries</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Whip a Darwin Core Archive</span>
+
+<span class="sd">    Validate the core file of a `Darwin Core Archive`_ zipped data set,</span>
+<span class="sd">    using the :class:`~dwca.read.DwCAReader` reading and iterator capabilities.</span>
+
+<span class="sd">    .. _Darwin Core Archive: https://en.wikipedia.org/wiki/Darwin_Core_Archive</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dwca_zip : str</span>
+<span class="sd">        Filename of the zipped Darwin Core Archive.</span>
+<span class="sd">    specifications : dict</span>
+<span class="sd">        Valid specifications whip dictionary schema.</span>
+<span class="sd">    maxentries : int</span>
+<span class="sd">        Define the limit of records to validate from the Archive, useful to</span>
+<span class="sd">        have a quick set on the frst subset of data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    whip_it : pywhip.pywhi.Whip</span>
+<span class="sd">        Whip validator clasc instance, containing the errors and reporting</span>
+<span class="sd">        capabilities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Extract data header - only core support</span>
+    <span class="k">with</span> <span class="n">DwCAReader</span><span class="p">(</span><span class="n">dwca_zip</span><span class="p">)</span> <span class="k">as</span> <span class="n">dwca</span><span class="p">:</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;term&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span>
+                       <span class="n">dwca</span><span class="o">.</span><span class="n">core_file</span><span class="o">.</span><span class="n">file_descriptor</span><span class="o">.</span><span class="n">fields</span><span class="p">]</span>
+
+    <span class="c1"># Apply whip</span>
+    <span class="n">whip_it</span> <span class="o">=</span> <span class="n">Whip</span><span class="p">(</span><span class="n">specifications</span><span class="p">)</span>
+    <span class="n">whip_it</span><span class="o">.</span><span class="n">_whip</span><span class="p">(</span><span class="n">whip_it</span><span class="o">.</span><span class="n">generate_dwca</span><span class="p">(</span><span class="n">dwca_zip</span><span class="p">),</span>
+                  <span class="n">field_names</span><span class="p">,</span> <span class="n">maxentries</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">whip_it</span></div>
+
+
+<div class="viewcode-block" id="whip_csv"><a class="viewcode-back" href="../../reference.html#pywhip.pywhip.whip_csv">[docs]</a><span class="k">def</span> <span class="nf">whip_csv</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">specifications</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">,</span> <span class="n">maxentries</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Whip a CSV-like file</span>
+
+<span class="sd">    Validate a CSV file, using the :class:`CSV &lt;python3:csv.DictReader&gt;`</span>
+<span class="sd">    reading and iterator capabilities of the Python standard library.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    csv_file : str</span>
+<span class="sd">        Filename of the CSV file to whip validate.</span>
+<span class="sd">    specifications : dict</span>
+<span class="sd">        Valid specifications whip dictionary schema.</span>
+<span class="sd">    delimiter : str</span>
+<span class="sd">        A one-character string used to separate fields, e.g. ``&#39;,&#39;``.</span>
+<span class="sd">    maxentries : int</span>
+<span class="sd">        Define the limit of records to validate from the Archive, useful to</span>
+<span class="sd">        have a quick set on the frst subset of data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    whip_it : pywhip.pywhi.Whip</span>
+<span class="sd">        Whip validator class instance, containing the errors and reporting</span>
+<span class="sd">        capabilities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Extract data header</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dwc</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">dwc</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">)</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">fieldnames</span>
+
+    <span class="c1"># Apply whip</span>
+    <span class="n">whip_it</span> <span class="o">=</span> <span class="n">Whip</span><span class="p">(</span><span class="n">specifications</span><span class="p">)</span>
+    <span class="n">whip_it</span><span class="o">.</span><span class="n">_whip</span><span class="p">(</span><span class="n">whip_it</span><span class="o">.</span><span class="n">generate_csv</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">),</span>
+                  <span class="n">field_names</span><span class="p">,</span> <span class="n">maxentries</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">whip_it</span></div>
+
+
+<div class="viewcode-block" id="Whip"><a class="viewcode-back" href="../../reference.html#pywhip.pywhip.Whip">[docs]</a><span class="k">class</span> <span class="nc">Whip</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Whip document validation class</span>
+
+<span class="sd">    Validates (multiple row) documents against a whip specification schema</span>
+<span class="sd">    using the high-level functions ``whip_...`` and creates a validation report</span>
+<span class="sd">    with the :meth:`~pywhip.pywhip.Whip.get_report` method.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sample_size : int</span>
+<span class="sd">        Number of value-examples to use in reporting</span>
+<span class="sd">    schema : dict</span>
+<span class="sd">        Whip specification schema, consisting of `field : constraint`</span>
+<span class="sd">        combinations</span>
+<span class="sd">    validation : pywhip.validators.DwcaValidator</span>
+<span class="sd">        A :class:`~pywhip.validators.DwcaValidator` class instance.</span>
+<span class="sd">    _report : dict</span>
+<span class="sd">        Base report container to collect document errors. Errors are</span>
+<span class="sd">        collected in the [&#39;results&#39;][&#39;specified_fields&#39;] values, having</span>
+<span class="sd">        a :class:`~pywhip.reporters.SpecificationErrorHandler` for each</span>
+<span class="sd">        field-specification combination.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        schema : dict</span>
+<span class="sd">            Whip specification schema, consisting of `field : constraint`</span>
+<span class="sd">            combinations.</span>
+<span class="sd">        sample_size : int</span>
+<span class="sd">            For each of the field-rules combinations, the (top) number of data</span>
+<span class="sd">            value samples/examples to include in the report.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">SchemaError</span><span class="p">(</span><span class="s2">&quot;Input schema need to be dictionary&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="n">schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">=</span> <span class="n">sample_size</span>
+
+        <span class="c1"># setup a DwcaValidator instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validation</span> <span class="o">=</span> <span class="n">DwcaValidator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span>
+                                        <span class="n">error_handler</span><span class="o">=</span><span class="n">WhipErrorHandler</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;executed_at&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                        <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s1">&#39;total_rows&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                            <span class="s1">&#39;passed_rows&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                            <span class="s1">&#39;failed_rows&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                            <span class="s1">&#39;passed_row_ids&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                            <span class="s1">&#39;warnings&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                            <span class="s1">&#39;unspecified_fields&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="s1">&#39;unknown_fields&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                            <span class="s1">&#39;specified_fields&#39;</span><span class="p">:</span> <span class="p">{}</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_total_row_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span>
+
+<div class="viewcode-block" id="Whip.get_report"><a class="viewcode-back" href="../../reference.html#pywhip.pywhip.Whip.get_report">[docs]</a>    <span class="k">def</span> <span class="nf">get_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Collect errors into reporting format (json/html)</span>
+
+<span class="sd">        Converts the logged errors into a json or html style report.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        format : json | html</span>
+<span class="sd">            Define the output format the report is used.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;json&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;html&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_html</span><span class="p">()</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">format_if_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Support to build if-based-rules in report</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rule : str</span>
+<span class="sd">            A whip specification rule.</span>
+<span class="sd">        number : int</span>
+<span class="sd">            The counter of the if-statements used in the whip specification,</span>
+<span class="sd">            counter starts at 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_if_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">format_delimited_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Support to build delimitedvalues-based-rules in report</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rule : str</span>
+<span class="sd">            A whip specification rule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_delimitedvalue&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">clean_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clean constraint for reports</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        constraint : str</span>
+<span class="sd">            The constraint as defined in the whip specification.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">el</span><span class="p">)</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">constraint</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extract_schema_blueprint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract fields and rules from schema</span>
+
+<span class="sd">        For scopes if and delimitedvalues, the function need to extract the</span>
+<span class="sd">        inner-rules from the scope and combine it with the if/delimitedvalue</span>
+<span class="sd">        to ahve unique specification names. A delimitedvalues is providioned</span>
+<span class="sd">        as well for generl delimitedvalues errors</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        schema : dict</span>
+<span class="sd">            Whip specification schema.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema_layout</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">rules</span> <span class="ow">in</span> <span class="n">schema</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">schema_layout</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">rule</span><span class="p">,</span> <span class="n">conditions</span> <span class="ow">in</span> <span class="n">rules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">rule</span> <span class="o">==</span> <span class="s1">&#39;if&#39;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">condition</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
+                        <span class="c1"># TODO: exclude to general schema-def on init validator</span>
+                        <span class="k">if</span> <span class="s1">&#39;empty&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">condition</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                            <span class="n">condition</span><span class="p">[</span><span class="s1">&#39;empty&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">for</span> <span class="n">subrule</span><span class="p">,</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">condition</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="n">subrule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+                                <span class="n">schema_layout</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">format_if_rule</span><span class="p">(</span>
+                                    <span class="n">subrule</span><span class="p">,</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> \
+                                    <span class="n">SpecificationErrorHandler</span><span class="p">(</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">clean_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">rule</span> <span class="o">==</span> <span class="s1">&#39;delimitedvalues&#39;</span><span class="p">:</span>
+                    <span class="n">schema_layout</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">rule</span><span class="p">]</span> <span class="o">=</span> <span class="n">SpecificationErrorHandler</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">subrule</span><span class="p">,</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">conditions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">subrule</span> <span class="o">!=</span> <span class="s1">&#39;delimiter&#39;</span><span class="p">:</span>
+                            <span class="n">schema_layout</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">format_delimited_rule</span><span class="p">(</span>
+                                <span class="n">subrule</span><span class="p">)]</span> <span class="o">=</span> <span class="n">SpecificationErrorHandler</span><span class="p">(</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">clean_constraint</span><span class="p">(</span><span class="n">constraint</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">schema_layout</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">rule</span><span class="p">]</span> <span class="o">=</span> \
+                        <span class="n">SpecificationErrorHandler</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">clean_constraint</span><span class="p">(</span><span class="n">conditions</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">schema_layout</span>
+
+    <span class="k">def</span> <span class="nf">_conditional_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_fields</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the field names mentioned inside if conditions</span>
+
+<span class="sd">        When fields are mentioned inside if statements, but not present in the</span>
+<span class="sd">        data, this should raise a preliminar warning/message as part of the</span>
+<span class="sd">        reporting</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_fields : list | set</span>
+<span class="sd">            List of the field names present in the input data file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conditional_fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">specs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;if&#39;</span> <span class="ow">in</span> <span class="n">specs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">if_rules</span> <span class="o">=</span> <span class="n">specs</span><span class="p">[</span><span class="s1">&#39;if&#39;</span><span class="p">]</span>
+                <span class="c1"># single if statement</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">if_rules</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+                    <span class="n">conditional_fields</span> <span class="o">+=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">if_rules</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">if_rules</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)]</span>
+                <span class="c1"># multiple ifs combined</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">if_rules</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">if_rules</span><span class="p">:</span>
+                        <span class="n">conditional_fields</span> <span class="o">+=</span> <span class="p">([</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">rule</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rule</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">SchemaError</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">conditional_fields</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">file_fields</span><span class="p">)):</span>
+            <span class="n">missing_if_fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">conditional_fields</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span>
+                <span class="nb">set</span><span class="p">(</span><span class="n">file_fields</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;warnings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;Following fields mentioned inside if specifications do not &quot;</span>
+                <span class="s2">&quot;exist inside the document: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_if_fields</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">_compare_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_fields</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compare data fields and specifications</span>
+
+<span class="sd">        Compare the fields mentioned by the specifications schema and the</span>
+<span class="sd">        data set and update thereport attributes on unvalidated and missing</span>
+<span class="sd">        fields</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_fields : list | set</span>
+<span class="sd">            List of the field names present in the input data file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">file_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">file_fields</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;unspecified_fields&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">file_fields</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;unknown_fields&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">file_fields</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_whip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_generator</span><span class="p">,</span> <span class="n">field_names</span><span class="p">,</span> <span class="n">maxentries</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate whip specifications on the input</span>
+
+<span class="sd">         For each entry of the input generator (which can be limited using the</span>
+<span class="sd">         ``maxentries`` parameter, the validation is recording the errors. At</span>
+<span class="sd">         the end, the :attr:`~pywhip.pywhip.Whip._report` attribute is updated</span>
+<span class="sd">         with the error logs and other relevant metadata.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_generator : iterator</span>
+<span class="sd">            An iterator, yielding `field : value` combinations of the document</span>
+<span class="sd">            on each iteration.</span>
+<span class="sd">        field_names : list | set</span>
+<span class="sd">            List of the field names present in the input data file.</span>
+<span class="sd">        maxentries : int</span>
+<span class="sd">            Define the limit of records to validate from the Archive, useful to</span>
+<span class="sd">            have a quick set on the frst subset of data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># preliminar checks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compare_fields</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conditional_fields</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span>
+
+        <span class="c1"># prepare object to save errors</span>
+        <span class="n">specified_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_schema_blueprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+        <span class="n">passed_row_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># validate each row and log the errors for each row</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">input_generator</span><span class="p">):</span>
+            <span class="n">row_id</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>  <span class="c1"># apply specification rules</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">_errors</span><span class="p">:</span>
+                    <span class="n">field</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">field</span>
+
+                    <span class="k">if</span> <span class="n">error</span><span class="o">.</span><span class="n">is_group_error</span><span class="p">:</span>  <span class="c1"># if/delimitedvalues</span>
+                        <span class="k">if</span> <span class="n">error</span><span class="o">.</span><span class="n">rule</span> <span class="o">==</span> <span class="s1">&#39;if&#39;</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">child_error</span> <span class="ow">in</span> <span class="n">error</span><span class="o">.</span><span class="n">child_errors</span><span class="p">:</span>
+                                <span class="n">number</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">child_error</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
+                                    <span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                                <span class="n">rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_if_rule</span><span class="p">(</span>
+                                    <span class="n">child_error</span><span class="o">.</span><span class="n">rule</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+
+                                <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span>\
+                                    <span class="n">error_handler</span><span class="o">.</span><span class="n">_format_message</span><span class="p">(</span><span class="n">field</span><span class="p">,</span>
+                                                                  <span class="n">child_error</span><span class="p">)</span>
+                                <span class="n">specified_fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">rule</span><span class="p">][(</span>
+                                    <span class="n">child_error</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">message</span><span class="p">)]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+
+                        <span class="k">elif</span> <span class="n">error</span><span class="o">.</span><span class="n">rule</span> <span class="o">==</span> <span class="s1">&#39;delimitedvalues&#39;</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">child_error</span> <span class="ow">in</span> <span class="n">error</span><span class="o">.</span><span class="n">child_errors</span><span class="p">:</span>
+                                <span class="n">rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_delimited_rule</span><span class="p">(</span><span class="n">child_error</span><span class="o">.</span><span class="n">rule</span><span class="p">)</span>
+
+                                <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span>\
+                                    <span class="n">error_handler</span><span class="o">.</span><span class="n">_format_message</span><span class="p">(</span><span class="n">field</span><span class="p">,</span>
+                                                                  <span class="n">child_error</span><span class="p">)</span>
+                                <span class="n">specified_fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">rule</span><span class="p">][(</span>
+                                    <span class="n">child_error</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">message</span><span class="p">)]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="ne">NotImplementedError</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validation</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">validator</span><span class="o">.</span>\
+                            <span class="n">error_handler</span><span class="o">.</span><span class="n">_format_message</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+                        <span class="n">specified_fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">error</span><span class="o">.</span><span class="n">rule</span><span class="p">][(</span><span class="n">error</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                                                             <span class="n">message</span><span class="p">)]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">passed_row_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">maxentries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">maxentries</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="c1"># fill report TODO: exclude his from in-function adapts to attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_total_row_count</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;total_rows&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_total_row_count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;passed_row_ids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">passed_row_ids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;passed_rows&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">passed_row_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;failed_rows&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_total_row_count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">passed_row_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;executed_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;specified_fields&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report_specified_fields</span><span class="p">(</span><span class="n">specified_fields</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">_total_row_count</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">sample_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_isitgreat</span><span class="p">()</span>
+
+        <span class="c1"># TODO: add generator function and dict-searches to query errors</span>
+
+    <span class="k">def</span> <span class="nf">_isitgreat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;check if there are any errors recorded&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="s1">&#39;failed_rows&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hooray, your dataset complies with the specifications!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Your dataset does not comply with the specifications, &#39;</span>
+                  <span class="s1">&#39;use get_report() for more detailed information.&#39;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_dwca</span><span class="p">(</span><span class="n">dwca_zip</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Darwin core archive generator</span>
+
+<span class="sd">        Yields `field : value` combinations of the document on each iteration,</span>
+<span class="sd">        corresponding to individual rows of the data file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dwca_zip : str</span>
+<span class="sd">            Filename of the zipped Darwin Core Archive.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        document : dict</span>
+<span class="sd">            Provides a single line document values (as dict values) and</span>
+<span class="sd">            field names (as dict keys).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">DwCAReader</span><span class="p">(</span><span class="n">dwca_zip</span><span class="p">)</span> <span class="k">as</span> <span class="n">dwca</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">dwca</span><span class="p">:</span>
+                <span class="n">document</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="k">yield</span> <span class="n">document</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_csv</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;CSV File generator</span>
+
+<span class="sd">        Yields `field : value` combinations of the document on each iteration,</span>
+<span class="sd">        corresponding to individual rows of the data file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        csv_file : str</span>
+<span class="sd">            Filename of the CSV file to whip validate.</span>
+<span class="sd">        delimiter : str</span>
+<span class="sd">            A one-character string used to separate fields, e.g. ``&#39;,&#39;``.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        document : dict</span>
+<span class="sd">            Provides a single line document values (as dict values) and</span>
+<span class="sd">            field names (as dict keys).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dwc</span><span class="p">:</span>
+            <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">dwc</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">document</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_report_specified_fields</span><span class="p">(</span><span class="n">specified_fields</span><span class="p">,</span> <span class="n">nrows</span><span class="p">,</span> <span class="n">nsample</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transform the data objects to report objects</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        specified_fields : dict</span>
+<span class="sd">            Dictionary with a `~pywhip.reporters.SpecificationErrorHandler`</span>
+<span class="sd">            object for each field-specification combination.</span>
+<span class="sd">        nrows : int</span>
+<span class="sd">            Total rows of the current document working with, used to calculate</span>
+<span class="sd">            passed rows as well</span>
+<span class="sd">        nsample : int</span>
+<span class="sd">            Number of samples (ordered on the number of rows) to retain for</span>
+<span class="sd">            reporting purposes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">rules</span> <span class="ow">in</span> <span class="n">specified_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">rule</span><span class="p">,</span> <span class="n">error_report</span> <span class="ow">in</span> <span class="n">rules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">specified_fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">rule</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="n">specified_fields</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">rule</span><span class="p">]</span><span class="o">.</span><span class="n">build_error_report</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span>
+                                                                     <span class="n">nsample</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">specified_fields</span>
+
+<div class="viewcode-block" id="Whip.create_html"><a class="viewcode-back" href="../../reference.html#pywhip.pywhip.Whip.create_html">[docs]</a>    <span class="k">def</span> <span class="nf">create_html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Build html using template</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;./static/template.html&quot;</span>
+
+        <span class="n">html_template_path</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="n">FileSystemLoader</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">html_template_path</span><span class="p">)))</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">html_template_path</span><span class="p">))</span>
+        <span class="n">html</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">report</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">html</span><span class="p">)</span></div></div>
+</pre></div>
+
+    </div>
+     
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+    
+
+        </div>
+      </div> 
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, Stijn Van Hoey.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

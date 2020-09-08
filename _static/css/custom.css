@@ -1,0 +1,32 @@
+.bs-sidenav {
+  background-color: white;
+}
+
+.bs-sidenav .nav .nav > li > a {
+    color: #008cba;
+}
+
+#home-sidebar-external-links a {
+    color: #008cba;
+}
+
+.content h1 {
+    padding-top: 40px;
+}
+
+.content h2 {
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+    .navbar-right {
+        margin-right: 0rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .navbar-right {
+        margin-right: 4rem;
+    }
+}

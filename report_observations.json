@@ -1,0 +1,102 @@
+{
+    "errors": [],
+    "executed_at": "2018-08-22 21:32",
+    "results": {
+        "failed_rows": 3,
+        "passed_row_ids": [
+            2,
+            4
+        ],
+        "passed_rows": 2,
+        "specified_fields": {
+            "country": {
+                "allowed": {
+                    "constraint": "BE, NL",
+                    "failed_rows": 1,
+                    "passed_rows": 4,
+                    "samples": {
+                        "BA": {
+                            "failed_rows": 1,
+                            "first_row": 1,
+                            "message": "unallowed value BA"
+                        }
+                    }
+                },
+                "empty": {
+                    "constraint": "False",
+                    "failed_rows": 0,
+                    "passed_rows": 5,
+                    "samples": {}
+                }
+            },
+            "eventDate": {
+                "dateformat": {
+                    "constraint": "%Y-%m-%d",
+                    "failed_rows": 0,
+                    "passed_rows": 5,
+                    "samples": {}
+                },
+                "empty": {
+                    "constraint": "False",
+                    "failed_rows": 0,
+                    "passed_rows": 5,
+                    "samples": {}
+                },
+                "maxdate": {
+                    "constraint": "2018-12-31",
+                    "failed_rows": 0,
+                    "passed_rows": 5,
+                    "samples": {}
+                },
+                "mindate": {
+                    "constraint": "2016-01-01",
+                    "failed_rows": 1,
+                    "passed_rows": 4,
+                    "samples": {
+                        "1018-01-08": {
+                            "failed_rows": 1,
+                            "first_row": 5,
+                            "message": "date '1018-01-08' is before min limit '2016-01-01'"
+                        }
+                    }
+                }
+            },
+            "individualCount": {
+                "empty": {
+                    "constraint": "False",
+                    "failed_rows": 0,
+                    "passed_rows": 5,
+                    "samples": {}
+                },
+                "max": {
+                    "constraint": "100",
+                    "failed_rows": 1,
+                    "passed_rows": 4,
+                    "samples": {
+                        "3300": {
+                            "failed_rows": 1,
+                            "first_row": 3,
+                            "message": "max value is 100"
+                        }
+                    }
+                },
+                "min": {
+                    "constraint": "1",
+                    "failed_rows": 0,
+                    "passed_rows": 5,
+                    "samples": {}
+                },
+                "numberformat": {
+                    "constraint": "x",
+                    "failed_rows": 0,
+                    "passed_rows": 5,
+                    "samples": {}
+                }
+            }
+        },
+        "total_rows": 5,
+        "unknown_fields": [],
+        "unspecified_fields": [],
+        "warnings": []
+    }
+}

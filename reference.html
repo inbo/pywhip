@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API reference &#8212; pywhip 0.3.3 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="tutorial.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          pywhip</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.3.3</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="installation.html">Install</a></li>
+                <li><a href="tutorial.html">Tutorial</a></li>
+                <li><a href="#">API Reference</a></li>
+                <li><a href="contributing.html">Contributing</a></li>
+                <li><a href="history.html">History</a></li>
+            
+            
+              
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+<ul class="nav navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="https://twitter.com/LifeWatchINBO">
+        <img src="_static/png/twitter.png" height="15">
+    </a>
+</li>
+<li class="nav-item">
+    <a href="https://github.com/inbo/pywhip">
+        <img src="_static/png/github.png" height="15">
+    </a>
+</li>
+      </ul>
+
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-9 content">
+      
+  <div class="section" id="api-reference">
+<h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="high-level-functions">
+<h2>High level functions<a class="headerlink" href="#high-level-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="pywhip.pywhip.whip_csv">
+<code class="sig-prename descclassname">pywhip.pywhip.</code><code class="sig-name descname">whip_csv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">csv_file</span></em>, <em class="sig-param"><span class="n">specifications</span></em>, <em class="sig-param"><span class="n">delimiter</span></em>, <em class="sig-param"><span class="n">maxentries</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/pywhip.html#whip_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.pywhip.whip_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whip a CSV-like file</p>
+<p>Validate a CSV file, using the <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.DictReader" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CSV</span></code></a>
+reading and iterator capabilities of the Python standard library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>csv_file</strong><span class="classifier">str</span></dt><dd><p>Filename of the CSV file to whip validate.</p>
+</dd>
+<dt><strong>specifications</strong><span class="classifier">dict</span></dt><dd><p>Valid specifications whip dictionary schema.</p>
+</dd>
+<dt><strong>delimiter</strong><span class="classifier">str</span></dt><dd><p>A one-character string used to separate fields, e.g. <code class="docutils literal notranslate"><span class="pre">','</span></code>.</p>
+</dd>
+<dt><strong>maxentries</strong><span class="classifier">int</span></dt><dd><p>Define the limit of records to validate from the Archive, useful to
+have a quick set on the frst subset of data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>whip_it</strong><span class="classifier">pywhip.pywhi.Whip</span></dt><dd><p>Whip validator class instance, containing the errors and reporting
+capabilities.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pywhip.pywhip.whip_dwca">
+<code class="sig-prename descclassname">pywhip.pywhip.</code><code class="sig-name descname">whip_dwca</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dwca_zip</span></em>, <em class="sig-param"><span class="n">specifications</span></em>, <em class="sig-param"><span class="n">maxentries</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/pywhip.html#whip_dwca"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.pywhip.whip_dwca" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whip a Darwin Core Archive</p>
+<p>Validate the core file of a <a class="reference external" href="https://en.wikipedia.org/wiki/Darwin_Core_Archive">Darwin Core Archive</a> zipped data set,
+using the <a class="reference external" href="https://python-dwca-reader.readthedocs.io/en/latest/api.html#dwca.read.DwCAReader" title="(in Python-dwca-reader v0.13.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DwCAReader</span></code></a> reading and iterator capabilities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dwca_zip</strong><span class="classifier">str</span></dt><dd><p>Filename of the zipped Darwin Core Archive.</p>
+</dd>
+<dt><strong>specifications</strong><span class="classifier">dict</span></dt><dd><p>Valid specifications whip dictionary schema.</p>
+</dd>
+<dt><strong>maxentries</strong><span class="classifier">int</span></dt><dd><p>Define the limit of records to validate from the Archive, useful to
+have a quick set on the frst subset of data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>whip_it</strong><span class="classifier">pywhip.pywhi.Whip</span></dt><dd><p>Whip validator clasc instance, containing the errors and reporting
+capabilities.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="document-validation">
+<h2>Document validation<a class="headerlink" href="#document-validation" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pywhip.pywhip.Whip">
+<em class="property">class </em><code class="sig-prename descclassname">pywhip.pywhip.</code><code class="sig-name descname">Whip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">schema</span></em>, <em class="sig-param"><span class="n">sample_size</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/pywhip.html#Whip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.pywhip.Whip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whip document validation class</p>
+<p>Validates (multiple row) documents against a whip specification schema
+using the high-level functions <code class="docutils literal notranslate"><span class="pre">whip_...</span></code> and creates a validation report
+with the <a class="reference internal" href="#pywhip.pywhip.Whip.get_report" title="pywhip.pywhip.Whip.get_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_report()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sample_size</strong><span class="classifier">int</span></dt><dd><p>Number of value-examples to use in reporting</p>
+</dd>
+<dt><strong>schema</strong><span class="classifier">dict</span></dt><dd><p>Whip specification schema, consisting of <cite>field : constraint</cite>
+combinations</p>
+</dd>
+<dt><strong>validation</strong><span class="classifier">pywhip.validators.DwcaValidator</span></dt><dd><p>A <a class="reference internal" href="#pywhip.validators.DwcaValidator" title="pywhip.validators.DwcaValidator"><code class="xref py py-class docutils literal notranslate"><span class="pre">DwcaValidator</span></code></a> class instance.</p>
+</dd>
+<dt><strong>_report</strong><span class="classifier">dict</span></dt><dd><p>Base report container to collect document errors. Errors are
+collected in the [‘results’][‘specified_fields’] values, having
+a <a class="reference internal" href="#pywhip.reporters.SpecificationErrorHandler" title="pywhip.reporters.SpecificationErrorHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpecificationErrorHandler</span></code></a> for each
+field-specification combination.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>schema</strong><span class="classifier">dict</span></dt><dd><p>Whip specification schema, consisting of <cite>field : constraint</cite>
+combinations.</p>
+</dd>
+<dt><strong>sample_size</strong><span class="classifier">int</span></dt><dd><p>For each of the field-rules combinations, the (top) number of data
+value samples/examples to include in the report.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pywhip.pywhip.Whip.create_html">
+<code class="sig-name descname">create_html</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/pywhip.html#Whip.create_html"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.pywhip.Whip.create_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build html using template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt>str</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pywhip.pywhip.Whip.get_report">
+<code class="sig-name descname">get_report</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">format</span><span class="o">=</span><span class="default_value">'json'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/pywhip.html#Whip.get_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.pywhip.Whip.get_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect errors into reporting format (json/html)</p>
+<p>Converts the logged errors into a json or html style report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>format</strong><span class="classifier">json | html</span></dt><dd><p>Define the output format the report is used.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>str</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="specification-handling">
+<h2>Specification handling<a class="headerlink" href="#specification-handling" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#pywhip.validators.DwcaValidator" title="pywhip.validators.DwcaValidator"><code class="xref py py-class docutils literal notranslate"><span class="pre">DwcaValidator</span></code></a> is the underlying engine to handle
+the validation of incoming values against the whip specifications. It
+extends the existing <a class="reference external" href="https://docs.python-cerberus.org/en/stable/api.html#cerberus.Validator" title="(in Cerberus v1.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cerberus</span> <span class="pre">Validator</span></code></a> class.</p>
+<span class="target" id="module-pywhip.validators"></span><dl class="py class">
+<dt id="pywhip.validators.DwcaValidator">
+<em class="property">class </em><code class="sig-prename descclassname">pywhip.validators.</code><code class="sig-name descname">DwcaValidator</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/validators.html#DwcaValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.validators.DwcaValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates any mapping against specifications defined in a
+validation-schema</p>
+<p>In the context of pywhip, a mapping is generally a single line of data,
+with the keys the fields (data headers) and the values the data values for
+that particular line.</p>
+<p class="rubric">Notes</p>
+<p>This class subclasses <a class="reference external" href="https://docs.python-cerberus.org/en/stable/api.html#cerberus.Validator" title="(in Cerberus v1.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Validator</span></code></a> and adds pywhip specific
+<code class="docutils literal notranslate"><span class="pre">_validate_&lt;specification&gt;</span></code> methods.</p>
+<p>The whip specifications are a combination of cerberus native specifications
+and pywhip custom ones:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>directly available by cerberus</dt><dd><p>minlength, maxlength, regex</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>cerberus specifications overwritten by pywhip</dt><dd><p>allowed, empty, min, max</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>pywhip specific specification functions</dt><dd><p>numberformat, dateformat, mindate, maxdate, stringformat</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>pywhip specific specification environments:</dt><dd><p>delimitedValues, if</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Each <code class="docutils literal notranslate"><span class="pre">_validate_&lt;specification&gt;</span></code> assumes the following input arguments:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>constraint:</dt><dd><p>The constraint provided in the whip specification, i.e. the
+right hand side of the colon in the whip specifications. In the
+implementation, the input parameter can be names differently to clarify
+the role of the constraint in the validation function.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>field:</dt><dd><p>The name of the field, i.e. the left hand side of the colon
+in the whip specifications which corresponds to the field header name
+in the data.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>value:</dt><dd><p>A single data value for which the whip specification needs to be tested
+using the provided constraint.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To validate the schema input itself, cerberus validation rules can be added
+to the docstring TODO ADDLINK</p>
+<p>Extends the handling of Cerberus <a class="reference external" href="https://docs.python-cerberus.org/en/stable/api.html#cerberus.Validator" title="(in Cerberus v1.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Validator</span></code></a></p>
+<p>The following alterations are done:
+* Allow_unkown is default set on True
+* Initaition requires a schema
+* By default, all fields without <code class="docutils literal notranslate"><span class="pre">empty</span></code> specification get an
+<code class="docutils literal notranslate"><span class="pre">empty:</span> <span class="pre">False</span></code> specification. As such, empy strings are not allowed
+by default, according to whip specifications.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>allow_unknown</strong><span class="classifier">boolean</span></dt><dd><p>If False, only terms with specifications are allowed as input. As
+unknown fields are reported by pywhip after validation, the
+default value is False.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pywhip.validators.WhipErrorHandler">
+<em class="property">class </em><code class="sig-prename descclassname">pywhip.validators.</code><code class="sig-name descname">WhipErrorHandler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tree</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/validators.html#WhipErrorHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.validators.WhipErrorHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to store custom error message handling</p>
+<p>The WhipErrorHandler updates the
+<a class="reference external" href="https://docs.python-cerberus.org/en/stable/api.html#cerberus.errors.BasicErrorHandler" title="(in Cerberus v1.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasicErrorHandler</span></code></a> with custom messages for
+pywhip specific specifications. Each of the messages updates the
+message of a specification error, using the unique code
+attributed in the <a class="reference external" href="https://docs.python-cerberus.org/en/stable/api.html#cerberus.errors.ErrorDefinition" title="(in Cerberus v1.3.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ErrorDefinition</span></code></a> setup.</p>
+<p>The message is a descriptive message about the error and can optionally
+use the following variables:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>value</dt><dd><p>This refers to the individual data value of the document,
+use <code class="docutils literal notranslate"><span class="pre">{value}</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>constraint</dt><dd><p>This refers to the constraint provided by the whip
+specification right hand side of the colon, use <code class="docutils literal notranslate"><span class="pre">{constraint}</span></code></p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Optionally initialize a new instance.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pywhip.reporters">
+<span id="reporter-objects"></span><h2>Reporter Objects<a class="headerlink" href="#module-pywhip.reporters" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="pywhip.reporters.SpecificationErrorHandler">
+<em class="property">class </em><code class="sig-prename descclassname">pywhip.reporters.</code><code class="sig-name descname">SpecificationErrorHandler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">constraint</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/reporters.html#SpecificationErrorHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.reporters.SpecificationErrorHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class handler for field-rule entity reporting</p>
+<p class="rubric">Notes</p>
+<p>The <a class="reference internal" href="#pywhip.reporters.SpecificationErrorHandler" title="pywhip.reporters.SpecificationErrorHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpecificationErrorHandler</span></code></a> class is basically
+an enriched dictionary (using <a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.8)"><span class="xref std std-term">mapping</span></a>), directly building on top
+of a <a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.defaultdict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">defaultdict</span></code></a> with the (wrong) values as
+keys and a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code></a> as values to add (unique) rows for which
+that value occurs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>constraint</strong><span class="classifier">str</span></dt><dd><p>The constraint linked to the specification (field-rule combination),
+expressed as string</p>
+</dd>
+<dt><strong>_samples</strong><span class="classifier">defaultdict(set)</span></dt><dd><p>Dictionary with wrong data values as keys and the corresponding row
+identifiers as values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pywhip.reporters.SpecificationErrorHandler.build_error_report">
+<code class="sig-name descname">build_error_report</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">total_rows_count</span></em>, <em class="sig-param"><span class="n">top_n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pywhip/reporters.html#SpecificationErrorHandler.build_error_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.reporters.SpecificationErrorHandler.build_error_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert defaultdict to regular dict for json reporting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>total_rows_count</strong><span class="classifier">int</span></dt><dd><p>Total rows of the current document working with, used to calculate
+passed rows as well</p>
+</dd>
+<dt><strong>top_n</strong><span class="classifier">int</span></dt><dd><p>Number of samples (ordered on the number of rows) to retain for
+reporting purposes</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p><a class="reference internal" href="#pywhip.reporters.SpecificationErrorHandler.build_error_report" title="pywhip.reporters.SpecificationErrorHandler.build_error_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">build_error_report()</span></code></a>
+combines the information contained by the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">_samples</span></code>
+attribute, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span> <span class="p">(</span><span class="s2">&quot;07241981&quot;</span><span class="p">,</span> <span class="s2">&quot;string format ...&quot;</span><span class="p">)</span> <span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+  <span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;message as provided by error&quot;</span><span class="p">)</span> <span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>together with the other attributes into a json-style report:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;constraint&quot;</span><span class="p">:</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">, %Y-%m, %Y&quot;</span><span class="p">,</span>
+ <span class="s2">&quot;failed_rows&quot;</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>
+ <span class="s2">&quot;passed_rows&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+ <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;07241981&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;failed_rows&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s2">&quot;first_row&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;string format ...&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;failed_rows&quot;</span><span class="p">:</span> <span class="n">n_rows</span><span class="p">,</span>
+        <span class="s2">&quot;first_row&quot;</span><span class="p">:</span> <span class="n">minimum</span> <span class="n">of</span> <span class="n">row</span> <span class="n">identifiers</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;message as provided by error&quot;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt id="pywhip.reporters.WhipReportException">
+<em class="property">exception </em><code class="sig-prename descclassname">pywhip.reporters.</code><code class="sig-name descname">WhipReportException</code><a class="reference internal" href="_modules/pywhip/reporters.html#WhipReportException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pywhip.reporters.WhipReportException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when the reporting of the errors contains errors</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+    </div>
+     
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+    <ul>
+<li><a class="reference internal" href="#">API reference</a><ul>
+<li><a class="reference internal" href="#high-level-functions">High level functions</a></li>
+<li><a class="reference internal" href="#document-validation">Document validation</a></li>
+<li><a class="reference internal" href="#specification-handling">Specification handling</a></li>
+<li><a class="reference internal" href="#module-pywhip.reporters">Reporter Objects</a></li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div> 
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/reference.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, Stijn Van Hoey.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

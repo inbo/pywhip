@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pywhip &#8212; pywhip 0.3.3 documentation</title>
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">
+          pywhip</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.3.3</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="installation.html">Install</a></li>
+                <li><a href="tutorial.html">Tutorial</a></li>
+                <li><a href="reference.html">API Reference</a></li>
+                <li><a href="contributing.html">Contributing</a></li>
+                <li><a href="history.html">History</a></li>
+            
+            
+              
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+<ul class="nav navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="https://twitter.com/LifeWatchINBO">
+        <img src="_static/png/twitter.png" height="15">
+    </a>
+</li>
+<li class="nav-item">
+    <a href="https://github.com/inbo/pywhip">
+        <img src="_static/png/github.png" height="15">
+    </a>
+</li>
+      </ul>
+
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-9 content">
+      
+  <div class="section" id="pywhip">
+<h1>pywhip<a class="headerlink" href="#pywhip" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p>The pywhip package is a Python package to validate data against
+<a class="reference external" href="https://github.com/inbo/whip">whip specifications</a>, a human and machine-readable syntax to express
+specifications for data.</p>
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/inbo/pywhip/master?filepath=notebooks%2Fwhip_csv_data.ipynb"><img alt="https://mybinder.org/badge.svg" src="https://mybinder.org/badge.svg" /></a>
+<div class="section" id="the-short-story">
+<h2>The short story<a class="headerlink" href="#the-short-story" title="Permalink to this headline">¶</a></h2>
+<p>Pywhip is used to validate a data set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eventDate</span>   <span class="n">individualCount</span>  <span class="n">country</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">03</span>  <span class="mi">5</span>                 <span class="n">BA</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mi">04</span><span class="o">-</span><span class="mi">02</span>  <span class="mi">20</span>                <span class="n">NL</span>
+<span class="mi">2016</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">06</span>  <span class="mi">3300</span>              <span class="n">BE</span>
+<span class="mi">2017</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">02</span>  <span class="mi">2</span>                 <span class="n">BE</span>
+<span class="mi">1018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">08</span>  <span class="mi">1</span>                 <span class="n">NL</span>
+</pre></div>
+</div>
+<p>against a set of <a class="reference external" href="https://github.com/inbo/whip">whip specifications</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">country</span><span class="p">:</span>
+   <span class="n">allowed</span><span class="p">:</span> <span class="p">[</span><span class="n">BE</span><span class="p">,</span> <span class="n">NL</span><span class="p">]</span>
+<span class="n">eventDate</span><span class="p">:</span>
+    <span class="n">dateformat</span><span class="p">:</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span>
+    <span class="n">mindate</span><span class="p">:</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span>
+    <span class="n">maxdate</span><span class="p">:</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span>
+<span class="n">individualCount</span><span class="p">:</span>
+    <span class="n">numberformat</span><span class="p">:</span> <span class="n">x</span>  <span class="c1"># needs to be an integer value</span>
+    <span class="nb">min</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>to get a whip validator report:</p>
+<iframe src="_static/report_observations.html" height="400px" width="100%"></iframe><p>and celebrate or despair…</p>
+</div>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+    </div>
+     
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+<div class="home_sidebar">
+    <div class="links" id="home-sidebar-external-links">
+    <h3>Links</h3>
+    <ul class="list-unstyled">
+        <li>Browse source code at <br><a href="https://github.com/inbo/pywhip">https://​github.com/​inbo/pywhip</a></li>
+        <li>Report a bug at <br><a href="https://github.com/inbo/pywhip/issues">https://​github.com/​inbo/pywhip/​issues</a></li>
+        <li>Get to know our team at <br><a href="https://lifewatch.inbo.be">https://​lifewatch.inbo.be</a></li>
+    </ul>
+    </div>
+
+    <div class="license">
+    <h3>License</h3>
+    <ul class="list-unstyled">
+        <li>
+            <p><a href="https://opensource.org/licenses/mit-license.php">MIT</a> + file <a href="https://github.com/inbo/pywhip/blob/master/LICENSE">LICENSE</a></p>
+        </li>
+    </ul>
+    </div>
+
+    <div class="developers">
+    <h3>Developers</h3>
+    <ul class="list-unstyled">
+        <li>
+            <p>
+                <a href="https://github.com/stijnvanhoey">Stijn Van Hoey</a>
+                <a href="https://orcid.org/0000-0001-6413-3185" target="orcid.widget">
+                    <img src="https://members.orcid.org/sites/default/files/vector_iD_icon.svg" class="orcid" height="16">
+                </a>
+            </p>
+            <p>
+                <a href="https://github.com/peterdesmet">Peter Desmet</a>
+                <a href="https://orcid.org/0000-0002-8442-8025" target="orcid.widget">
+                    <img src="https://members.orcid.org/sites/default/files/vector_iD_icon.svg" class="orcid" height="16">
+                </a>
+            </p>
+        </li>
+        <li><a href="authors.html">All authors...</a></li>
+    </ul>
+    </div>
+
+    <div class="dev-status">
+    <h3>Dev status</h3>
+    <ul class="list-unstyled">
+        <li><a href="https://travis-ci.org/inbo/pywhip"><img alt="https://img.shields.io/travis/inbo/pywhip.svg" src="https://img.shields.io/travis/inbo/pywhip.svg"></a></li>
+        <li><a href="https://pypi.python.org/pypi/pywhip"><img alt="https://img.shields.io/pypi/v/pywhip.svg" src="https://img.shields.io/pypi/v/pywhip.svg"></a></li>
+        <li><a href="https://pyup.io/repos/github/inbo/pywhip/"><img alt="Updates" src="https://pyup.io/repos/github/inbo/pywhip/shield.svg"></a></li>
+    </ul>
+    </div>
+</div>
+
+        </div>
+      </div> 
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/index.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, Stijn Van Hoey.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

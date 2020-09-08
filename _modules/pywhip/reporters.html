@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pywhip.reporters &#8212; pywhip 0.3.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          pywhip</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.3.3</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../installation.html">Install</a></li>
+                <li><a href="../../tutorial.html">Tutorial</a></li>
+                <li><a href="../../reference.html">API Reference</a></li>
+                <li><a href="../../contributing.html">Contributing</a></li>
+                <li><a href="../../history.html">History</a></li>
+            
+            
+              
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+<ul class="nav navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="https://twitter.com/LifeWatchINBO">
+        <img src="_static/png/twitter.png" height="15">
+    </a>
+</li>
+<li class="nav-item">
+    <a href="https://github.com/inbo/pywhip">
+        <img src="_static/png/github.png" height="15">
+    </a>
+</li>
+      </ul>
+
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-9 content">
+      
+  <h1>Source code for pywhip.reporters</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">defaultdict</span>
+
+
+<div class="viewcode-block" id="WhipReportException"><a class="viewcode-back" href="../../reference.html#pywhip.reporters.WhipReportException">[docs]</a><span class="k">class</span> <span class="nc">WhipReportException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when the reporting of the errors contains errors&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="SpecificationErrorHandler"><a class="viewcode-back" href="../../reference.html#pywhip.reporters.SpecificationErrorHandler">[docs]</a><span class="k">class</span> <span class="nc">SpecificationErrorHandler</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class handler for field-rule entity reporting</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    constraint : str</span>
+<span class="sd">        The constraint linked to the specification (field-rule combination),</span>
+<span class="sd">        expressed as string</span>
+<span class="sd">    _samples : defaultdict(set)</span>
+<span class="sd">        Dictionary with wrong data values as keys and the corresponding row</span>
+<span class="sd">        identifiers as values.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The :class:`~pywhip.reporters.SpecificationErrorHandler` class is basically</span>
+<span class="sd">    an enriched dictionary (using :term:`mapping`), directly building on top</span>
+<span class="sd">    of a :class:`~collections.defaultdict` with the (wrong) values as</span>
+<span class="sd">    keys and a :class:`set` as values to add (unique) rows for which</span>
+<span class="sd">    that value occurs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: add control that keys are tuples only (__setitem__)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraint</span> <span class="o">=</span> <span class="n">constraint</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_unique_value_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if all values are linked to a single message&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()]))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="nf">_failed_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Overview of the failed row identifiers&quot;&quot;&quot;</span>
+        <span class="n">row_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">row_ids</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">row_ids</span>
+
+<div class="viewcode-block" id="SpecificationErrorHandler.build_error_report"><a class="viewcode-back" href="../../reference.html#pywhip.reporters.SpecificationErrorHandler.build_error_report">[docs]</a>    <span class="k">def</span> <span class="nf">build_error_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_rows_count</span><span class="p">,</span> <span class="n">top_n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert defaultdict to regular dict for json reporting</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        total_rows_count : int</span>
+<span class="sd">            Total rows of the current document working with, used to calculate</span>
+<span class="sd">            passed rows as well</span>
+<span class="sd">        top_n : int</span>
+<span class="sd">            Number of samples (ordered on the number of rows) to retain for</span>
+<span class="sd">            reporting purposes</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+
+<span class="sd">        :meth:`~pywhip.reporters.SpecificationErrorHandler.build_error_report`</span>
+<span class="sd">        combines the information contained by the</span>
+<span class="sd">        :attr:`~pywhip.reporters.SpecificationErrorHandler._samples`</span>
+<span class="sd">        attribute, for example::</span>
+
+<span class="sd">            { (&quot;07241981&quot;, &quot;string format ...&quot;) : [2, 3, 5, 6],</span>
+<span class="sd">              (&quot;value&quot;, &quot;message as provided by error&quot;) : [1, 2, 6,]</span>
+<span class="sd">            }</span>
+
+<span class="sd">        together with the other attributes into a json-style report::</span>
+
+<span class="sd">            {&quot;constraint&quot;: &quot;%Y-%m-%d, %Y-%m, %Y&quot;,</span>
+<span class="sd">             &quot;failed_rows&quot;: 23,</span>
+<span class="sd">             &quot;passed_rows&quot;: 3,</span>
+<span class="sd">             &quot;samples&quot;: {</span>
+<span class="sd">                &quot;07241981&quot;: {</span>
+<span class="sd">                    &quot;failed_rows&quot;: 4,</span>
+<span class="sd">                    &quot;first_row&quot;: 2,</span>
+<span class="sd">                    &quot;message&quot;: &quot;string format ...&quot;</span>
+<span class="sd">                },</span>
+<span class="sd">                &quot;value&quot;: {</span>
+<span class="sd">                    &quot;failed_rows&quot;: n_rows,</span>
+<span class="sd">                    &quot;first_row&quot;: minimum of row identifiers,</span>
+<span class="sd">                    &quot;message&quot;: &quot;message as provided by error&quot;</span>
+<span class="sd">                    }</span>
+<span class="sd">                }</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_value_messages</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">WhipReportException</span><span class="p">(</span><span class="s2">&quot;Not all value-message &quot;</span>
+                                      <span class="s2">&quot;combinations unique!&quot;</span><span class="p">)</span>
+
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span>
+                                       <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="n">top_n</span><span class="p">]:</span>
+            <span class="n">row_id_list</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[(</span><span class="n">value</span><span class="p">,</span> <span class="n">message</span><span class="p">)]</span>
+            <span class="n">samples</span><span class="p">[</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">,</span>
+                              <span class="s1">&#39;first_row&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">row_id_list</span><span class="p">),</span>
+                              <span class="s1">&#39;failed_rows&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_id_list</span><span class="p">)}</span>
+
+        <span class="n">failed_rows_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_failed_rows</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;constraint&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraint</span><span class="p">,</span>
+                <span class="s1">&#39;passed_rows&#39;</span><span class="p">:</span> <span class="n">total_rows_count</span> <span class="o">-</span> <span class="n">failed_rows_count</span><span class="p">,</span>
+                <span class="s1">&#39;failed_rows&#39;</span><span class="p">:</span> <span class="n">failed_rows_count</span><span class="p">,</span>
+                <span class="s1">&#39;samples&#39;</span><span class="p">:</span> <span class="n">samples</span><span class="p">}</span></div></div>
+</pre></div>
+
+    </div>
+     
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary">
+    
+
+        </div>
+      </div> 
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+      
+    </p>
+    <p>
+        &copy; Copyright 2018, Stijn Van Hoey.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
