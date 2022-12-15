@@ -21,7 +21,7 @@ test_requirements = [
 
 setup(
     name='pywhip',
-    version='0.3.3',
+    version='0.3.4',
     description="Python package to validate data against whip specifications",
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -50,6 +50,9 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10'
     ],
     test_suite='tests',
     tests_require=test_requirements,
