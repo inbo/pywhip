@@ -4,7 +4,10 @@ import re
 from copy import copy
 from datetime import datetime, date
 from dateutil.parser import parse
-from collections import Mapping, Sequence
+try:
+    from collections.abc import Mapping, Sequence
+except:
+    from collections import Mapping, Sequence
 
 import json
 # https://pypi.python.org/pypi/rfc3987 regex on URI's en IRI's
@@ -187,7 +190,10 @@ class DwcaValidator(Validator):
         """ {'type': 'boolean'} """
         # Dropping all remaining rules except of if (instead of subselection)
         # when empty = True
-        from collections import Sized
+        try:
+            from collections.abc import Sized
+        except: 
+            from collections import Sized
         if isinstance(value, Sized) and len(value) == 0:
             # ALL rules, except of if
             self._drop_remaining_rules(
