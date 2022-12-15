@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from collections.abc import Mapping, defaultdict
+    from collections.abc import Mapping
 except:
-    from collections import Mapping, defaultdict
-
+    from collections import Mapping
+from collections import defaultdict
 
 class WhipReportException(Exception):
     """Raised when the reporting of the errors contains errors"""
