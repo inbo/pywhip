@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from collecitons.abc import Mapping, defaultdict
+    from collections.abc import Mapping, defaultdict
 except:
     from collections import Mapping, defaultdict
 
