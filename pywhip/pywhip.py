@@ -3,7 +3,11 @@
 import os
 import csv
 from datetime import datetime
-from collections import Mapping, Sequence
+try:
+    from collections.abc import Mapping, Sequence
+except:
+    from collections import Mapping, Sequence
+    
 from pkg_resources import resource_filename
 
 from dwca.read import DwCAReader
