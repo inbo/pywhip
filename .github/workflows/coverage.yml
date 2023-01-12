@@ -1,9 +1,13 @@
 name: 'coverage'
 on:
-    pull_request:
-        branches:
-            - master
-            - main
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - master
+      - main
 jobs:
     coverage:
         runs-on: ubuntu-latest
